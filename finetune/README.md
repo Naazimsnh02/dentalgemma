@@ -2,7 +2,7 @@
 
 **Fine-tuning [MedGemma 1.5 4B IT](https://huggingface.co/google/medgemma-1.5-4b-it) for dental diagnostics — a novel domain adaptation for the [MedGemma Impact Challenge](https://kaggle.com/competitions/med-gemma-impact-challenge).**
 
-MedGemma was **not** trained on dental data, making this a true novel task adaptation. This project builds a complete pipeline — from raw dental datasets to fine-tuned model — adapting Google's medical foundation model for dental X-ray analysis, pathology classification, and clinical case assessment.
+MedGemma was **not** trained on dental data, making this a true novel task adaptation. This project builds a complete pipeline — from raw dental datasets to fine-tuned model — adapting Google's medical foundation model for dental X-ray analysis, pathology classification, and clinical case assessment using full-precision LoRA fine-tuning.
 
 [![HuggingFace VQA Dataset](https://img.shields.io/badge/🤗%20Dataset-dentalgemma--vqa-blue)](https://huggingface.co/datasets/naazimsnh02/dentalgemma-vqa)
 [![HuggingFace Instruct Dataset](https://img.shields.io/badge/🤗%20Dataset-dentalgemma--instruct-blue)](https://huggingface.co/datasets/naazimsnh02/dentalgemma-instruct)
@@ -37,7 +37,7 @@ Dental diagnostics remains an underserved domain in medical AI. While MedGemma e
 
 1. **Curating** 6 diverse dental datasets spanning X-ray analysis, pathology classification, tooth identification, and clinical case assessment
 2. **Preprocessing** raw data into standardized HuggingFace datasets with clinically accurate chat-format annotations
-3. **Fine-tuning** MedGemma 1.5 4B IT using QLoRA for efficient domain adaptation
+3. **Fine-tuning** MedGemma 1.5 4B IT using full bfloat16 LoRA with critical fixes for label masking and image preprocessing
 
 ### Key Capabilities After Fine-Tuning
 
@@ -203,45 +203,66 @@ Raw datasets should be placed under `datasets/` following the directory structur
 | Parameter | Value |
 |:----------|:------|
 | **Base Model** | `google/medgemma-1.5-4b-it` |
-| **Method** | QLoRA (4-bit NF4 quantization + LoRA) |
-| **LoRA Rank** | 16 |
-| **LoRA Alpha** | 16 |
+| **Method** | LoRA (Full bfloat16 precision, no quantization) |
+| **LoRA Rank** | 64 |
+| **LoRA Alpha** | 64 |
 | **LoRA Dropout** | 0.05 |
 | **Target Modules** | All linear layers |
-| **Trainable Modules** | `lm_head`, `embed_tokens` |
-| **Batch Size** | 1 per device × 4 gradient accumulation steps |
-| **Learning Rate** | 2e-4 (linear scheduler) |
-| **Epochs** | 3 |
-| **Precision** | bfloat16 |
+| **Batch Size (VQA)** | 1 per device × 4 gradient accumulation steps |
+| **Batch Size (Instruct)** | 2 per device × 4 gradient accumulation steps |
+| **Learning Rate** | 5e-5 (linear scheduler) |
+| **Epochs** | 10 per stage (early stopping applied) |
+| **Precision** | Full bfloat16 (no quantization) |
 | **Max Sequence Length** | 1024 |
 | **Optimizer** | AdamW (fused) |
-| **Warmup** | 3% of training steps |
+| **Warmup Ratio** | 10% of training steps |
+| **Max Grad Norm** | 1.0 |
 | **Framework** | TRL SFTTrainer + PEFT |
+
+### Key Training Improvements
+
+- **Image Padding:** Enabled padding to square before resize (preserves aspect ratios, fixes distortion)
+- **Higher LoRA Rank:** Increased from 16→64 for better model capacity
+- **Lower Learning Rate:** Reduced from 2e-4→5e-5 with longer warmup for stability
+- **Early Stopping:** Best checkpoints selected based on validation loss (VQA: step 1200, Instruct: step 700)
 
 ### Running Fine-Tuning
 
 The notebook `dentalgemma_fine_tune.ipynb` is fully Colab-ready:
 
-1. **Open in Google Colab** and select an **A100 GPU** runtime (≥40 GB VRAM required for bfloat16)
+1. **Open in Google Colab** and select an **A100 GPU** runtime (≥40 GB VRAM required for full bfloat16)
 2. **Set your HuggingFace token** in Colab Secrets (name: `HF_TOKEN`, needs write access)
 3. **Accept MedGemma usage conditions** at [google/medgemma-1.5-4b-it](https://huggingface.co/google/medgemma-1.5-4b-it)
 4. **Run all cells** — the notebook handles:
    - Loading both DentalGemma datasets from HuggingFace Hub
    - Formatting messages for the chat template
-   - Loading the model with 4-bit quantization
-   - Training with QLoRA via SFTTrainer
-   - Saving and pushing the fine-tuned adapter to HuggingFace Hub
+   - Loading the model in full bfloat16 precision (no quantization)
+   - Two-stage training with LoRA via SFTTrainer (VQA → Instruct)
+   - Selecting best checkpoints based on validation loss
+   - Merging LoRA adapters with base model
+   - Pushing the fine-tuned model to HuggingFace Hub
    - Evaluation with sample inference
 
 **Training Pipeline:**
 ```
+Stage 1: VQA Training (Multimodal)
 DentalGemma VQA dataset (HuggingFace Hub)
-    ↓ load & parse messages
-MedGemma 1.5 4B IT (4-bit quantized)
-    ↓ QLoRA fine-tuning (SFTTrainer)
-DentalGemma fine-tuned adapter
+    ↓ load & parse messages with label masking
+MedGemma 1.5 4B IT (full bfloat16)
+    ↓ LoRA fine-tuning (SFTTrainer, 10 epochs)
+    ↓ early stopping at step 1200 (val loss: 0.0281)
+VQA-adapted model
+
+Stage 2: Instruct Training (Text-only)
+DentalGemma Instruct dataset (HuggingFace Hub)
+    ↓ load & parse messages with label masking
+VQA-adapted model
+    ↓ LoRA fine-tuning (SFTTrainer, 10 epochs)
+    ↓ early stopping at step 700 (val loss: 0.0209)
+Final LoRA adapter
+    ↓ merge with base model
     ↓ push to Hub
-Inference-ready model
+DentalGemma 1.5 4B IT (inference-ready)
 ```
 
 ---
@@ -254,7 +275,7 @@ DentalGemma builds on MedGemma 1.5 4B IT, which uses:
 - **Language Model:** Gemma 3 architecture (4B parameters) — generates clinical text responses
 - **Pipeline:** `image-text-to-text` — accepts multimodal input (image + text) and produces text output
 
-The QLoRA adapter adds minimal parameters on top of the frozen 4-bit base model, enabling efficient fine-tuning on consumer GPUs while preserving MedGemma's medical knowledge.
+The LoRA adapters (rank 64) add trainable parameters on top of the full-precision base model, enabling high-quality fine-tuning while preserving MedGemma's medical knowledge. The final model merges these adapters back into the base weights for deployment.
 
 ---
 
