@@ -1,9 +1,10 @@
-# 🦷 DentalGemma Professional Demo Application - Complete Implementation Plan
+# 🦷 DentalGemma Professional Demo Application — Complete Implementation Plan
 
 **Project:** DentalGemma AI Assistant  
 **Challenge:** [MedGemma Impact Challenge](https://kaggle.com/competitions/med-gemma-impact-challenge)  
 **Model:** Fine-tuned MedGemma 1.5 4B IT for Dental Diagnostics  
-**Deployment:** Vercel (Frontend) + Modal.com (ML Backend) + External APIs
+**Deployment:** Vercel (Frontend PWA) + Modal.com (ML Backend)  
+**Last Updated:** February 15, 2026
 
 ---
 
@@ -11,54 +12,123 @@
 
 1. [Executive Summary](#executive-summary)
 2. [Application Overview](#application-overview)
-3. [Core Features](#core-features)
-4. [Technical Architecture](#technical-architecture)
-5. [Project Structure](#project-structure)
-6. [Modal.com Deployment](#modalcom-deployment)
-7. [External API Integrations](#external-api-integrations)
-8. [UI/UX Design](#uiux-design)
-9. [Key Pages](#key-pages)
-10. [Security & Compliance](#security--compliance)
-11. [Challenge Alignment](#challenge-alignment)
-12. [Implementation Timeline](#implementation-timeline)
-13. [Cost Estimation](#cost-estimation)
+3. [Technical Architecture](#technical-architecture)
+4. [Core Features](#core-features)
+5. [PWA & Offline Features](#pwa--offline-features)
+6. [Agentic Diagnostic Workflow](#agentic-diagnostic-workflow)
+7. [Additional Features](#additional-features)
+8. [Technology Stack](#technology-stack)
+9. [Project Structure](#project-structure)
+10. [Modal.com Deployment](#modalcom-deployment)
+11. [External API Integrations](#external-api-integrations)
+12. [UI/UX Design System](#uiux-design-system)
+13. [Key Pages](#key-pages)
+14. [Security & Compliance](#security--compliance)
+15. [Challenge Alignment](#challenge-alignment)
+16. [Implementation Timeline](#implementation-timeline)
+17. [Cost Estimation](#cost-estimation)
+18. [Risk Mitigation](#risk-mitigation)
+19. [Submission Deliverables](#submission-deliverables)
+20. [Future Enhancements](#future-enhancements)
 
 ---
 
 ## 🎯 Executive Summary
 
-Create a **production-ready dental AI diagnostic platform** with **hybrid cloud-edge architecture** and **agentic workflow capabilities** for the MedGemma Impact Challenge. The application integrates:
+DentalGemma is a **production-ready dental AI diagnostic platform** with **cloud-first architecture** and **agentic workflow capabilities**, purpose-built for the MedGemma Impact Challenge. The platform integrates:
 
-- **Fine-tuned MedGemma models** (VQA + Instruct) for dental diagnostics
-- **Hybrid Inference** - Cloud (Modal.com) OR Edge (WebGPU) - user's choice
-- **Multi-Agent Diagnostic System** - Intelligent workflow orchestration
-- **Google Gemini Live API** for real-time voice consultation
+- **Fine-tuned MedGemma Multimodal Model** (VQA + Instruct) for dental diagnostics across 98 clinical conditions
+- **Cloud-First Architecture** — Fast and reliable inference via Modal.com GPU
+- **Multi-Agent Diagnostic System** — Intelligent workflow orchestration via Vercel AI SDK 6
+- **Hybrid Voice Consultation** — Web Speech API + DentalGemma (default) | Gemini 2.5 Flash Native Audio (enhanced)
 - **Google Places API** for dentist location services
-- **Exa Neural Search** for evidence-based research
+- **PubMed E-Utils API** for evidence-based research
 
-**Deployment:** Vercel (Frontend PWA) + Modal.com (Cloud Backend) + Transformers.js (Edge Inference)  
-**Tech Stack:** Next.js 14 PWA, TypeScript, Tailwind CSS, Shadcn UI, Transformers.js, WebGPU  
-**Prize Targets:** Main Track + Edge AI Prize + Agentic Workflow Prize
+**Deployment:** Vercel (Frontend PWA) + Modal.com (Cloud GPU Backend)  
+**Tech Stack:** Next.js 16, TypeScript, Tailwind CSS v4, shadcn/ui, Vercel AI SDK 6  
+**Prize Targets:** Main Track ($75K) + Agentic Workflow ($10K) + Novel Task ($10K)
 
 ---
 
 ## 🚀 Application Overview
 
 **Name:** DentalGemma AI Assistant  
-**Tagline:** "Privacy-First Edge AI for Dental Diagnostics with Intelligent Agentic Workflows"  
-**Target Users:** Dental professionals, students, researchers, patients (educational)
+**Tagline:** *"AI-Powered Dental Diagnostics with Intelligent Agentic Workflows"*  
+**Target Users:** Dental professionals, students, researchers, patients (educational)  
+**URL:** `dentalgemma.vercel.app`
 
-### Key Differentiators
+### Key Capabilities
 
-✅ **Novel Task Adaptation** - MedGemma fine-tuned for dental domain (not in original training)  
-✅ **Hybrid Cloud-Edge Architecture** - User choice: Cloud speed OR Edge privacy  
-✅ **Agentic Workflow System** - Multi-agent orchestration with tool calling  
-✅ **Edge AI Capable** - Runs on-device with WebGPU acceleration  
-✅ **Privacy-First** - Optional local inference, data never leaves device  
-✅ **Multimodal Capabilities** - Text + Image analysis  
-✅ **Real-time Voice** - Hands-free clinical workflow  
-✅ **Evidence-based** - Integrated research dashboard  
-✅ **Practical Utility** - Dentist finder for patient referrals
+✅ **Novel Task Adaptation** — MedGemma fine-tuned for dental domain (not in original training data)  
+✅ **Cloud-First Architecture** — Specialized GPU inference for high accuracy and speed
+✅ **Agentic Workflow System** — Autonomous multi-step diagnostic orchestration  
+✅ **Multimodal** — Text + Image analysis with fine-tuned VQA model  
+✅ **Real-time Voice** — Hands-free clinical workflow with hybrid voice architecture  
+✅ **Evidence-based** — PubMed-integrated research dashboard  
+✅ **Practical Utility** — Dentist finder, treatment tracking, patient education
+
+---
+
+## 🏗️ Technical Architecture
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                    FRONTEND (Next.js 16 PWA)                        │
+│              Deployed on Vercel · Tailwind v4 · shadcn/ui           │
+│                                                                     │
+│  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐              │
+│  │ X-Ray    │ │ Clinical │ │ Voice    │ │ Agentic  │              │
+│  │ Analyzer │ │ Case     │ │ Consult  │ │ Workflow │              │
+│  │  (VQA)   │ │ Assess.  │ │ (Hybrid) │ │ Engine   │              │
+│  └────┬─────┘ └────┬─────┘ └────┬─────┘ └────┬─────┘              │
+│       │             │            │             │                    │
+│  ┌────┴─────────────┴────────────┴─────────────┴────────────┐      │
+│  │                 AI ENGINE LAYER                          │      │
+│  │    ┌──────────────────────────┐                          │      │
+│  │    │   Cloud API (Modal)      │                          │      │
+│  │    │   DentalGemma Full Model │                          │      │
+│  │    │   (GPU Inference)        │                          │      │
+│  │    └──────────────────────────┘                          │      │
+│  └──────────────────────────────────────────────────────────┘      │
+│                                                                     │
+│  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌────────┐  │
+│  │ Dentist  │ │ Progress │ │ Research │ │ Patient  │ │Symptom │  │
+│  │ Finder   │ │ Tracker  │ │ Dashboard│ │ Educatn  │ │Checker │  │
+│  └──────────┘ └──────────┘ └──────────┘ └──────────┘ └────────┘  │
+└─────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────┐
+│                     BACKEND SERVICES                                │
+│                                                                     │
+│  ┌──────────────────┐  ┌──────────────────┐                        │
+│  │  Modal.com        │  │  Google Cloud     │                        │
+│  │  · DentalGemma    │  │  · Gemini 2.5     │                        │
+│  │    1.5 4B IT      │  │    Flash Native   │                        │
+│  │    (Multimodal)   │  │    Audio GA       │                        │
+│  │  · GPU: H100/A10G │  │    (enhanced      │                        │
+│  │                   │  │     voice mode)   │                        │
+│  └──────────────────┘  └──────────────────┘                        │
+│                                                                     │
+│  ┌──────────────────┐  ┌──────────────────┐                        │
+│  │  Google Places    │  │  PubMed E-Utils  │                        │
+│  │  API (dentist     │  │  (free research  │                        │
+│  │   finder)         │  │   search)        │                        │
+│  └──────────────────┘  └──────────────────┘                        │
+└─────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────┐
+│              AGENTIC WORKFLOW LAYER                                  │
+│              Vercel AI SDK 6 Agent Abstractions                     │
+│                                                                     │
+│  ┌────────────┐ ┌────────────┐ ┌────────────┐ ┌──────────────────┐│
+│  │ Coordinator│→│ X-Ray      │→│ Research   │→│ Referral Agent   ││
+│  │ Agent      │ │ Analyzer   │ │ Synthesizer│ │ + Report Gen     ││
+│  └────────────┘ └────────────┘ └────────────┘ └──────────────────┘│
+│                                                                     │
+│  Tools: analyzeXray · assessCase · searchResearch · findSpecialist  │
+│         generateReport · checkGuidelines                            │
+└─────────────────────────────────────────────────────────────────────┘
+```
 
 ---
 
@@ -66,53 +136,29 @@ Create a **production-ready dental AI diagnostic platform** with **hybrid cloud-
 
 ### 1. 🔍 X-Ray Analysis Suite
 
-**Capabilities from VQA Dataset (1,654 samples):**
+**Model:** DentalGemma 1.5 4B IT (Multimodal) — Same model for both vision and text tasks
 
-#### A. Cavity Detection (~418 samples)
-- **Input:** Intraoral X-ray images (JPG/PNG)
-- **Output:**
-  - Cavity count (0, 1, 2, 3+)
-  - Normal vs. cavity classification
-  - Confidence scores
-  - Visual overlay (if bounding box available)
-  
-#### B. Panoramic OPG Classification (~517 samples)
-- **Input:** Panoramic (OPG) X-ray images
-- **Output:** 6-class pathology detection
-  - ✅ Healthy Teeth
-  - 🦷 Caries
-  - 🔒 Impacted Teeth
-  - 💔 BDC-BDR (Broken Down Crown/Root)
-  - 🦠 Infection
-  - ⚡ Fractured Teeth
-  
-#### C. Tooth Identification (~64 samples)
-- **Input:** Panoramic X-ray images
-- **Output:**
-  - Total tooth count
-  - Tooth type classification (8 classes)
-  - Per-tooth identification
-  
-#### D. General Radiographic Assessment (~655 samples)
-- **Input:** Dental radiographs
-- **Output:**
-  - Systematic evaluation report
-  - Clinical findings
-  - Quality assessment
+#### Capabilities
 
-**UI/UX Features:**
-- Drag-and-drop image upload
-- Sample X-rays for testing (demo mode)
+| Analysis Type | Training Samples | Output |
+|:-------------|:----------------|:-------|
+| **Cavity Detection** | ~418 | Cavity count (0–3+), normal/cavity classification, confidence scores |
+| **Panoramic OPG Classification** | ~517 | 6-class pathology: Healthy, Caries, Impacted, BDC-BDR, Infection, Fractured |
+| **Tooth Identification** | ~64 | Total count, 8-class type classification, per-tooth identification |
+| **General Radiographic Assessment** | ~655 | Systematic evaluation report, clinical findings, quality assessment |
+
+#### User Interface
+- Drag-and-drop image upload with file browser fallback
+- Sample X-rays gallery for demo/testing
 - Real-time analysis with progress indicator
-- Split-view: Original image + Annotated results
-- Confidence scores with color coding
-- Downloadable PDF report
-- Image comparison slider
+- Split-view: Original image alongside annotated results
+- Confidence scores with color-coded indicators
+- Image comparison slider (before/after overlay)
+- Downloadable PDF report with professional formatting
+- Export raw analysis as JSON
 
-**Technical Implementation:**
-
+#### API Design
 ```typescript
-// API Route: /api/analyze-xray
 POST /api/analyze-xray
 Body: {
   image: base64 | URL,
@@ -137,359 +183,265 @@ Response: {
 
 ### 2. 📋 Comprehensive Clinical Case Assessment
 
-**Capabilities from Instruct Dataset (2,494 cases, 98 conditions):**
+**Model:** DentalGemma 1.5 4B IT (Multimodal) — Same model used for X-ray analysis
 
-#### Input Form (Multi-step)
+#### Input Form (Multi-step with Progress Bar)
 
 **Step 1: Patient Information**
-- Age (number input)
-- Gender (select: Male/Female/Other)
-- Patient ID (optional, for tracking)
+- Age, gender, patient ID (optional)
 
 **Step 2: Chief Complaint**
-- Primary complaint (textarea)
-- Duration of symptoms (text)
-- Pain level (1-10 scale)
-- Symptom triggers (checkboxes)
+- Primary complaint (textarea), duration, pain level (1-10 scale), symptom triggers (checkboxes)
 
 **Step 3: Clinical Examination**
-- Intraoral findings (textarea)
-- Extraoral findings (textarea)
-- Soft tissue examination (textarea)
-- Periodontal status (textarea)
+- Intraoral findings, extraoral findings, soft tissue examination, periodontal status
 
 **Step 4: Radiographic Findings**
-- X-ray description (textarea)
-- Optional: Upload X-ray image (integrates with VQA model)
-- Bone loss assessment
-- Periapical status
+- X-ray description (textarea), optional X-ray upload (integrates with Multimodal model), bone loss assessment, periapical status
 
 **Step 5: Medical History**
-- Current medications (textarea)
-- Allergies (textarea)
-- Systemic conditions (checkboxes: Diabetes, Hypertension, etc.)
-- Previous dental treatments (textarea)
+- Current medications, allergies, systemic conditions (Diabetes, Hypertension, etc.), previous dental treatments
 
-#### Output Report (Structured)
+#### Structured Output Report
 
-**1. 🎯 Primary Diagnosis**
-- Condition name
-- ICD-10 code (if applicable)
-- Confidence level (percentage)
-- Differential diagnoses (top 3)
+1. 🎯 **Primary Diagnosis** — Condition name, ICD-10 code, confidence level, differential diagnoses (top 3)
+2. 🔬 **Etiology Analysis** — Root cause, contributing factors, risk factors
+3. ⚠️ **Urgency Classification**
+   - 🔴 **Urgent** — Immediate attention required (within 24 hours)
+   - 🟡 **Moderate** — Schedule within 1 week
+   - 🟢 **Elective** — Routine scheduling acceptable
+4. 📝 **Management Plan** — Immediate interventions, step-by-step protocol, alternatives, expected outcomes, duration estimate
+5. 💊 **Antibiotic Recommendations** — Indication (with reasoning), drug/dosage/duration, alternatives for allergies, evidence-based rationale
+6. 📅 **Follow-up Schedule** — Initial timing, monitoring parameters, long-term plan, red flags
+7. 👥 **Patient Counseling** — Simple-language explanation, home care, dietary recommendations, pain management, emergency triggers
+8. 📚 **Clinical Guidelines** — Relevant guidelines, scientific references, evidence level (A/B/C)
 
-**2. 🔬 Etiology Analysis**
-- Root cause identification
-- Contributing factors
-- Risk factors present
-
-**3. ⚠️ Urgency Classification**
-
-- 🔴 **Urgent** - Immediate attention required (within 24 hours)
-- 🟡 **Moderate** - Schedule within 1 week
-- 🟢 **Elective** - Routine scheduling acceptable
-
-**4. 📝 Management Plan**
-- Immediate interventions
-- Step-by-step treatment protocol
-- Alternative treatment options
-- Expected outcomes
-- Treatment duration estimate
-
-**5. 💊 Antibiotic Recommendations**
-- Indication for antibiotics (Yes/No with reasoning)
-- Recommended antibiotic (if applicable)
-- Dosage and duration
-- Alternative options (for allergies)
-- Evidence-based rationale
-
-**6. 📅 Follow-up Schedule**
-- Initial follow-up timing
-- Monitoring parameters
-- Long-term follow-up plan
-- Red flags to watch for
-
-**7. 👥 Patient Counseling**
-- Explanation in simple terms
-- Home care instructions
-- Dietary recommendations
-- Pain management advice
-- When to seek emergency care
-
-**8. 📚 Clinical Guidelines**
-- Relevant clinical practice guidelines
-- Scientific references
-- Evidence level (A/B/C)
-
-**UI/UX Features:**
-- Multi-step form with progress bar
+#### User Interface Features
+- Multi-step form with animated progress bar
 - Auto-save to localStorage (every 30 seconds)
 - Field validation with helpful error messages
-- Collapsible sections for better organization
+- Collapsible sections in report for better readability
 - Print-friendly report layout
 - Export as PDF with professional formatting
-- Share via email (optional)
 - Save to history for future reference
-
-**Technical Implementation:**
-```typescript
-// API Route: /api/assess-case
-POST /api/assess-case
-Body: {
-  patient: { age, gender },
-  chiefComplaint: string,
-  clinicalFindings: string,
-  radiographicFindings: string,
-  medicalHistory: string,
-  xrayImage?: base64 // Optional multimodal input
-}
-
-Response: {
-  success: boolean,
-  assessment: {
-    diagnosis: { primary, differential[], confidence },
-    etiology: string,
-    urgency: "urgent" | "moderate" | "elective",
-    managementPlan: string[],
-    antibiotics: { indicated, recommendation, rationale },
-    followUp: string[],
-    patientCounseling: string[],
-    clinicalGuidelines: { title, reference, evidenceLevel }[]
-  },
-  processingTime: number
-}
-```
 
 ---
 
-### 3. 🎤 Real-Time Voice Consultation
+### 3. 🎤 Real-Time Voice Consultation (Hybrid Architecture)
 
-**Using Google Gemini Live API**
+The voice consultation feature uses a **hybrid approach** to combine the strength of our fine-tuned model with the naturalness of Google's Gemini voice system.
 
-**Model:** `gemini-live-2.5-flash-preview`  
-**Documentation:** [Gemini Live API Guide](https://ai.google.dev/gemini-api/docs/live-guide)
+#### Default Mode: Web Speech API + DentalGemma
 
-#### Features
+- **Speech Recognition:** Browser-native `SpeechRecognition` API (free, no API key, offline-capable)
+- **AI Response:** Transcribed text → DentalGemma on Modal → dental-specific clinical response
+- **Text-to-Speech:** Browser-native `SpeechSynthesis` API (free, works offline)
+- **Advantages:** Uses our fine-tuned model for all dental responses; zero third-party voice costs; offline TTS support
 
-**Core Capabilities:**
-- 🗣️ Real-time bidirectional voice conversation
-- 🎯 Voice Activity Detection (VAD) - automatic turn-taking
-- 📝 Live transcription (both user and AI)
-- 🔊 Natural, human-like voice responses
-- 💬 Session management for long conversations
-- ⚡ Low-latency streaming (<500ms)
+#### Enhanced Mode (User Toggle): Gemini 2.5 Flash Native Audio
 
-**Use Cases:**
-1. **Quick Symptom Assessment**
-   - "I have pain in my upper left molar"
-   - AI asks follow-up questions
-   - Provides preliminary assessment
+- **Model:** `gemini-live-2.5-flash-native-audio` (GA since December 2025)
+- **SDK:** `@google/genai` v1.41+ (official GA SDK)
+- **Capabilities:** Native audio processing (no separate TTS step), 30 HD voices, 24+ languages, VAD (automatic turn-taking), barge-in support, affective dialog (emotion-aware), function calling mid-utterance, proactive audio
+- **System prompt** injects DentalGemma's dental expertise and clinical knowledge
+- **Advantages:** Most natural conversational experience; sub-500ms latency; emotional awareness
 
-2. **Treatment Explanation**
-   - "Explain root canal procedure to me"
-   - AI provides patient-friendly explanation
-   - Answers follow-up questions
+#### Clinical Use Cases
+1. **Quick Symptom Assessment** — AI asks targeted follow-up questions to narrow diagnosis
+2. **Treatment Explanation** — Patient-friendly procedural explanations
+3. **Chairside Consultation** — Hands-free clinical queries during procedures
+4. **Educational Q&A** — Dental student learning support
 
-3. **Chairside Consultation**
-   - Hands-free during procedures
-   - Voice-activated clinical queries
-   - Real-time documentation assistance
-
-4. **Educational Q&A**
-   - Dental students asking questions
-   - Continuing education support
-   - Case discussion
-
-**UI/UX Features:**
-- Large microphone button (push-to-talk or continuous)
-- Real-time audio waveform visualization
-- Live transcription display (scrolling)
+#### User Interface
+- Large microphone button (push-to-talk or continuous mode)
+- Real-time audio waveform visualization (Web Audio API + Canvas)
+- Live transcription display (scrolling, both user and AI)
+- Mode toggle: "Standard" ↔ "Enhanced Voice"
 - Conversation history panel
 - Export transcript as text/PDF
 - Voice settings (speed, language)
-- Background noise indicator
-- Connection status indicator
+- Connection status and background noise indicators
 
-**Technical Implementation:**
-
+#### Technical Implementation
 ```typescript
-// API Route: /api/voice/connect (WebSocket)
-// Client-side implementation
+// Default Mode: Web Speech API + DentalGemma
+const recognition = new SpeechRecognition();
+recognition.onresult = async (event) => {
+  const transcript = event.results[0][0].transcript;
+  const response = await fetch('/api/chat', {
+    method: 'POST',
+    body: JSON.stringify({ message: transcript })
+  });
+  const data = await response.json();
+  const utterance = new SpeechSynthesisUtterance(data.response);
+  speechSynthesis.speak(utterance);
+};
 
+// Enhanced Mode: Gemini 2.5 Flash Native Audio GA
 import { GoogleGenAI } from '@google/genai';
 
 const ai = new GoogleGenAI({ apiKey: process.env.GOOGLE_AI_API_KEY });
-const model = 'gemini-live-2.5-flash-preview';
-
 const session = await ai.live.connect({
-  model: model,
+  model: 'gemini-live-2.5-flash-native-audio',
   config: {
     responseModalities: ['AUDIO', 'TEXT'],
-    systemInstruction: `You are an expert dental AI assistant. 
-    Provide accurate, evidence-based dental information. 
-    Always recommend consulting a licensed dentist for diagnosis.`
+    systemInstruction: `You are DentalGemma, an expert dental AI assistant
+      trained on 98 dental conditions. Provide accurate, evidence-based
+      dental information. Always recommend consulting a licensed dentist
+      for clinical diagnosis.`
   }
 });
 
-// Send audio stream
 await session.send({
-  realtimeInput: {
-    audio: audioBuffer,
-    mimeType: 'audio/pcm;rate=16000'
-  }
+  realtimeInput: { audio: audioBuffer, mimeType: 'audio/pcm;rate=16000' }
 });
 
-// Receive responses
 for await (const response of session.receive()) {
-  if (response.text) {
-    // Display transcription
-  }
-  if (response.audio) {
-    // Play audio response
-  }
+  if (response.text) { /* Display transcription */ }
+  if (response.audio) { /* Play audio response */ }
 }
 ```
 
 ---
+
+## 📱 PWA & Offline Features
+
+While the core AI model runs in the cloud for maximum performance, the application is built as a Progressive Web App (PWA) with significant offline utility.
+
+### Offline Capabilities
+- 💾 Cached clinical guidelines and dental knowledge base (pre-embedded JSON, 98 conditions)
+- 🔍 Offline search through dental conditions database
+- 📊 Treatment progress tracking (localStorage)
+- 📋 Dental symptom checker (rule-based + cached model responses)
+- 🦷 Interactive dental anatomy explorer (SVG/Canvas)
+- 🗣️ Voice TTS (Web Speech API works offline)
+
+### PWA Features
+- Installable on Mobile and Desktop
+- Service Worker for asset caching
+- Graceful degradation when offline (AI features disabled, static features available)
+
+---
+
+## 🤖 Agentic Diagnostic Workflow
+
+### Multi-Agent System Overview
+
+The agentic diagnostic workflow deploys multiple AI agents that work together to provide comprehensive dental analysis. This system reimagines the dental diagnostic workflow through intelligent orchestration.
+
+**Framework:** Vercel AI SDK 6 (released December 2025) — native Agent abstractions, streaming-first architecture, type-safe structured outputs, human-in-the-loop tool execution.
+
+### Workflow Execution
+
+```
+Patient Input: "45M with severe pain in tooth #14, X-ray attached"
+
+Agent Workflow:
+┌─────────────────────────────────────────────────────────┐
+│ 1. Coordinator Agent                                     │
+│    ✓ Detected: X-ray image present + symptom description │
+│    ✓ Plan: Analyze X-ray → Assess → Research → Refer    │
+└─────────────────────────────────────────────────────────┘
+                          ↓
+┌─────────────────────────────────────────────────────────┐
+│ 2. X-Ray Analyzer Agent                                  │
+│    ✓ Tool: analyzeXray(image)                           │
+│    ✓ Finding: Deep cavity in tooth #14                  │
+│    ✓ Finding: Periapical radiolucency                   │
+└─────────────────────────────────────────────────────────┘
+                          ↓
+┌─────────────────────────────────────────────────────────┐
+│ 3. Clinical Assessor Agent                               │
+│    ✓ Tool: assessCase(combined_data)                    │
+│    ✓ Diagnosis: Acute periapical abscess                │
+│    ✓ Urgency: URGENT (within 24 hours)                  │
+│    ✓ Treatment: Root canal + Amoxicillin 500mg TID      │
+└─────────────────────────────────────────────────────────┘
+                          ↓
+┌─────────────────────────────────────────────────────────┐
+│ 4. Research Synthesizer Agent                            │
+│    ✓ Tool: searchResearch("periapical abscess")         │
+│    ✓ Found: 5 relevant clinical guidelines              │
+│    ✓ Synthesized: Evidence-based treatment protocols    │
+└─────────────────────────────────────────────────────────┘
+                          ↓
+┌─────────────────────────────────────────────────────────┐
+│ 5. Referral Agent                                        │
+│    ✓ Tool: findSpecialist("endodontist", user_location) │
+│    ✓ Found: 3 nearby endodontists, sorted by rating     │
+└─────────────────────────────────────────────────────────┘
+                          ↓
+┌─────────────────────────────────────────────────────────┐
+│ 6. Report Synthesis Agent                                │
+│    ✓ Combined all findings into comprehensive report    │
+│    ✓ Generated downloadable PDF                         │
+│    ✓ Included: Diagnosis, treatment, research, referrals│
+└─────────────────────────────────────────────────────────┘
+```
+
+### Agent Tools
+
+| Tool | Function | Source |
+|:-----|:---------|:-------|
+| `analyzeXray` | X-ray image analysis | DentalGemma Multimodal (Modal) |
+| `assessCase` | Clinical case assessment | DentalGemma Multimodal (Modal) |
+| `searchResearch` | Evidence-based literature search | PubMed E-Utils API |
+| `findSpecialist` | Locate nearby dental specialists | Google Places API |
+| `generateReport` | Comprehensive PDF report generation | Client-side (jsPDF) |
+| `checkGuidelines` | Clinical guideline lookup | Cached knowledge base |
+
+### User Interface
+- Workflow visualization with animated step-by-step progress
+- Agent activity log with full transparency (user sees each decision)
+- Tool call history with inputs and outputs
+- Confidence scores per agent step
+- Override options (user can guide the workflow)
+- Export complete workflow trace as PDF
+- Streaming display (real-time as each step completes)
+
+---
+
+## 🔵 Additional Features
 
 ### 4. 🗺️ Find Nearby Dentists
 
-**Using Google Places API**
-
-#### Features
+**Google Places API integration with interactive mapping.**
 
 **Search Capabilities:**
-- 📍 Location-based search (address, city, or coordinates)
+- 📍 Location-based search (address, city, or GPS coordinates)
 - 🔍 Radius filter (1, 5, 10, 25 miles)
-- 🏥 Specialty filter:
-  - General Dentistry
-  - Orthodontics
-  - Endodontics
-  - Periodontics
-  - Oral Surgery
-  - Pediatric Dentistry
-  - Prosthodontics
-  - Cosmetic Dentistry
-- ⭐ Rating filter (4+ stars, 4.5+ stars)
-- 💰 Price level filter ($, $$, $$$, $$$$)
+- 🏥 Specialty filter: General, Orthodontics, Endodontics, Periodontics, Oral Surgery, Pediatric, Prosthodontics, Cosmetic
+- ⭐ Rating filter (4+, 4.5+ stars)
+- 💰 Price level filter
 - 🕐 Open now filter
 
-**Display Information:**
-- Interactive map with markers (Leaflet.js or Google Maps)
-- Practice name and specialty
-- ⭐ Rating (1-5 stars) + review count
-- 📍 Distance from search location
-- 📞 Phone number (click to call)
-- 🌐 Website link
-- 📧 Email (if available)
-- 🕐 Hours of operation
-- 💰 Price level indicator
-- 📸 Photos (if available)
-- 📝 Recent reviews (top 3)
-- 🚗 Directions link (Google Maps)
-
-**UI/UX Features:**
-- Split view: Map (left) + List (right)
-- Marker clustering for dense areas
-- Click marker to highlight in list
-- Filter panel (collapsible on mobile)
-- Sort options:
-  - Distance (nearest first)
-  - Rating (highest first)
-  - Review count (most reviewed)
-  - Price (lowest first)
-- Save favorites (localStorage)
-- Share dentist info
-- Mobile-responsive (map stacks on top)
-
-**Technical Implementation:**
-
-```typescript
-// API Route: /api/find-dentists
-POST /api/find-dentists
-Body: {
-  location: string | { lat: number, lng: number },
-  radius: number, // in meters
-  specialty?: string,
-  minRating?: number,
-  priceLevel?: number[],
-  openNow?: boolean
-}
-
-Response: {
-  success: boolean,
-  results: [
-    {
-      placeId: string,
-      name: string,
-      address: string,
-      location: { lat, lng },
-      distance: number, // in miles
-      rating: number,
-      reviewCount: number,
-      priceLevel: number,
-      phone: string,
-      website: string,
-      hours: { open, close }[],
-      photos: string[],
-      reviews: { author, rating, text, time }[]
-    }
-  ],
-  mapCenter: { lat, lng },
-  totalResults: number
-}
-
-// Implementation using Google Places API
-import { Client } from "@googlemaps/google-maps-services-js";
-
-const client = new Client({});
-const response = await client.placesNearby({
-  params: {
-    location: { lat, lng },
-    radius: radiusInMeters,
-    type: "dentist",
-    keyword: specialty,
-    key: process.env.GOOGLE_PLACES_API_KEY
-  }
-});
-```
-
-**Map Integration:**
-```typescript
-// Using react-leaflet
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
-
-<MapContainer center={[lat, lng]} zoom={13}>
-  <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-  {dentists.map(dentist => (
-    <Marker key={dentist.placeId} position={[dentist.location.lat, dentist.location.lng]}>
-      <Popup>
-        <h3>{dentist.name}</h3>
-        <p>⭐ {dentist.rating} ({dentist.reviewCount} reviews)</p>
-        <p>📍 {dentist.distance} miles away</p>
-      </Popup>
-    </Marker>
-  ))}
-</MapContainer>
-```
+**Display:** Interactive Leaflet.js map with clustered markers, split-view (map 60% + list 40%), contact info, hours, reviews, ratings, directions link. Save favorites to localStorage.
 
 ---
 
-### 5. 🔬 Evidence-Based Research Dashboard
+### 5. 📊 Treatment Progress Tracker
 
-**Using Exa Neural Search API**
+**Visual dashboard for tracking dental treatment journeys.**
 
-#### Features
+- Interactive charts (Recharts) — treatment timeline, progress bars, cost tracking
+- Treatment milestones with completion status
+- Color-coded progress indicators
+- Data persisted in localStorage (works offline)
+- Export/share capability
+
+---
+
+### 6. 🔬 Dental Research Dashboard
+
+**Evidence-based research powered by PubMed E-Utils API (free, no API key required).**
 
 **Search Capabilities:**
-- 🧠 Neural semantic search (AI-powered relevance)
+- 🧠 Semantic search through dental and medical literature
 - 📚 Source filtering:
   - PubMed / MEDLINE
   - Dental journals
   - Clinical guidelines
-  - University research
-  - .edu domains
-  - .gov domains
+  - University research (.edu domains)
 - 📅 Date range filter (last 6 months, 1 year, 5 years, all time)
 - 🏷️ Content type filter:
   - Research papers
@@ -497,22 +449,17 @@ import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
   - Systematic reviews
   - Case reports
   - Guidelines
-- 🔍 Advanced query options:
-  - Autoprompt (AI query enhancement)
-  - Similar content search
-  - Citation tracking
 
 **Display Information:**
-- 📄 Article title (clickable)
+- 📄 Article title (clickable to PubMed)
 - ✍️ Authors and affiliations
 - 📅 Publication date
 - 📰 Journal/source name
-- 📊 Relevance score (0-100)
-- 📝 Abstract/summary (first 300 words)
+- 📝 Abstract/summary
 - 🔗 Full-text link (if available)
-- 📚 Citation count (if available)
-- 🏷️ Keywords/tags
-- 💾 Save to reading list
+- 📚 Citation count (if available via PubMed)
+- 🏷️ Keywords/MeSH terms
+- 💾 Save to reading list (localStorage)
 - 📤 Export citation (BibTeX, APA, MLA)
 
 **UI/UX Features:**
@@ -527,458 +474,105 @@ import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 - Share search results
 - Search history
 
-**Technical Implementation:**
+---
 
-```typescript
-// API Route: /api/research
-POST /api/research
-Body: {
-  query: string,
-  filters?: {
-    dateRange?: { start: string, end: string },
-    domains?: string[], // ["pubmed.gov", ".edu"]
-    contentType?: string,
-    numResults?: number
-  },
-  useAutoprompt?: boolean
-}
+### 7. 📚 Patient Education Portal
 
-Response: {
-  success: boolean,
-  results: [
-    {
-      id: string,
-      title: string,
-      url: string,
-      author: string,
-      publishedDate: string,
-      score: number,
-      text: string, // abstract/summary
-      highlights: string[],
-      domain: string
-    }
-  ],
-  autopromptQuery?: string, // if autoprompt used
-  totalResults: number
-}
+**AI-generated patient education materials powered by DentalGemma.**
 
-// Implementation using Exa API
-import Exa from "exa-js";
-
-const exa = new Exa(process.env.EXA_API_KEY);
-const results = await exa.searchAndContents(query, {
-  type: "neural",
-  useAutoprompt: true,
-  numResults: 10,
-  includeDomains: ["pubmed.ncbi.nlm.nih.gov", ".edu"],
-  startPublishedDate: "2020-01-01",
-  text: { maxCharacters: 1000 }
-});
-```
+- Condition-specific education pages (98 conditions from training data)
+- Interactive dental anatomy explorer (SVG/Canvas)
+- Pre/post-procedure guidance with visual aids
+- Simplified explanations from clinical terminology
+- Sharable education cards
+- Multi-language support via browser translation API
 
 ---
 
-### 6. 📊 Interactive Dashboard
+### 8. 📋 Dental Symptom Checker
 
-**Features:**
-- 📈 Usage statistics (analyses performed, cases assessed)
-- 🕐 Recent activity timeline
-- ⭐ Saved items (X-rays, cases, research papers)
-- 📊 Condition distribution chart (pie chart)
-- ⚠️ Urgency breakdown (bar chart)
-- 🎯 Quick action cards:
-  - Analyze X-ray
-  - Assess case
-  - Voice consultation
-  - Find dentist
-  - Research
-- 🔔 Notifications (if any)
-- 👤 User profile (optional, for saved data)
+**Interactive guided assessment for patients.**
+
+- Step-by-step questionnaire (decision tree)
+- AI-powered differential diagnosis (DentalGemma for complex cases, rule-based for offline)
+- Urgency assessment with color-coded recommendations
+- Action guidance: see dentist ASAP vs. home care vs. monitor
+- Works fully offline (cached decision trees + rules engine)
 
 ---
 
-### 7. 🤖 Multi-Agent Diagnostic Workflow (NEW - Agentic)
+### 9. ℹ️ About DentalGemma Model
 
-**Intelligent Orchestration System**
-
-**What it does:**
-Reimagines the dental diagnostic workflow by deploying multiple AI agents that work together to provide comprehensive analysis.
-
-**Agent Architecture:**
-
-```typescript
-// Multi-Agent System
-class DentalDiagnosticAgent {
-  private agents = {
-    coordinator: new CoordinatorAgent(),
-    xrayAnalyzer: new XRayAnalyzerAgent(),
-    clinicalAssessor: new ClinicalAssessorAgent(),
-    researchSynthesizer: new ResearchSynthesizerAgent(),
-    referralAgent: new ReferralAgent(),
-  };
-  
-  async diagnose(input: PatientCase) {
-    // Coordinator plans the workflow
-    const plan = await this.agents.coordinator.createPlan(input);
-    
-    // Execute multi-step workflow
-    const results = await this.executeWorkflow(plan);
-    
-    return results;
-  }
-}
-```
-
-**Workflow Steps:**
-
-1. **📋 Intake Agent**
-   - Analyzes patient complaint
-   - Identifies required diagnostic steps
-   - Creates execution plan
-
-2. **🔍 X-Ray Analysis Agent** (if image provided)
-   - Calls VQA model (cloud or edge)
-   - Extracts findings
-   - Identifies abnormalities
-
-3. **🩺 Clinical Assessment Agent**
-   - Synthesizes all available data
-   - Generates differential diagnosis
-   - Determines urgency level
-
-4. **🔬 Research Agent**
-   - Searches for relevant clinical guidelines
-   - Finds similar cases
-   - Synthesizes evidence-based recommendations
-
-5. **🏥 Referral Agent** (if needed)
-   - Determines if specialist needed
-   - Finds nearby specialists
-   - Provides referral information
-
-6. **📝 Report Synthesis Agent**
-   - Combines all agent outputs
-   - Generates comprehensive report
-   - Provides actionable recommendations
-
-**Tool Calling Framework:**
-
-```typescript
-// Agent can call multiple tools
-const tools = {
-  analyzeXray: async (image) => { /* VQA model */ },
-  searchResearch: async (query) => { /* Exa API */ },
-  findSpecialist: async (specialty, location) => { /* Places API */ },
-  assessCase: async (data) => { /* Instruct model */ },
-  synthesizeEvidence: async (papers) => { /* LLM synthesis */ }
-};
-
-// Coordinator decides which tools to use
-const workflow = await coordinator.plan({
-  hasXray: true,
-  urgency: "moderate",
-  requiresSpecialist: false
-});
-
-// Example workflow:
-// 1. analyzeXray(image)
-// 2. searchResearch(findings)
-// 3. assessCase(combined_data)
-// 4. synthesizeEvidence(research_results)
-```
-
-**UI/UX Features:**
-- Workflow visualization (step-by-step progress)
-- Agent activity log (transparency)
-- Tool call history (what was searched, analyzed)
-- Confidence scores per agent
-- Override options (user can guide workflow)
-- Export complete workflow trace
-
-**Example Workflow:**
-
-```
-User Input: "45M with severe pain in tooth #14, X-ray attached"
-
-Agent Workflow:
-┌─────────────────────────────────────────────────────────┐
-│ 1. Coordinator Agent                                     │
-│    ✓ Detected: X-ray image present                      │
-│    ✓ Plan: Analyze X-ray → Search research → Assess     │
-└─────────────────────────────────────────────────────────┘
-                          ↓
-┌─────────────────────────────────────────────────────────┐
-│ 2. X-Ray Analyzer Agent                                  │
-│    ✓ Tool: analyzeXray(image)                           │
-│    ✓ Finding: Deep cavity in tooth #14                  │
-│    ✓ Finding: Periapical radiolucency                   │
-└─────────────────────────────────────────────────────────┘
-                          ↓
-┌─────────────────────────────────────────────────────────┐
-│ 3. Research Agent                                        │
-│    ✓ Tool: searchResearch("periapical abscess")         │
-│    ✓ Found: 5 relevant clinical guidelines              │
-│    ✓ Synthesized: Treatment protocols                   │
-└─────────────────────────────────────────────────────────┘
-                          ↓
-┌─────────────────────────────────────────────────────────┐
-│ 4. Clinical Assessor Agent                               │
-│    ✓ Tool: assessCase(combined_data)                    │
-│    ✓ Diagnosis: Acute periapical abscess                │
-│    ✓ Urgency: URGENT (within 24 hours)                  │
-└─────────────────────────────────────────────────────────┘
-                          ↓
-┌─────────────────────────────────────────────────────────┐
-│ 5. Referral Agent                                        │
-│    ✓ Tool: findSpecialist("endodontist", user_location) │
-│    ✓ Found: 3 nearby endodontists                       │
-│    ✓ Sorted by: Rating, distance                        │
-└─────────────────────────────────────────────────────────┘
-                          ↓
-┌─────────────────────────────────────────────────────────┐
-│ 6. Report Synthesis Agent                                │
-│    ✓ Combined all findings                              │
-│    ✓ Generated comprehensive report                     │
-│    ✓ Included: Diagnosis, treatment, referrals          │
-└─────────────────────────────────────────────────────────┘
-```
-
-**Benefits:**
-- ✅ Automates complex diagnostic workflow
-- ✅ Reduces time from hours to minutes
-- ✅ Ensures no steps are missed
-- ✅ Evidence-based recommendations
-- ✅ Transparent decision-making
-- ✅ Qualifies for Agentic Workflow Prize 🏆
+- Model architecture: MedGemma 1.5 4B IT + SigLIP vision encoder + LoRA fine-tuning
+- Training data: 6 datasets, 4,148 samples (1,654 VQA + 2,494 instruct)
+- 98 dental conditions covered
+- Capabilities showcase with example inputs/outputs
+- Links to HuggingFace model and datasets
+- Performance metrics and benchmarks
 
 ---
 
-### 8. 🔄 Inference Mode Manager (NEW - Edge AI)
+### 10. 📈 Interactive Dashboard
 
-**Hybrid Cloud-Edge System**
+**Central hub for all platform activity.**
 
-**What it does:**
-Allows users to choose between cloud inference (fast, reliable) or edge inference (private, offline).
-
-**Features:**
-
-**Mode Selection:**
-- 🌐 **Cloud Mode** (Default)
-  - Fast inference (2-3 seconds)
-  - Reliable (99.9% uptime)
-  - No setup required
-  - Uses Modal.com backend
-
-- 💻 **Edge Mode** (Optional)
-  - Private (data never leaves device)
-  - Offline capable
-  - Zero server costs
-  - Requires model download (2.5 GB, one-time)
-
-**Model Download Manager:**
-```typescript
-class ModelDownloadManager {
-  async downloadModel() {
-    // Download quantized ONNX model
-    const modelUrl = 'https://huggingface.co/.../dentalgemma-vqa-onnx-q4';
-    
-    // Show progress
-    const progress = await this.downloadWithProgress(modelUrl);
-    
-    // Cache in IndexedDB
-    await this.cacheModel(progress.data);
-    
-    // Initialize Transformers.js
-    await this.initializeLocalInference();
-  }
-  
-  async checkModelAvailability() {
-    // Check if model cached
-    const cached = await this.isModelCached();
-    
-    // Check WebGPU support
-    const webgpuAvailable = 'gpu' in navigator;
-    
-    return { cached, webgpuAvailable };
-  }
-}
-```
-
-**UI Components:**
-
-1. **Mode Toggle**
-   - Switch between Cloud/Edge
-   - Shows current mode
-   - Displays performance metrics
-
-2. **Download Progress**
-   - Progress bar (0-100%)
-   - Download speed
-   - Estimated time remaining
-   - Pause/Resume capability
-
-3. **Performance Dashboard**
-   - Inference time comparison
-   - Memory usage
-   - Battery impact (mobile)
-   - Cost savings (edge mode)
-
-4. **Smart Recommendations**
-   - Suggests cloud mode on mobile data
-   - Suggests edge mode for sensitive data
-   - Warns about battery drain
-
-**Technical Implementation:**
-
-```typescript
-// Transformers.js + WebGPU
-import { pipeline, env } from '@xenova/transformers';
-
-class EdgeInferenceEngine {
-  private model: any;
-  
-  async initialize() {
-    // Enable WebGPU
-    env.backends.onnx.wasm.proxy = false;
-    
-    // Load quantized model
-    this.model = await pipeline(
-      'image-text-to-text',
-      'dentalgemma-vqa-onnx-q4',
-      {
-        device: 'webgpu',
-        dtype: 'q4',
-        cache_dir: 'indexeddb://models'
-      }
-    );
-  }
-  
-  async analyze(image: ImageData, prompt: string) {
-    const startTime = performance.now();
-    
-    const result = await this.model(image, {
-      prompt,
-      max_new_tokens: 512,
-      do_sample: false
-    });
-    
-    const inferenceTime = performance.now() - startTime;
-    
-    return {
-      analysis: result,
-      inferenceTime,
-      source: 'edge'
-    };
-  }
-}
-```
-
-**Benefits:**
-- ✅ User choice (speed vs privacy)
-- ✅ Automatic fallback (reliability)
-- ✅ Zero additional cost (edge is optional)
-- ✅ HIPAA-friendly (local mode)
-- ✅ Offline capability
-- ✅ Qualifies for Edge AI Prize 🏆
+- Quick stats cards: analyses performed, cases assessed, research papers found, dentists located
+- Recent activity timeline
+- Condition distribution chart (pie chart)
+- Urgency breakdown (bar chart)
+- Usage over time (line chart)
+- Quick action cards for all features
+- Quick action cards for all features
 
 ---
 
-## 🏗️ Technical Architecture (Hybrid Cloud-Edge + Agentic)
+## ⚙️ Technology Stack
 
-```
-┌─────────────────────────────────────────────────────────────────────────┐
-│                    FRONTEND (Vercel PWA)                                 │
-│                                                                          │
-│  Next.js 14 PWA + TypeScript + Tailwind CSS + Shadcn UI + Service Worker│
-│                                                                          │
-│  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────────┐ │
-│  │ X-Ray    │ │ Clinical │ │ Voice    │ │ Dentist  │ │ Multi-Agent  │ │
-│  │ Analysis │ │ Case     │ │ Agent    │ │ Finder   │ │ Workflow     │ │
-│  └──────────┘ └──────────┘ └──────────┘ └──────────┘ └──────────────┘ │
-│                                                                          │
-│  ┌──────────────────────────────────────────────────────────────────┐  │
-│  │              INFERENCE MODE MANAGER                               │  │
-│  │                                                                   │  │
-│  │  [Cloud Mode] ←→ Toggle ←→ [Edge Mode]                          │  │
-│  │                                                                   │  │
-│  │  Cloud: Fast (2-3s) | Edge: Private (3-10s)                     │  │
-│  └──────────────────────────────────────────────────────────────────┘  │
-└─────────────────────────────────────────────────────────────────────────┘
-                                    │
-                    ┌───────────────┴───────────────┐
-                    ▼                               ▼
-        ┌───────────────────────┐       ┌───────────────────────┐
-        │   CLOUD PATH          │       │   EDGE PATH           │
-        │                       │       │                       │
-        │   Next.js API Routes  │       │   Transformers.js     │
-        │   + Modal.com         │       │   + WebGPU            │
-        │                       │       │   + IndexedDB Cache   │
-        └───────────────────────┘       └───────────────────────┘
-                    │                               │
-        ┌───────────┴───────────┐                  │
-        ▼                       ▼                  ▼
-┌──────────────┐    ┌──────────────────┐    ┌──────────────────┐
-│ Modal.com    │    │ External APIs    │    │ Browser Storage  │
-│              │    │                  │    │                  │
-│ • VQA Model  │    │ • Gemini Live    │    │ • ONNX Model     │
-│ • Instruct   │    │ • Places API     │    │   (2.5 GB)       │
-│   Model      │    │ • Exa Search     │    │ • IndexedDB      │
-│              │    │                  │    │ • Cache API      │
-└──────────────┘    └──────────────────┘    └──────────────────┘
+### Frontend
 
-┌─────────────────────────────────────────────────────────────────────────┐
-│                    AGENTIC WORKFLOW LAYER                                │
-│                                                                          │
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐  ┌────────────┐ │
-│  │ Coordinator  │→ │ X-Ray        │→ │ Research     │→ │ Referral   │ │
-│  │ Agent        │  │ Analyzer     │  │ Synthesizer  │  │ Agent      │ │
-│  └──────────────┘  └──────────────┘  └──────────────┘  └────────────┘ │
-│                                                                          │
-│  Tool Calling: analyzeXray | searchResearch | findSpecialist | assess   │
-└─────────────────────────────────────────────────────────────────────────┘
-```
+| Component | Technology | Details |
+|:----------|:-----------|:--------|
+| Framework | **Next.js 16** (App Router) | Latest stable (Oct 2025). Turbopack default bundler, React 19.2, View Transitions, Cache Components |
+| Language | **TypeScript** | Type safety throughout |
+| Styling | **Tailwind CSS v4** | Oxide engine (Rust), CSS-first config with `@theme` directive, P3 color palette, container queries, `@starting-style` transitions |
+| UI Components | **shadcn/ui** (latest) | Visual project builder, Radix + Base UI support, RTL, accessible |
+| Charts | **Recharts** | React-native, lightweight |
+| Maps | **Leaflet.js + react-leaflet** | Free tiles (OpenStreetMap), no API key for rendering |
+| Icons | **Lucide React** | Consistent, tree-shakeable |
+| Animations | **Framer Motion** | Smooth micro-animations, View Transitions |
+| Forms | **React Hook Form + Zod** | Validation, performance |
+| State | **Zustand** | Minimal boilerplate |
+| Markdown | **react-markdown** | Render AI responses |
+| PDF | **jsPDF + html2canvas** | Report generation |
 
-**Technology Stack:**
+### Backend / APIs
 
-**Frontend:**
-- Next.js 14 (App Router) with PWA support
-- TypeScript
-- Tailwind CSS
-- Shadcn UI components
-- React Leaflet (maps)
-- Recharts (data visualization)
-- React Hook Form (forms)
-- Zod (validation)
-- Zustand (state management)
-- Workbox (Service Worker)
+| Component | Technology | Details |
+|:----------|:-----------|:--------|
+| Model Serving | **Modal.com** | GPU inference (H100/A10G), serverless, GPU snapshotting for 10x faster cold starts |
+| AI/Agent Framework | **Vercel AI SDK 6** | Agent abstractions, streaming-first, MCP support, type-safe (Dec 2025) |
+| Gemini SDK | **@google/genai v1.41+** | Official GA SDK (replaces deprecated `@google/generative-ai`) |
+| Voice (default) | **Web Speech API** | Browser-native, free, offline TTS |
+| Voice (enhanced) | **Gemini 2.5 Flash Native Audio GA** | 30 HD voices, affective dialog, native audio processing (GA Dec 2025) |
+| Location | **Google Places API** | Dentist finder |
+| Research | **PubMed E-Utils API** | Free, no API key required |
+| API Routes | **Next.js API Routes** | Serverless on Vercel |
 
-**Edge AI:**
-- Transformers.js v4 (WebGPU support)
-- ONNX Runtime Web
-- WebGPU API
-- IndexedDB (model caching)
-- Cache API (offline support)
+### Edge / Offline
+| Component | Technology | Details |
+|:----------|:-----------|:--------|
+| Offline Support | **Service Worker + Cache API** | PWA offline capability |
+| Local Data | **localStorage** | Preferences, treatment tracking |
 
-**Cloud Backend:**
-- Next.js API Routes
-- Modal.com (ML inference)
-- Google Gemini Live API
-- Google Places API
-- Exa Search API
+### DevOps
 
-**Agentic System:**
-- LangChain.js (agent orchestration)
-- Custom tool calling framework
-- Multi-agent coordination
-- Workflow state management
-
-**Deployment:**
-- Vercel (PWA + API routes)
-- Modal.com (GPU inference)
-- CDN (model distribution)
+| Component | Technology | Details |
+|:----------|:-----------|:--------|
+| Hosting | **Vercel** (Free tier) | Auto-deploy, global edge CDN |
+| CI/CD | **Vercel Git Integration** | Auto-deploy on push |
+| Version Control | **GitHub** | Public repository |
 
 ---
-
 
 ## 📦 Project Structure
 
@@ -992,405 +586,243 @@ dentalgemma-app/
 │   ├── (dashboard)/
 │   │   ├── layout.tsx                    # Dashboard layout with sidebar
 │   │   ├── page.tsx                      # Main dashboard
-│   │   ├── xray-analysis/
-│   │   │   └── page.tsx                  # X-ray analysis interface
-│   │   ├── clinical-assessment/
-│   │   │   └── page.tsx                  # Clinical case form
-│   │   ├── voice-consultation/
-│   │   │   └── page.tsx                  # Voice agent interface
-│   │   ├── find-dentists/
-│   │   │   └── page.tsx                  # Dentist finder with map
-│   │   ├── research/
-│   │   │   └── page.tsx                  # Research dashboard
-│   │   ├── agentic-workflow/
-│   │   │   └── page.tsx                  # Multi-agent diagnostic workflow
-│   │   ├── settings/
-│   │   │   └── page.tsx                  # Inference mode settings
-│   │   └── history/
-│   │       └── page.tsx                  # Analysis history
+│   │   ├── xray-analysis/page.tsx
+│   │   ├── clinical-assessment/page.tsx
+│   │   ├── voice-consultation/page.tsx
+│   │   ├── find-dentists/page.tsx
+│   │   ├── research/page.tsx
+│   │   ├── agentic-workflow/page.tsx
+│   │   ├── symptom-checker/page.tsx
+│   │   ├── education/page.tsx
+│   │   ├── progress-tracker/page.tsx
+│   │   ├── model-info/page.tsx
+│   │   ├── settings/page.tsx
+│   │   └── history/page.tsx
 │   ├── api/
-│   │   ├── analyze-xray/
-│   │   │   └── route.ts                  # Modal VQA endpoint proxy
-│   │   ├── assess-case/
-│   │   │   └── route.ts                  # Modal Instruct endpoint proxy
-│   │   ├── voice/
-│   │   │   └── route.ts                  # Gemini Live API proxy
-│   │   ├── find-dentists/
-│   │   │   └── route.ts                  # Google Places API proxy
-│   │   ├── research/
-│   │   │   └── route.ts                  # Exa Search API proxy
-│   │   └── agentic/
-│   │       └── route.ts                  # Multi-agent workflow endpoint
-│   ├── manifest.json                     # PWA manifest
-│   ├── layout.tsx                        # Root layout
-│   └── globals.css                       # Global styles
+│   │   ├── analyze-xray/route.ts
+│   │   ├── assess-case/route.ts
+│   │   ├── chat/route.ts
+│   │   ├── agent/diagnose/route.ts
+│   │   ├── research/search/route.ts
+│   │   ├── dentists/nearby/route.ts
+│   │   └── health/route.ts
+│   ├── manifest.ts
+│   ├── layout.tsx
+│   └── globals.css
 ├── components/
-│   ├── ui/                               # Shadcn UI components
-│   │   ├── button.tsx
-│   │   ├── card.tsx
-│   │   ├── form.tsx
-│   │   ├── input.tsx
-│   │   ├── select.tsx
-│   │   ├── tabs.tsx
-│   │   ├── dialog.tsx
-│   │   ├── progress.tsx
-│   │   ├── switch.tsx
-│   │   └── ...
+│   ├── ui/                               # shadcn/ui
 │   ├── xray/
-│   │   ├── xray-uploader.tsx             # Drag-drop upload
-│   │   ├── xray-viewer.tsx               # Image viewer with zoom
-│   │   ├── analysis-results.tsx          # Results display
-│   │   └── sample-xrays.tsx              # Demo images
+│   │   ├── xray-uploader.tsx
+│   │   ├── xray-viewer.tsx
+│   │   ├── analysis-results.tsx
+│   │   └── sample-xrays.tsx
 │   ├── case/
-│   │   ├── case-form.tsx                 # Multi-step form
-│   │   ├── assessment-report.tsx         # Report viewer
-│   │   └── pdf-export.tsx                # PDF generation
+│   │   ├── case-form.tsx
+│   │   ├── assessment-report.tsx
+│   │   └── pdf-export.tsx
 │   ├── voice/
-│   │   ├── voice-interface.tsx           # Microphone controls
-│   │   ├── audio-visualizer.tsx          # Waveform display
-│   │   └── transcript-viewer.tsx         # Conversation history
+│   │   ├── voice-interface.tsx
+│   │   ├── audio-visualizer.tsx
+│   │   └── transcript-viewer.tsx
 │   ├── dentist/
-│   │   ├── dentist-map.tsx               # Leaflet map
-│   │   ├── dentist-list.tsx              # Results list
-│   │   ├── dentist-card.tsx              # Individual dentist card
-│   │   └── filter-panel.tsx              # Search filters
+│   │   ├── dentist-map.tsx
+│   │   ├── dentist-list.tsx
+│   │   ├── dentist-card.tsx
+│   │   └── filter-panel.tsx
 │   ├── research/
-│   │   ├── search-bar.tsx                # Search interface
-│   │   ├── research-results.tsx          # Results grid
-│   │   ├── paper-card.tsx                # Individual paper card
-│   │   └── citation-export.tsx           # Export citations
+│   │   ├── search-bar.tsx
+│   │   ├── research-results.tsx
+│   │   ├── paper-card.tsx
+│   │   └── citation-export.tsx
 │   ├── agentic/
-│   │   ├── workflow-visualizer.tsx       # Agent workflow display
-│   │   ├── agent-card.tsx                # Individual agent status
-│   │   ├── tool-call-log.tsx             # Tool execution history
-│   │   └── workflow-controls.tsx         # Start/stop/override
-│   ├── edge/
-│   │   ├── inference-mode-toggle.tsx     # Cloud/Edge switcher
-│   │   ├── model-download-manager.tsx    # Download progress
-│   │   ├── performance-dashboard.tsx     # Metrics comparison
-│   │   └── webgpu-detector.tsx           # Capability detection
+│   │   ├── workflow-visualizer.tsx
+│   │   ├── agent-card.tsx
+│   │   ├── tool-call-log.tsx
+│   │   └── workflow-controls.tsx
+│   ├── education/
+│   │   ├── condition-page.tsx
+│   │   └── anatomy-explorer.tsx
+│   ├── symptom-checker/
+│   │   ├── questionnaire.tsx
+│   │   └── results-display.tsx
 │   ├── dashboard/
-│   │   ├── stats-cards.tsx               # Statistics cards
-│   │   ├── activity-timeline.tsx         # Recent activity
-│   │   └── charts.tsx                    # Data visualizations
+│   │   ├── stats-cards.tsx
+│   │   ├── activity-timeline.tsx
+│   │   └── charts.tsx
 │   ├── layout/
-│   │   ├── navbar.tsx                    # Top navigation
-│   │   ├── sidebar.tsx                   # Side navigation
-│   │   └── footer.tsx                    # Footer
+│   │   ├── navbar.tsx
+│   │   ├── sidebar.tsx
+│   │   └── footer.tsx
 │   └── shared/
 │       ├── loading-spinner.tsx
 │       ├── error-boundary.tsx
-│       └── disclaimer.tsx                # Medical disclaimer
+│       └── disclaimer.tsx
 ├── lib/
 │   ├── api/
-│   │   ├── modal-client.ts               # Modal API client
-│   │   ├── gemini-client.ts              # Gemini Live client
-│   │   ├── places-client.ts              # Google Places client
-│   │   └── exa-client.ts                 # Exa Search client
-│   ├── edge/
-│   │   ├── inference-manager.ts          # Hybrid cloud/edge manager
-│   │   ├── transformers-client.ts        # Transformers.js wrapper
-│   │   ├── model-cache.ts                # IndexedDB model storage
-│   │   └── webgpu-utils.ts               # WebGPU helpers
+│   │   ├── modal-client.ts
+│   │   ├── gemini-client.ts
+│   │   ├── places-client.ts
+│   │   └── pubmed-client.ts
 │   ├── agentic/
-│   │   ├── agent-coordinator.ts          # Multi-agent orchestrator
-│   │   ├── tool-registry.ts              # Tool calling framework
-│   │   ├── workflow-engine.ts            # Workflow execution
-│   │   └── agents/
-│   │       ├── xray-analyzer.ts          # X-ray analysis agent
-│   │       ├── clinical-assessor.ts      # Clinical assessment agent
-│   │       ├── research-synthesizer.ts   # Research synthesis agent
-│   │       └── referral-agent.ts         # Specialist referral agent
-│   ├── utils.ts                          # Utility functions
-│   ├── constants.ts                      # App constants
-│   └── validations.ts                    # Zod schemas
+│   │   ├── agent-coordinator.ts
+│   │   ├── tools.ts
+│   │   └── workflow-engine.ts
+│   ├── voice/
+│   │   ├── web-speech.ts
+│   │   └── gemini-live.ts
+│   ├── utils.ts
+│   ├── constants.ts
+│   └── validations.ts
 ├── hooks/
 │   ├── use-xray-analysis.ts
 │   ├── use-case-assessment.ts
 │   ├── use-voice-session.ts
 │   ├── use-dentist-search.ts
 │   ├── use-research.ts
-│   ├── use-inference-mode.ts             # Cloud/Edge mode management
-│   ├── use-model-download.ts             # Model download state
-│   ├── use-agentic-workflow.ts           # Multi-agent workflow
-│   └── use-webgpu.ts                     # WebGPU detection
+│   └── use-agentic-workflow.ts
 ├── store/
-│   └── app-store.ts                      # Zustand store
+│   └── app-store.ts
 ├── types/
-│   └── index.ts                          # TypeScript types
+│   └── index.ts
 ├── public/
-│   ├── sample-xrays/                     # Demo X-ray images
-│   │   ├── cavity-1.jpg
-│   │   ├── opg-1.jpg
-│   │   └── ...
+│   ├── sample-xrays/
 │   ├── icons/
-│   ├── images/
-│   ├── manifest.json                     # PWA manifest
-│   └── sw.js                             # Service worker
-├── workers/
-│   └── model-worker.ts                   # Web Worker for inference
-├── .env.local                            # Environment variables
-├── next.config.js
-├── tailwind.config.ts
-├── tsconfig.json
+│   └── sw.js
+├── .env.local
+├── next.config.ts
 ├── package.json
+├── tsconfig.json
 └── README.md
 ```
 
 ---
 
-
 ## 🚀 Modal.com Deployment
 
-### Endpoint 1: VQA Model (X-Ray Analysis)
+### Unified DentalGemma Endpoint
 
 ```python
-# modal_vqa_endpoint.py
+# modal_dentalgemma.py
 import modal
-from transformers import AutoProcessor, AutoModelForImageTextToText
-import torch
-from PIL import Image
-import io
-import base64
 
-app = modal.App("dentalgemma-vqa")
+app = modal.App("dentalgemma")
 
-# Create image with dependencies
 image = (
-    modal.Image.debian_slim()
+    modal.Image.debian_slim(python_version="3.11")
     .pip_install(
         "transformers>=4.50.0",
-        "torch>=2.0.0",
+        "torch>=2.5.0",
         "pillow>=10.0.0",
-        "accelerate>=0.20.0"
+        "accelerate>=1.0.0",
+        "bitsandbytes>=0.41.0",
     )
 )
 
-# Download model at build time
-@app.function(
+@app.cls(
     image=image,
     gpu="A10G",
     secrets=[modal.Secret.from_name("huggingface-secret")],
-    timeout=300
+    timeout=300,
+    container_idle_timeout=300,
+    enable_memory_snapshot=True,
 )
-@modal.web_endpoint(method="POST")
-def analyze_xray(data: dict):
-    """
-    Analyze dental X-ray images using fine-tuned MedGemma VQA model
-    
-    Input:
-    {
-        "image": "base64_encoded_image",
-        "question": "Analyze this dental X-ray for cavities"
-    }
-    
-    Output:
-    {
-        "analysis": "This dental X-ray shows...",
-        "confidence": 0.95,
-        "processing_time": 2.3
-    }
-    """
-    import time
-    start_time = time.time()
-    
-    # Load model (cached after first call)
-    model_id = "YOUR_HF_USERNAME/dentalgemma-vqa-finetuned"
-    processor = AutoProcessor.from_pretrained(model_id)
-    model = AutoModelForImageTextToText.from_pretrained(
-        model_id,
-        torch_dtype=torch.bfloat16,
-        device_map="auto"
-    )
-    
-    # Decode image
-    image_data = base64.b64decode(data["image"])
-    image = Image.open(io.BytesIO(image_data))
-    
-    # Prepare input
-    question = data.get("question", "Analyze this dental X-ray image.")
-    messages = [
-        {
-            "role": "user",
-            "content": [
-                {"type": "image", "image": image},
-                {"type": "text", "text": question}
-            ]
-        }
-    ]
-    
-    # Process
-    inputs = processor.apply_chat_template(
-        messages,
-        add_generation_prompt=True,
-        tokenize=True,
-        return_dict=True,
-        return_tensors="pt"
-    ).to(model.device, dtype=torch.bfloat16)
-    
-    # Generate
-    with torch.inference_mode():
-        generation = model.generate(**inputs, max_new_tokens=2000, do_sample=False)
-        generation = generation[0][inputs["input_ids"].shape[-1]:]
-    
-    # Decode
-    analysis = processor.decode(generation, skip_special_tokens=True)
-    
-    processing_time = time.time() - start_time
-    
-    return {
-        "success": True,
-        "analysis": analysis,
-        "processing_time": processing_time
-    }
-```
+class DentalGemmaModel:
+    @modal.enter()
+    def load_models(self):
+        """Load models at container startup (cached via GPU snapshot)."""
+        from transformers import AutoProcessor, AutoModelForImageTextToText
+        import torch
 
-### Endpoint 2: Instruct Model (Clinical Assessment)
-
-```python
-# modal_instruct_endpoint.py
-import modal
-from transformers import AutoTokenizer, AutoModelForCausalLM
-import torch
-
-app = modal.App("dentalgemma-instruct")
-
-image = (
-    modal.Image.debian_slim()
-    .pip_install(
-        "transformers>=4.50.0",
-        "torch>=2.0.0",
-        "accelerate>=0.20.0"
-    )
-)
-
-@app.function(
-    image=image,
-    gpu="A10G",
-    secrets=[modal.Secret.from_name("huggingface-secret")],
-    timeout=300
-)
-@modal.web_endpoint(method="POST")
-def assess_case(data: dict):
-    """
-    Assess clinical dental case using fine-tuned MedGemma Instruct model
-    
-    Input:
-    {
-        "patient": {"age": 45, "gender": "Male"},
-        "chief_complaint": "Severe pain in upper right molar",
-        "clinical_findings": "Deep cavity visible...",
-        "radiographic_findings": "Periapical radiolucency...",
-        "medical_history": "Type 2 diabetes, controlled"
-    }
-    
-    Output:
-    {
-        "diagnosis": {...},
-        "management_plan": [...],
-        "urgency": "urgent",
-        ...
-    }
-    """
-    import time
-    start_time = time.time()
-    
-    # Load model
-    model_id = "YOUR_HF_USERNAME/dentalgemma-instruct-finetuned"
-    tokenizer = AutoTokenizer.from_pretrained(model_id)
-    model = AutoModelForCausalLM.from_pretrained(
-        model_id,
-        torch_dtype=torch.bfloat16,
-        device_map="auto"
-    )
-    
-    # Format case
-    case_text = f"""Please evaluate this dental patient:
-
-PATIENT: {data['patient']['age']}yo {data['patient']['gender']}
-
-CHIEF COMPLAINT:
-{data['chief_complaint']}
-
-CLINICAL FINDINGS:
-{data['clinical_findings']}
-
-RADIOGRAPHIC FINDINGS:
-{data['radiographic_findings']}
-
-MEDICAL HISTORY:
-{data['medical_history']}"""
-    
-    messages = [
-        {"role": "system", "content": "You are an expert dental clinician..."},
-        {"role": "user", "content": case_text}
-    ]
-    
-    # Tokenize
-    inputs = tokenizer.apply_chat_template(
-        messages,
-        add_generation_prompt=True,
-        return_tensors="pt"
-    ).to(model.device)
-    
-    # Generate
-    with torch.inference_mode():
-        outputs = model.generate(
-            inputs,
-            max_new_tokens=2000,
-            do_sample=False,
-            temperature=0.7
+        model_id = "naazimsnh02/dentalgemma-1.5-4b-it"
+        self.processor = AutoProcessor.from_pretrained(model_id)
+        self.model = AutoModelForImageTextToText.from_pretrained(
+            model_id, torch_dtype=torch.bfloat16, device_map="auto"
         )
-    
-    # Decode
-    assessment = tokenizer.decode(outputs[0][inputs.shape[-1]:], skip_special_tokens=True)
-    
-    processing_time = time.time() - start_time
-    
-    return {
-        "success": True,
-        "assessment": assessment,
-        "processing_time": processing_time
-    }
+
+    @modal.web_endpoint(method="POST")
+    def analyze_xray(self, data: dict):
+        """VQA inference for dental X-ray analysis."""
+        import time, base64, io, torch
+        from PIL import Image
+
+        start_time = time.time()
+        image_data = base64.b64decode(data["image"])
+        image = Image.open(io.BytesIO(image_data))
+
+        question = data.get("question", "Analyze this dental X-ray image.")
+        messages = [{"role": "user", "content": [
+            {"type": "image", "image": image},
+            {"type": "text", "text": question}
+        ]}]
+
+        inputs = self.processor.apply_chat_template(
+            messages, add_generation_prompt=True,
+            tokenize=True, return_dict=True, return_tensors="pt"
+        ).to(self.model.device, dtype=torch.bfloat16)
+
+        with torch.inference_mode():
+            generation = self.model.generate(**inputs, max_new_tokens=2000, do_sample=False)
+            generation = generation[0][inputs["input_ids"].shape[-1]:]
+
+        return {
+            "success": True,
+            "analysis": self.processor.decode(generation, skip_special_tokens=True),
+            "processing_time": time.time() - start_time
+        }
+
+    @modal.web_endpoint(method="POST")
+    def assess_case(self, data: dict):
+        """Clinical case assessment using instruct model."""
+        import time, torch
+
+        start_time = time.time()
+        case_text = f"""Please evaluate this dental patient:
+PATIENT: {data['patient']['age']}yo {data['patient']['gender']}
+CHIEF COMPLAINT: {data['chief_complaint']}
+CLINICAL FINDINGS: {data['clinical_findings']}
+RADIOGRAPHIC FINDINGS: {data['radiographic_findings']}
+MEDICAL HISTORY: {data['medical_history']}"""
+
+        messages = [
+            {"role": "system", "content": "You are an expert dental clinician. Provide comprehensive clinical assessments with diagnosis, management plan, and evidence-based recommendations."},
+            {"role": "user", "content": case_text}
+        ]
+
+        inputs = self.processor.apply_chat_template(
+            messages, add_generation_prompt=True,
+            tokenize=True, return_tensors="pt"
+        ).to(self.model.device)
+
+        with torch.inference_mode():
+            outputs = self.model.generate(inputs, max_new_tokens=2000, do_sample=False)
+
+        return {
+            "success": True,
+            "assessment": self.processor.decode(outputs[0][inputs.shape[-1]:], skip_special_tokens=True),
+            "processing_time": time.time() - start_time
+        }
 ```
 
 **Deployment Commands:**
 ```bash
-# Install Modal
 pip install modal
-
-# Authenticate
 modal token new
-
-# Deploy VQA endpoint
-modal deploy modal_vqa_endpoint.py
-
-# Deploy Instruct endpoint
-modal deploy modal_instruct_endpoint.py
-
-# Get endpoint URLs
-modal app list
+modal deploy modal_dentalgemma.py
+modal app list  # Get endpoint URLs
 ```
 
 ---
 
-
 ## 🔌 External API Integrations
 
-### 1. Google Gemini Live API
+### 1. Gemini Live API (Enhanced Voice Mode)
 
-**Setup:**
 ```bash
-# Install SDK
-npm install @google/genai
-
-# Environment variable
-GOOGLE_AI_API_KEY=your_api_key_here
+npm install @google/genai    # v1.41+ — official GA SDK
 ```
 
-**Usage in Next.js:**
 ```typescript
-// lib/api/gemini-client.ts
+// lib/voice/gemini-live.ts
 import { GoogleGenAI } from '@google/genai';
 
 export class GeminiVoiceClient {
@@ -1403,10 +835,10 @@ export class GeminiVoiceClient {
 
   async connect() {
     this.session = await this.ai.live.connect({
-      model: 'gemini-live-2.5-flash-preview',
+      model: 'gemini-live-2.5-flash-native-audio',
       config: {
         responseModalities: ['AUDIO', 'TEXT'],
-        systemInstruction: `You are an expert dental AI assistant...`
+        systemInstruction: `You are DentalGemma, an expert dental AI assistant...`
       }
     });
     return this.session;
@@ -1414,10 +846,7 @@ export class GeminiVoiceClient {
 
   async sendAudio(audioBuffer: ArrayBuffer) {
     await this.session.send({
-      realtimeInput: {
-        audio: audioBuffer,
-        mimeType: 'audio/pcm;rate=16000'
-      }
+      realtimeInput: { audio: audioBuffer, mimeType: 'audio/pcm;rate=16000' }
     });
   }
 
@@ -1429,877 +858,813 @@ export class GeminiVoiceClient {
 }
 ```
 
-**Pricing:** Pay-as-you-go (check [Google AI pricing](https://ai.google.dev/pricing))
-
----
-
 ### 2. Google Places API
 
-**Setup:**
 ```bash
-# Install SDK
 npm install @googlemaps/google-maps-services-js
-
-# Environment variable
-GOOGLE_PLACES_API_KEY=your_api_key_here
 ```
 
-**Usage:**
+**Pricing:** $200 free credit/month (Nearby Search: $32/1K requests, Place Details: $17/1K).
+
+### 3. PubMed E-Utils API (Free)
+
 ```typescript
-// lib/api/places-client.ts
-import { Client } from "@googlemaps/google-maps-services-js";
+// lib/api/pubmed-client.ts
+export async function searchPubMed(query: string, maxResults = 10) {
+  const baseUrl = 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils';
 
-export async function findNearbyDentists(params: {
-  location: { lat: number; lng: number };
-  radius: number;
-  specialty?: string;
-}) {
-  const client = new Client({});
-  
-  const response = await client.placesNearby({
-    params: {
-      location: params.location,
-      radius: params.radius,
-      type: "dentist",
-      keyword: params.specialty,
-      key: process.env.GOOGLE_PLACES_API_KEY!
-    }
-  });
-  
-  return response.data.results;
+  const searchRes = await fetch(
+    `${baseUrl}/esearch.fcgi?db=pubmed&term=${encodeURIComponent(query)}&retmax=${maxResults}&retmode=json`
+  );
+  const { esearchresult } = await searchRes.json();
+
+  if (!esearchresult.idlist.length) return [];
+
+  const summaryRes = await fetch(
+    `${baseUrl}/esummary.fcgi?db=pubmed&id=${esearchresult.idlist.join(',')}&retmode=json`
+  );
+  const { result } = await summaryRes.json();
+
+  return Object.values(result).filter((r: any) => r.uid);
 }
 
-export async function getPlaceDetails(placeId: string) {
-  const client = new Client({});
+export async function findSimilarPapers(pmid: string) {
+  const baseUrl = 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils';
   
-  const response = await client.placeDetails({
-    params: {
-      place_id: placeId,
-      fields: ["name", "rating", "formatted_phone_number", "website", "opening_hours", "reviews"],
-      key: process.env.GOOGLE_PLACES_API_KEY!
-    }
-  });
+  const response = await fetch(
+    `${baseUrl}/elink.fcgi?dbfrom=pubmed&db=pubmed&id=${pmid}&retmode=json`
+  );
+  const data = await response.json();
   
-  return response.data.result;
+  return data.linksets[0]?.linksetdbs || [];
 }
 ```
 
-**Pricing:** 
-- Nearby Search: $32 per 1000 requests
-- Place Details: $17 per 1000 requests
-- Free tier: $200 credit/month
+**No API key required.** Rate limit: 3 requests/second (10/s with optional API key).
 
 ---
 
-### 3. Exa Search API
+## 🎨 UI/UX Design System
 
-**Setup:**
-```bash
-# Install SDK
-npm install exa-js
+### Design Principles
+- **Medical-grade trust** — Clean, professional, clinical aesthetic
+- **Dark mode default** — Easier on eyes during clinical use
+- **Glassmorphism accents** — Modern premium feel
+- **Micro-animations** — Framer Motion for smooth transitions and View Transitions
+- **Color-coded urgency** — Intuitive visual communication across all features
 
-# Environment variable
-EXA_API_KEY=your_api_key_here
-```
+### Color Palette (Tailwind v4 CSS-First Configuration)
 
-**Usage:**
-```typescript
-// lib/api/exa-client.ts
-import Exa from "exa-js";
-
-export async function searchDentalResearch(query: string, options?: {
-  dateRange?: { start: string; end: string };
-  domains?: string[];
-  numResults?: number;
-}) {
-  const exa = new Exa(process.env.EXA_API_KEY!);
-  
-  const results = await exa.searchAndContents(query, {
-    type: "neural",
-    useAutoprompt: true,
-    numResults: options?.numResults || 10,
-    includeDomains: options?.domains || [
-      "pubmed.ncbi.nlm.nih.gov",
-      ".edu",
-      "scholar.google.com"
-    ],
-    startPublishedDate: options?.dateRange?.start,
-    endPublishedDate: options?.dateRange?.end,
-    text: {
-      maxCharacters: 1000,
-      includeHtmlTags: false
-    },
-    highlights: {
-      numSentences: 3,
-      highlightsPerUrl: 3
-    }
-  });
-  
-  return results;
-}
-
-export async function findSimilarPapers(url: string) {
-  const exa = new Exa(process.env.EXA_API_KEY!);
-  
-  const results = await exa.findSimilar(url, {
-    numResults: 5,
-    includeDomains: ["pubmed.ncbi.nlm.nih.gov", ".edu"]
-  });
-  
-  return results;
-}
-```
-
-**Pricing:**
-- Free tier: 1000 searches/month
-- Pro: $20/month for 10,000 searches
-
----
-
-
-## 🎨 UI/UX Design Principles
-
-### Design System
-
-**Color Palette:**
 ```css
-/* Primary - Medical Blue */
---primary: 210 100% 50%;        /* #0080FF */
---primary-foreground: 0 0% 100%; /* White */
+@import "tailwindcss";
 
-/* Secondary - Clinical Gray */
---secondary: 210 10% 95%;        /* #F2F4F7 */
---secondary-foreground: 210 10% 20%; /* #2D3748 */
-
-/* Accent - Success Green */
---accent: 142 76% 36%;           /* #16A34A */
---accent-foreground: 0 0% 100%;
-
-/* Destructive - Urgent Red */
---destructive: 0 84% 60%;        /* #EF4444 */
---destructive-foreground: 0 0% 100%;
-
-/* Warning - Moderate Yellow */
---warning: 38 92% 50%;           /* #F59E0B */
-
-/* Background */
---background: 0 0% 100%;         /* White */
---foreground: 210 10% 10%;       /* Near Black */
-
-/* Muted */
---muted: 210 10% 96%;
---muted-foreground: 210 10% 40%;
-
-/* Border */
---border: 210 10% 90%;
---ring: 210 100% 50%;
+@theme {
+  --color-primary: oklch(0.65 0.15 180);          /* Medical Teal */
+  --color-primary-foreground: oklch(0.98 0 0);
+  --color-accent: oklch(0.60 0.15 240);            /* Clinical Blue */
+  --color-urgent: oklch(0.63 0.25 25);              /* Red */
+  --color-moderate: oklch(0.75 0.18 85);            /* Amber */
+  --color-elective: oklch(0.70 0.18 155);           /* Green */
+  --color-background: oklch(0.15 0.01 260);         /* Dark Background */
+  --color-surface: oklch(0.20 0.01 260);
+  --color-surface-elevated: oklch(0.25 0.02 260);
+}
 ```
 
-**Typography:**
-- Headings: Inter (700, 600)
-- Body: Inter (400, 500)
-- Monospace: JetBrains Mono (code/data)
-
-**Spacing:**
-- Base unit: 4px (0.25rem)
-- Scale: 4, 8, 12, 16, 24, 32, 48, 64, 96
+### Typography
+- **Headings:** Inter (700, 600) — loaded via `next/font`
+- **Body:** Inter (400, 500)
+- **Monospace:** JetBrains Mono (code, data displays)
 
 ### Accessibility
-
-✅ **WCAG 2.1 AA Compliance:**
-- Color contrast ratio ≥ 4.5:1 for text
-- Color contrast ratio ≥ 3:1 for UI components
-- Keyboard navigation support
-- Focus indicators on all interactive elements
-- ARIA labels for screen readers
-- Alt text for all images
-- Semantic HTML structure
-
-✅ **Responsive Design:**
-- Mobile: 320px - 767px
-- Tablet: 768px - 1023px
-- Desktop: 1024px+
-
-✅ **Performance:**
-- Lighthouse score > 90
-- First Contentful Paint < 1.5s
-- Time to Interactive < 3s
-- Image optimization (WebP, lazy loading)
-
-### Component Library
-
-**Using Shadcn UI:**
-- Button, Card, Dialog, Form, Input, Select, Tabs
-- Toast notifications
-- Loading skeletons
-- Error boundaries
-- Custom components for domain-specific needs
+- ✅ WCAG 2.1 AA compliance (contrast ≥ 4.5:1)
+- ✅ Keyboard navigation with focus indicators
+- ✅ ARIA labels and screen reader support
+- ✅ Semantic HTML structure
+- ✅ Responsive: Mobile (320px+), Tablet (768px+), Desktop (1024px+)
+- ✅ Lighthouse score target > 90
 
 ---
 
 ## 📄 Key Pages
 
-### 1. Landing Page (`/`)
+### Sitemap
 
-**Sections:**
-- **Hero**
-  - Headline: "AI-Powered Dental Diagnostics with Fine-Tuned MedGemma"
-  - Subheadline: "Novel task adaptation for dental X-ray analysis and clinical assessment"
-  - CTA: "Try Demo" button
-  - Demo video embed (3 min)
+```
+/ ............................ Landing page (hero + feature showcase)
+/xray ........................ X-Ray Analyzer
+/assessment .................. Clinical Case Assessment
+/voice ....................... Voice Consultation (Hybrid)
+/agent ....................... Agentic Diagnostic Workflow
+/dentist-finder .............. Find Nearby Dentists
+/progress .................... Treatment Progress Tracker
+/research .................... Dental Research Dashboard
+/education ................... Patient Education Portal
+/symptom-checker ............. Dental Symptom Checker
+/model-info .................. About DentalGemma Model
+/settings .................... App Settings
+/history ..................... Analysis History
+```
 
-- **Features Grid**
-  - 5 feature cards with icons
-  - X-Ray Analysis, Clinical Assessment, Voice Consultation, Dentist Finder, Research
+### Landing Page (`/`)
+- **Hero Section:** Animated gradient background, headline "AI-Powered Dental Diagnostics with Fine-Tuned MedGemma", tagline "Novel task adaptation for dental X-ray analysis and clinical assessment", CTA "Try Demo"
+- **Features Grid:** 11 feature cards with icons, descriptions, and links
+- **How It Works:** 3-step visual: Upload → Analyze → Get Results
+- **Model Information:** Fine-tuning details, dataset statistics (4,148 samples, 98 conditions), performance metrics
+- **Challenge Context:** MedGemma Impact Challenge badge and track coverage (Main + Novel Task + Agentic)
+- **Demo Video:** Embedded 3-minute walkthrough
+- **Footer:** Links, disclaimer, contact
 
-- **How It Works**
-  - 3-step process visualization
-  - Upload → Analyze → Get Results
+### Dashboard Layout
+All feature pages share a consistent layout:
+- Collapsible sidebar navigation with feature icons
+- Top bar with global search
+- Main content area with breadcrumbs
+- Medical disclaimer footer
+- Quick stats overview
 
-- **Model Information**
-  - Fine-tuning details
-  - Dataset statistics
-  - Performance metrics
-
-- **Challenge Context**
-  - MedGemma Impact Challenge badge
-  - Submission details
-
-- **Footer**
-  - Links, disclaimer, contact
-
----
-
-### 2. Dashboard (`/dashboard`)
-
-**Layout:**
-- Sidebar navigation (collapsible on mobile)
-- Top bar with user menu and notifications
-- Main content area
-
-**Content:**
-- Welcome message
-- Quick stats cards:
-  - Total analyses performed
-  - Cases assessed
-  - Research papers found
-  - Dentists located
-- Recent activity timeline
-- Quick action buttons (large, prominent)
-- Charts:
-  - Condition distribution (pie chart)
-  - Urgency breakdown (bar chart)
-  - Usage over time (line chart)
-
----
-
-### 3. X-Ray Analysis (`/dashboard/xray-analysis`)
-
-**Layout:**
-- Two-column layout (upload left, results right)
-- Mobile: stacked vertically
+### X-Ray Analysis Page (`/xray`)
+**Layout:** Two-column (upload left 40%, results right 60%) - stacked on mobile
 
 **Upload Section:**
-- Drag-and-drop zone
+- Drag-and-drop zone with visual feedback
 - File browser button
-- Sample X-rays gallery (click to analyze)
-- Analysis type selector:
+- Sample X-rays gallery (6-8 demo images, click to analyze)
+- Analysis type selector dropdown:
   - Cavity Detection
   - OPG Classification
   - Tooth Identification
   - General Assessment
 
 **Results Section:**
-- Image viewer with zoom/pan
-- Analysis text (formatted)
-- Confidence scores with progress bars
-- Visual overlays (if applicable)
-- Export buttons (PDF, JSON)
-- Save to history
+- Image viewer with zoom/pan controls
+- Analysis text (formatted with markdown)
+- Confidence scores with animated progress bars
+- Visual overlays (if bounding boxes available)
+- Export buttons (PDF with professional formatting, JSON for developers)
+- Save to history button
+- Share button (copy link)
 
----
-
-### 4. Clinical Assessment (`/dashboard/clinical-assessment`)
-
-**Multi-step Form:**
-- Progress indicator (5 steps)
-- Step 1: Patient Info
-- Step 2: Chief Complaint
-- Step 3: Clinical Findings
-- Step 4: Radiographic Findings
-- Step 5: Medical History
+### Clinical Assessment Page (`/assessment`)
+**Multi-step Form with Progress Bar:**
+- Step 1: Patient Info (age, gender, patient ID optional)
+- Step 2: Chief Complaint (textarea, duration, pain scale 1-10, triggers)
+- Step 3: Clinical Findings (intraoral, extraoral, soft tissue, periodontal)
+- Step 4: Radiographic Findings (description, optional X-ray upload with multimodal integration, bone loss, periapical status)
+- Step 5: Medical History (medications, allergies, systemic conditions checkboxes, previous treatments)
 
 **Features:**
-- Auto-save indicator
-- Field validation with inline errors
-- Optional X-ray upload (integrates with VQA)
-- Previous/Next navigation
-- Submit button on final step
+- Auto-save indicator (saves every 30 seconds to localStorage)
+- Field validation with inline error messages
+- Optional X-ray upload that integrates with Multimodal model
+- Previous/Next navigation buttons
+- Submit button on final step with loading state
 
 **Results Page:**
-- Comprehensive report with sections
-- Collapsible sections for better readability
-- Print button
-- Export as PDF
-- Share via email
+- Comprehensive report with 8 collapsible sections
+- Print-friendly layout
+- Export as PDF with professional medical formatting
+- Share via email (optional)
 - Save to history
+- Edit/revise option
 
----
-
-### 5. Voice Consultation (`/dashboard/voice-consultation`)
-
-**Layout:**
-- Centered interface
-- Large microphone button
-- Audio waveform visualization
-- Transcript panel (scrollable)
+### Voice Consultation Page (`/voice`)
+**Layout:** Centered interface with focus on conversation
 
 **Features:**
-- Microphone permission request
-- Push-to-talk or continuous mode toggle
-- Real-time transcription (user + AI)
-- Conversation history
-- Export transcript
-- Clear conversation
-- Voice settings (speed, language)
+- Large microphone button (animated when active)
+- Mode toggle: "Standard" (Web Speech + DentalGemma) ↔ "Enhanced" (Gemini Native Audio)
+- Push-to-talk or continuous mode selector
+- Real-time audio waveform visualization (Web Audio API + Canvas)
+- Live transcription display (scrolling, both user and AI with timestamps)
+- Conversation history panel (collapsible)
+- Export transcript as text/PDF
+- Clear conversation button
+- Voice settings (speed, language selection)
+- Connection status indicator
+- Background noise level indicator
 
----
+### Agentic Workflow Page (`/agent`)
+**Layout:** Full-width with workflow visualization
 
-### 6. Find Dentists (`/dashboard/find-dentists`)
+**Features:**
+- Workflow visualization with animated step-by-step progress
+- Agent activity log with full transparency (user sees each decision)
+- Tool call history with inputs and outputs (expandable)
+- Confidence scores per agent step
+- Override options (user can guide the workflow)
+- Export complete workflow trace as PDF
+- Streaming display (real-time as each step completes)
+- Pause/resume workflow controls
 
-**Layout:**
-- Split view: Map (60%) + List (40%)
-- Mobile: Map on top, list below
+### Find Dentists Page (`/dentist-finder`)
+**Layout:** Split view - Map (60% left) + List (40% right) - stacked on mobile
 
 **Search Panel:**
-- Location input (autocomplete)
+- Location input with autocomplete (Google Places Autocomplete)
 - Radius slider (1-25 miles)
-- Specialty dropdown
-- Rating filter
-- Price level filter
+- Specialty dropdown (8 specialties)
+- Rating filter (4+, 4.5+ stars)
+- Price level filter ($-$$$$)
 - Open now checkbox
 - Search button
 
 **Map:**
-- Interactive Leaflet map
-- Dentist markers (clustered)
+- Interactive Leaflet map with OpenStreetMap tiles
+- Dentist markers with clustering for dense areas
 - Click marker to highlight in list
 - Zoom controls
+- Current location button
 
 **List:**
-- Dentist cards with:
-  - Name, specialty
-  - Rating, review count
-  - Distance
-  - Phone, website
-  - Hours
-  - "Get Directions" button
+- Dentist cards with name, specialty, rating, distance, phone, website, hours
+- "Get Directions" button (opens Google Maps)
+- Save to favorites (localStorage)
+- Pagination or infinite scroll
+
+### Research Dashboard Page (`/research`)
+**Layout:** Search bar at top, filter panel (left sidebar, collapsible), results grid (main area)
+
+**Search Bar:**
+- Large input field with autocomplete
+- Advanced options toggle
+- Recent searches dropdown
+
+**Filter Panel:**
+- Date range picker (last 6 months, 1 year, 5 years, all time)
+- Content type radio buttons (research papers, trials, reviews, case reports, guidelines)
+- Number of results slider (10-50)
+
+**Results Grid:**
+- Paper cards with title, authors, date, abstract preview, save button, export citation button
+- Load more button
+- Grid/list view toggle
+
+**Saved Papers:**
+- Sidebar or separate tab
+- Export all citations (BibTeX, APA, MLA)
+
+---
+
+### Treatment Progress Tracker Page (`/progress`)
+**Layout:** Dashboard-style with cards and charts
+
+**Features:**
+- Treatment timeline visualization (horizontal timeline with milestones)
+- Progress cards for each treatment phase:
+  - Status indicator (Not Started, In Progress, Completed)
+  - Completion percentage
+  - Next appointment date
+  - Notes section
+- Interactive charts (Recharts):
+  - Treatment progress over time (line chart)
+  - Cost tracking (bar chart)
+  - Milestone completion (progress bars)
+- Color-coded progress indicators:
+  - 🔴 Overdue
+  - 🟡 Upcoming
+  - 🟢 Completed
+- Add/edit treatment entries
+- Upload related documents/images
+- Export progress report as PDF
+- Data persisted in localStorage (works offline)
+- Share progress with dentist (export link)
+
+---
+
+### Patient Education Portal Page (`/education`)
+**Layout:** Grid of condition cards with search and filter
+
+**Features:**
+- Search bar for conditions (98 dental conditions from training data)
+- Category filters:
+  - Preventive Care
+  - Restorative Procedures
+  - Periodontal Conditions
+  - Endodontic Issues
+  - Oral Surgery
+  - Orthodontics
+  - Pediatric Dentistry
+  - Emergency Care
+- Condition cards with:
+  - Condition name and icon
+  - Brief description
+  - "Learn More" button
+
+**Individual Condition Page:**
+- Condition overview (AI-generated by DentalGemma)
+- Symptoms and signs
+- Causes and risk factors
+- Treatment options
+- Prevention tips
+- Interactive dental anatomy explorer (SVG/Canvas with hover tooltips)
+- Pre/post-procedure guidance with visual aids
+- Simplified explanations (patient-friendly language)
+- Related conditions
+- Sharable education cards (social media format)
+- Multi-language support via browser translation API
+- Print-friendly format
+
+---
+
+### Dental Symptom Checker Page (`/symptom-checker`)
+**Layout:** Step-by-step questionnaire with progress indicator
+
+**Features:**
+- Welcome screen with disclaimer
+- Interactive questionnaire (decision tree):
+  - Step 1: Location (which tooth/area?)
+  - Step 2: Type of pain (sharp, dull, throbbing, constant)
+  - Step 3: Duration (hours, days, weeks)
+  - Step 4: Triggers (hot, cold, sweet, pressure)
+  - Step 5: Associated symptoms (swelling, bleeding, fever)
+  - Step 6: Medical history (relevant conditions)
+- AI-powered differential diagnosis:
+  - Complex cases: DentalGemma analysis
+  - Simple cases: Rule-based engine (offline capable)
+- Results page:
+  - Possible conditions (ranked by likelihood)
+  - Urgency assessment with color-coded recommendations:
+    - 🔴 **Emergency** - Seek immediate care (ER/urgent care)
+    - 🟡 **Urgent** - See dentist within 24-48 hours
+    - 🟢 **Routine** - Schedule regular appointment
+    - 🔵 **Home Care** - Monitor and self-care
+  - Action guidance with specific steps
+  - Home care recommendations
+  - When to seek emergency care (red flags)
+- Works fully offline (cached decision trees + rules engine)
+- Save results to history
+- Share with dentist (export PDF)
+
+---
+
+### About DentalGemma Model Page (`/model-info`)
+**Layout:** Single-page with sections and interactive elements
+
+**Sections:**
+1. **Model Overview**
+   - Architecture: MedGemma 1.5 4B IT + SigLIP vision encoder
+   - Fine-tuning approach: LoRA
+   - Training infrastructure: Modal.com GPU (A100)
+
+2. **Training Data**
+   - 6 datasets, 4,148 total samples
+   - VQA: 1,654 dental X-ray samples
+     - Cavity Detection: ~418 samples
+     - OPG Classification: ~517 samples
+     - Tooth Identification: ~64 samples
+     - General Assessment: ~655 samples
+   - Instruct: 2,494 clinical cases
+     - 98 dental conditions covered
+     - Expert-validated responses
+   - Data sources and licensing information
+
+3. **Capabilities Showcase**
+   - Interactive demo with example inputs/outputs
+   - Sample X-ray analysis (before/after)
+   - Sample clinical case assessment
+   - Confidence scores and accuracy metrics
+
+4. **Performance Metrics**
+   - Accuracy benchmarks per task
+   - Inference speed metrics
+   - Model size and memory requirements
+   - Comparison with baseline models
+
+5. **Technical Details**
+   - Model card (HuggingFace format)
+   - Training hyperparameters
+   - Evaluation methodology
+   - Limitations and known issues
+
+6. **Links & Resources**
+   - HuggingFace model repository
+   - Dataset repositories
+   - Training code (GitHub)
+   - Research paper (if available)
+   - API documentation
+
+---
+
+### Settings Page (`/settings`)
+**Layout:** Tabbed interface with organized sections
+
+**Tabs:**
+
+1. **Voice Settings**
+   - Voice mode: Standard (Web Speech) vs Enhanced (Gemini)
+   - Speech recognition language
+   - Text-to-speech voice selection
+   - Speech rate slider (0.5x - 2x)
+   - Pitch adjustment
+   - Test voice button
+
+2. **Display Preferences**
+   - Theme: Light / Dark / System
+   - Font size: Small / Medium / Large
+   - Reduce animations toggle
+   - High contrast mode
+   - Color-blind friendly mode
+
+3. **Privacy & Data**
+   - Clear localStorage button
+   - Clear analysis history
+   - Clear saved items
+   - Export all data (JSON)
+   - Data retention settings
+   - Analytics opt-out
+
+4. **Notifications**
+   - Browser notifications toggle
+   - Email notifications (if accounts added)
+   - Notification preferences per feature
+
+5. **About**
+   - App version
+   - Last updated date
+   - License information
+   - Privacy policy link
+   - Terms of service link
+   - Contact support
+
+---
+
+### Analysis History Page (`/history`)
+**Layout:** Timeline view with filters and search
+
+**Features:**
+- Timeline of all analyses (reverse chronological)
+- Filter by type:
+  - X-Ray Analysis
+  - Clinical Assessment
+  - Voice Consultation
+  - Agentic Workflow
+  - Symptom Check
+- Date range filter
+- Search by keywords
+- Sort options (date, type, urgency)
+- History cards with:
+  - Thumbnail/icon
+  - Type and date
+  - Brief summary
+  - Urgency indicator
+  - "View Details" button
+  - Delete button
+- Bulk actions:
+  - Select multiple
+  - Export selected
+  - Delete selected
+- Export all history as PDF/JSON
+- Clear all history (with confirmation)
+- Data stored in localStorage
 - Pagination or infinite scroll
 
 ---
 
-### 7. Research Dashboard (`/dashboard/research`)
+### Main Dashboard Page (`/dashboard`)
+**Layout:** Grid of widgets and quick actions
 
-**Layout:**
-- Search bar at top
-- Filter panel (left sidebar, collapsible)
-- Results grid (main area)
+**Content:**
 
-**Search Bar:**
-- Large input field
-- Autocomplete suggestions
-- Advanced options toggle
+1. **Welcome Section**
+   - Personalized greeting
+   - Quick stats summary
 
-**Filter Panel:**
-- Date range picker
-- Domain checkboxes (PubMed, .edu, etc.)
-- Content type radio buttons
-- Number of results slider
+2. **Quick Stats Cards** (4 cards in grid)
+   - Total analyses performed
+   - Cases assessed
+   - Research papers found
+   - Dentists located
+   - Each with icon and trend indicator
 
-**Results Grid:**
-- Paper cards with:
-  - Title (clickable)
-  - Authors, date
-  - Relevance score
-  - Abstract preview
-  - Save button
-  - Export citation button
-- Load more button
+3. **Recent Activity Timeline**
+   - Last 10 activities
+   - Type, date, brief description
+   - Click to view details
 
-**Saved Papers:**
-- Sidebar or separate tab
-- Export all citations
+4. **Quick Action Cards** (Large, prominent buttons)
+   - Analyze X-Ray
+   - Assess Clinical Case
+   - Voice Consultation
+   - Find Dentist
+   - Search Research
+   - Run Agentic Workflow
+   - Check Symptoms
+   - View Education
+   - Track Progress
+   - Each with icon and description
+
+5. **Analytics Charts**
+   - Condition distribution (pie chart)
+     - Top 5 conditions analyzed
+     - Percentage breakdown
+   - Urgency breakdown (bar chart)
+     - Emergency, Urgent, Routine, Home Care
+     - Count per category
+   - Usage over time (line chart)
+     - Last 30 days
+     - Analyses per day
+     - Trend line
+
+6. **Notifications Panel** (if any)
+   - System updates
+   - Feature announcements
+   - Tips and tricks
 
 ---
 
+### Shared Layout Components
 
-## 🔒 Security & Compliance
+**Sidebar Navigation:**
+- Logo and app name
+- Collapse/expand button
+- Navigation items with icons:
+  - Dashboard (home icon)
+  - X-Ray Analysis (image icon)
+  - Clinical Assessment (clipboard icon)
+  - Voice Consultation (microphone icon)
+  - Agentic Workflow (network icon)
+  - Find Dentists (map icon)
+  - Progress Tracker (chart icon)
+  - Research (book icon)
+  - Education (graduation cap icon)
+  - Symptom Checker (stethoscope icon)
+  - Model Info (info icon)
+  - Settings (gear icon)
+  - History (clock icon)
+- Active state highlighting
+- Tooltips on hover (when collapsed)
 
-### Data Privacy
+**Top Bar:**
+- Breadcrumbs navigation
+- Search bar (global search across features)
+- Notifications bell icon
+- User menu (if accounts added)
+- Help/documentation link
 
-**No Patient Data Storage (Demo Mode):**
-- All analyses are ephemeral
-- No server-side data persistence
-- Optional localStorage for user convenience (can be cleared)
-- No user accounts required
-
-**Data in Transit:**
-- HTTPS only (enforced by Vercel)
-- API keys stored in environment variables
-- No sensitive data in URLs or logs
-
-**HIPAA Considerations:**
-- Clear disclaimer: "Not HIPAA compliant, for educational use only"
-- Recommend users not upload real patient data
-- Use synthetic/demo data for testing
-
-### Disclaimers
-
-**Prominent Display (on every page):**
+**Medical Disclaimer Footer:**
 ```
 ⚠️ IMPORTANT DISCLAIMER
 This application is for educational and research purposes only.
 It is NOT intended for clinical diagnosis or patient care.
 AI-generated assessments must be validated by licensed dental professionals.
-Do not upload real patient data.
+Do not upload real patient data. This application is not HIPAA compliant.
+```
+- Displayed on every page
+- Collapsible but always visible
+- Links to full disclaimer, privacy policy, terms of service
+
+---
+
+## 🔒 Security & Compliance
+
+### Data Privacy
+- **No server-side data storage** — All analyses are ephemeral
+- **No user accounts required** — Zero personal data collection
+- **Optional localStorage** for convenience (user can clear anytime)
+- **HTTPS only** — Enforced by Vercel
+- **API keys** stored exclusively in environment variables
+
+### Medical Disclaimer (Displayed on Every Page)
+```
+⚠️ IMPORTANT DISCLAIMER
+This application is for educational and research purposes only.
+It is NOT intended for clinical diagnosis or patient care.
+AI-generated assessments must be validated by licensed dental professionals.
+Do not upload real patient data. This application is not HIPAA compliant.
 ```
 
-**Additional Disclaimers:**
-- Model limitations section
-- Data usage policy
-- Terms of service
-- Privacy policy
-
 ### Rate Limiting
-
-**API Protection:**
 ```typescript
-// middleware.ts
-import { Ratelimit } from "@upstash/ratelimit";
-import { Redis } from "@upstash/redis";
-
-const ratelimit = new Ratelimit({
-  redis: Redis.fromEnv(),
-  limiter: Ratelimit.slidingWindow(10, "1 m"), // 10 requests per minute
-});
-
-export async function middleware(request: Request) {
-  const ip = request.headers.get("x-forwarded-for") ?? "127.0.0.1";
-  const { success } = await ratelimit.limit(ip);
-  
-  if (!success) {
-    return new Response("Too many requests", { status: 429 });
-  }
-  
-  return NextResponse.next();
-}
+// Vercel Edge Middleware — IP-based rate limiting
+// 10 requests/minute for AI endpoints
+// Generous limits for static content
 ```
 
 ### Error Handling
-
-**Graceful Degradation:**
 - Try-catch blocks for all API calls
-- User-friendly error messages
+- User-friendly error messages (no raw stack traces)
 - Fallback UI for failed requests
-- Retry mechanisms with exponential backoff
+- Retry with exponential backoff
+- Graceful degradation (cloud → cached)
 
 ---
 
 ## 🏆 Challenge Alignment
 
-### MedGemma Impact Challenge Evaluation Criteria
+### Evaluation Criteria Coverage
 
-| Criterion | Weight | How We Address It | Evidence |
-|-----------|--------|-------------------|----------|
-| **Effective use of HAI-DEF models** | 20% | Fine-tuned MedGemma 1.5 4B IT for novel dental task (not in original training) | • 1,654 VQA samples<br>• 2,494 instruct samples<br>• 98 dental conditions<br>• Multimodal capabilities<br>• Hybrid cloud-edge deployment |
-| **Problem domain** | 15% | Clear dental diagnostic workflow improvement with agentic automation | • Reduces diagnostic time from hours to minutes<br>• Automates complex workflows<br>• Improves accuracy with multi-agent validation<br>• Accessible to underserved areas<br>• Educational tool for students |
-| **Impact potential** | 15% | Accessible AI for dental professionals globally with privacy-first option | • Web-based PWA (no installation)<br>• Free to use (demo)<br>• Edge AI for privacy compliance<br>• Offline capable<br>• Multiple languages (future)<br>• Scalable architecture |
-| **Product feasibility** | 20% | Production-ready app with real deployment and innovative edge AI | • Deployed on Vercel<br>• Modal.com for cloud inference<br>• Transformers.js for edge inference<br>• External APIs integrated<br>• Performance optimized<br>• PWA installable |
-| **Execution & communication** | 30% | Professional demo + comprehensive documentation + innovative features | • 3-min demo video (main)<br>• Edge AI demo video<br>• Agentic workflow demo video<br>• Detailed writeup<br>• Clean codebase<br>• User-friendly UI<br>• Technical innovation |
+| Criterion | Weight | How DentalGemma Addresses It |
+|-----------|--------|------------------------------|
+| **Effective use of HAI-DEF models** | 20% | Fine-tuned MedGemma 1.5 4B IT for novel dental domain (4,148 samples across 98 conditions). Cloud deployment via Modal.com demonstrating effective model serving. |
+| **Problem domain** | 15% | Clear dental diagnostic workflow improvement. Reduces diagnostic time from hours to minutes. Automates complex multi-step workflows. Improves accessibility for underserved areas. |
+| **Impact potential** | 15% | Free web-based PWA accessible globally. Offline capability for key resources in low-connectivity regions. Educational tool for dental students. |
+| **Product feasibility** | 20% | Production deployment on Vercel + Modal.com. 11 integrated features. Real external APIs. Professional UI. Performance optimized. PWA installable. |
+| **Execution & communication** | 30% | Professional demo videos (3). Comprehensive documentation. Clean codebase. User-friendly interface. Technical innovation across all four prize tracks. |
 
 ### Prize Eligibility
 
-**🏆 Main Track ($75,000)**
-- ✅ Novel task adaptation (dental diagnostics)
-- ✅ Production-ready deployment
-- ✅ Comprehensive feature set
-- ✅ Real-world applicability
-
-**🏆 Edge AI Prize ($5,000)**
-- ✅ On-device inference with WebGPU
-- ✅ 4-bit quantized ONNX model
-- ✅ Offline capability
-- ✅ Privacy-first architecture
-- ✅ Performance comparison dashboard
-- ✅ Progressive Web App
-
-**🏆 Agentic Workflow Prize ($10,000)**
-- ✅ Multi-agent orchestration system
-- ✅ Tool calling framework
-- ✅ Intelligent workflow planning
-- ✅ Complex process automation
-- ✅ Transparent decision-making
-- ✅ Significant workflow overhaul
-
-**🏆 Novel Task Prize ($10,000)**
-- ✅ MedGemma not trained on dental data
-- ✅ Custom dataset creation (4,148 samples)
-- ✅ Domain-specific fine-tuning
-- ✅ Novel multimodal capabilities
-
-**Total Prize Potential: $100,000** (4 categories)
-
-### Submission Deliverables
-
-**1. Main Video (3 minutes)**
-- Script and storyboard
-- Screen recording with voiceover
-- Demo of all 7 features (including agentic workflow)
-- Hybrid cloud-edge demonstration
-- Technical architecture overview
-- Impact statement
-
-**2. Edge AI Demo Video (2 minutes)**
-- Model download process
-- WebGPU inference demonstration
-- Performance comparison (cloud vs edge)
-- Offline capability showcase
-- Privacy benefits explanation
-
-**3. Agentic Workflow Demo Video (2 minutes)**
-- Multi-agent system visualization
-- Tool calling demonstration
-- Workflow orchestration
-- Complex case automation
-- Transparency and explainability
-
-**4. Writeup (3 pages)**
-- Project name and team
-- Problem statement
-- Solution overview (hybrid + agentic)
-- Technical details (edge AI + multi-agent)
-- Results and impact
-- Novel task adaptation evidence
-
-**5. Code Repository**
-- GitHub repo with comprehensive README
-- Well-documented code
-- Setup instructions
-- Deployment guide
-- Model conversion scripts
-- Agentic system documentation
-
-**6. Live Demo**
-- Vercel deployment URL
-- Sample data for testing
-- User guide
-- Edge AI toggle demonstration
-- Agentic workflow examples
+| Prize | Amount | Key Evidence |
+|:------|:-------|:-------------|
+| **🏆 Main Track** | $75,000 | Full-featured production application, 11 features, professional deployment, comprehensive documentation |
+| **🏆 Novel Task** | $10,000 | MedGemma not originally trained on dental data; 6 datasets, 4,148 samples; dual VQA + Instruct fine-tuning; 98 dental conditions |
+| **🏆 Agentic Workflow** | $10,000 | Vercel AI SDK 6 agent with 6-step autonomous diagnostic pipeline, transparent reasoning, tool calling |
 
 ---
 
-## 📅 Implementation Timeline (Updated for Hybrid + Agentic)
+## 📅 Implementation Timeline
 
-### Week 1: Foundation + Cloud Backend (Days 1-7)
+### Phase 1: Foundation (Days 1–2)
+- [ ] Initialize Next.js 16 project with TypeScript
+- [ ] Set up Tailwind CSS v4 (CSS-first) + shadcn/ui
+- [ ] Create layout: sidebar + main content + dark mode
+- [ ] Design and implement landing page
+- [ ] Set up Vercel deployment pipeline
+- [ ] Configure project structure (components, hooks, lib, types)
+- [ ] Set up PWA manifest and service worker
 
-**Day 1-2: Project Setup**
-- [ ] Initialize Next.js 14 project with PWA support
-- [ ] Install dependencies (Shadcn UI, Tailwind, Transformers.js, etc.)
-- [ ] Set up project structure (including edge/ and agentic/ folders)
-- [ ] Configure TypeScript, ESLint, Prettier
-- [ ] Set up Git repository
-- [ ] Configure PWA manifest and service worker
+### Phase 2: Core AI Features (Days 3–5)
+- [ ] **X-Ray Analyzer** — Upload UI + Modal API integration + results display
+- [ ] **Clinical Assessment** — Multi-step form + validation + Modal API + structured report
+- [ ] **Voice Consultation** — Web Speech API + DentalGemma chat + Gemini Live toggle
 
-**Day 3-4: Landing Page & Dashboard**
-- [ ] Create landing page with hero section
-- [ ] Build feature showcase (7 features)
-- [ ] Implement dashboard layout
-- [ ] Add sidebar navigation
-- [ ] Create stats cards
-- [ ] Add inference mode toggle UI
-
-**Day 5-7: X-Ray Analysis (Cloud Mode)**
-- [ ] Build upload interface
-- [ ] Implement drag-and-drop
-- [ ] Add sample X-rays
-- [ ] Create results viewer
-- [ ] Test with mock data
-- [ ] Add performance metrics display
-
----
-
-### Week 2: Cloud Features + Edge AI Setup (Days 8-14)
-
-**Day 8-9: Modal Deployment**
-- [ ] Write Modal VQA endpoint
-- [ ] Write Modal Instruct endpoint
-- [ ] Deploy to Modal.com
-- [ ] Test endpoints
+### Phase 3: Modal Backend (Days 5–6)
+- [ ] Write unified Modal endpoint (VQA + Instruct)
+- [ ] Deploy with GPU snapshotting for fast cold starts
 - [ ] Integrate with Next.js API routes
-- [ ] Add error handling and retries
+- [ ] Error handling, retries, keep-alive pings
 
-**Day 10-11: Clinical Assessment**
-- [ ] Build multi-step form
-- [ ] Implement validation
-- [ ] Add auto-save functionality
-- [ ] Create report viewer
-- [ ] Add PDF export
-- [ ] Connect to Modal Instruct endpoint
-
-**Day 12-14: Edge AI Foundation**
-- [ ] Convert VQA model to ONNX (4-bit quantized)
-- [ ] Set up Transformers.js integration
-- [ ] Implement model download manager
-- [ ] Create IndexedDB caching system
-- [ ] Build WebGPU detection
-- [ ] Test local inference
-
----
-
-### Week 3: Agentic System + Edge Integration (Days 15-21)
-
-**Day 15-16: Agentic Framework**
-- [ ] Design multi-agent architecture
-- [ ] Implement tool calling framework
-- [ ] Create agent coordinator
-- [ ] Build workflow engine
-- [ ] Add state management
-
-**Day 17-18: Agent Implementation**
-- [ ] Implement X-ray analyzer agent
-- [ ] Implement clinical assessor agent
-- [ ] Implement research synthesizer agent
-- [ ] Implement referral agent
-- [ ] Test agent coordination
-
-**Day 19-20: Edge AI Integration**
-- [ ] Integrate Transformers.js with X-ray analysis
-- [ ] Implement inference mode manager
-- [ ] Add cloud/edge toggle
-- [ ] Build performance comparison dashboard
-- [ ] Test offline capability
-
-**Day 21: Voice + External APIs**
-- [ ] Set up Gemini Live API
-- [ ] Integrate Google Places API
-- [ ] Integrate Exa Search API
-- [ ] Test all external integrations
-
----
-
-### Week 4: Polish, Testing & Deployment (Days 22-28)
-
-**Day 22-23: Feature Completion**
-- [ ] Complete agentic workflow UI
-- [ ] Add workflow visualization
-- [ ] Implement dentist finder
-- [ ] Complete research dashboard
-- [ ] Add voice consultation
-
-**Day 24: UI/UX Polish**
-- [ ] Refine all pages
-- [ ] Add loading states
-- [ ] Improve error messages
-- [ ] Test responsive design
-- [ ] Accessibility audit
-- [ ] PWA testing (install, offline)
-
-**Day 25: Testing & Optimization**
+### Phase 4: Agentic Workflow (Days 6–7)
+- [ ] Set up Vercel AI SDK 6 agent with tool definitions
+- [ ] Implement 6-step diagnostic workflow
+- [ ] Build streaming workflow visualization UI
+- [ ] PDF report generation
 - [ ] End-to-end testing
-- [ ] Performance optimization
-- [ ] Bug fixes
-- [ ] Cross-browser testing
-- [ ] Mobile testing
-- [ ] Edge AI performance testing
-- [ ] Agentic workflow testing
 
-**Day 26: Deployment**
-- [ ] Deploy to Vercel
-- [ ] Configure environment variables
-- [ ] Set up custom domain (optional)
-- [ ] Test production build
-- [ ] Monitor performance
-- [ ] Upload ONNX model to CDN
+### Phase 5: Additional Features (Days 7–8)
+- [ ] Dentist Finder (Google Places + Leaflet map)
+- [ ] Treatment Progress Tracker (Recharts + localStorage)
+- [ ] Research Dashboard (PubMed E-Utils)
+- [ ] Patient Education Portal
+- [ ] Dental Symptom Checker
+- [ ] About DentalGemma Model page
+- [ ] Dashboard with statistics
 
-**Day 27: Documentation**
-- [ ] Write comprehensive README
-- [ ] Create user guide
-- [ ] Document API endpoints
-- [ ] Write deployment guide
-- [ ] Document agentic system
-- [ ] Document edge AI setup
-- [ ] Prepare challenge writeup
-
-**Day 28: Demo Videos**
-- [ ] Write scripts (3 videos)
-- [ ] Record main demo (3 min)
-- [ ] Record edge AI demo (2 min)
-- [ ] Record agentic workflow demo (2 min)
-- [ ] Edit videos
-- [ ] Upload and submit
+### Phase 6: Polish & Submission (Days 9–10)
+- [ ] UI polish, animations (Framer Motion), responsive design
+- [ ] Performance optimization (Turbopack, code splitting, image optimization)
+- [ ] Cross-browser + mobile testing
+- [ ] Accessibility audit (WCAG 2.1 AA)
+- [ ] Record demo videos (main 3 min + Agentic 2 min)
+- [ ] Write submission document (3 pages)
+- [ ] Final deployment and verification
 
 ---
 
+## 💰 Cost Estimation
 
-## 💰 Cost Estimation (Updated for Hybrid)
-
-### Development Phase (4 weeks)
-
-**Free Tier Services:**
-- ✅ Vercel (Hobby plan) - $0
-- ✅ GitHub (public repo) - $0
-- ✅ Next.js, React, Tailwind - $0
-- ✅ Transformers.js - $0
-- ✅ WebGPU - $0
-
-**Paid Services:**
+### Development Phase
 
 | Service | Usage | Cost |
 |---------|-------|------|
-| **Modal.com** | GPU inference (A10G) | ~$0.50/hour |
-| | Estimated: 30 hours testing | ~$15 |
-| **Google AI Studio** | Gemini Live API | Your existing credits |
-| | Estimated: 1000 requests | ~$5-10 |
-| **Google Places API** | Nearby Search + Details | Free tier ($200/month) |
-| | Estimated: 500 requests | $0 (within free tier) |
-| **Exa Search API** | Neural search | Free tier (1000/month) |
-| | Estimated: 200 searches | $0 (within free tier) |
-| **CDN (optional)** | ONNX model hosting | Free (Vercel/HF) |
-| | 2.5 GB model | $0 |
-| **Domain (optional)** | Custom domain | ~$12/year |
-
-**Total Development Cost:** ~$20-35
-
----
+| Vercel (Hobby plan) | Hosting + CDN | $0 |
+| Next.js, React, Tailwind, shadcn/ui | Open source | $0 |
+| Transformers.js, WebGPU | Open source | $0 |
+| Modal.com | GPU testing (~30 hours A10G) | ~$10–15 |
+| Google AI Studio | Gemini Live testing | ~$5–10 |
+| Google Places API | Dentist search testing | $0 (within $200/month free credit) |
+| PubMed E-Utils | Research search | $0 (free, no key) |
+| **Total Development** | | **~$15–25** |
 
 ### Demo Period (1 month)
 
-**Estimated Usage:**
-- 100 X-ray analyses (50 cloud, 50 edge)
-- 50 clinical assessments (cloud only)
-- 200 voice consultations
-- 500 dentist searches
-- 300 research queries
-- 50 agentic workflows
+| Service | Estimated Cost |
+|---------|---------------|
+| Modal.com | ~$15 |
+| Google AI Studio | ~$10–20 |
+| Google Places API | $0 (free tier) |
+| PubMed E-Utils | $0 (free, no key) |
+| Vercel | $0 |
+| **Total Demo Period** | **~$25–35** |
 
-| Service | Cost |
-|---------|------|
-| Modal.com | ~$15 (30 hours GPU, reduced due to edge usage) |
-| Google AI Studio | ~$20 (covered by your credits) |
-| Google Places API | $0 (within free tier) |
-| Exa Search API | $0 (within free tier) |
-| Vercel | $0 (Hobby plan) |
-| CDN | $0 (free tier) |
+### Production Scale (1,000 users/month, optional)
 
-**Total Demo Period Cost:** ~$15-35
-
-**Cost Savings from Edge AI:** ~40% reduction in Modal.com costs
-
----
-
-### Production Scale (Optional)
-
-**For 1000 users/month (50% edge, 50% cloud):**
-- Modal.com: ~$150-200 (50% reduction)
-- Google AI Studio: ~$100-200
-- Google Places API: ~$50-100
-- Exa Search API: ~$20 (Pro plan)
-- Vercel Pro: $20/month
-- CDN: $10-20/month
-
-**Total Production Cost:** ~$350-560/month
-
-**Cost Savings from Edge AI:** ~$150-200/month (30-35% reduction)
+| Service | Estimated Cost |
+|---------|---------------|
+| Modal.com | ~$300–400 |
+| Google AI Studio | ~$100–200 |
+| Google Places API | ~$50–100 |
+| PubMed E-Utils | $0 (free, no key) |
+| Vercel Pro | $20/month |
+| **Total Production** | **~$320–520/month** |
 
 ---
 
-## 📊 Success Metrics
+## ⚠️ Risk Mitigation
 
-### Technical Metrics
-
-**Performance:**
-- ✅ X-ray analysis: < 3 seconds
-- ✅ Clinical assessment: < 5 seconds
-- ✅ Voice response latency: < 500ms
-- ✅ Page load time: < 2 seconds
-- ✅ Lighthouse score: > 90
-
-**Reliability:**
-- ✅ Uptime: 99.9%
-- ✅ Error rate: < 1%
-- ✅ API success rate: > 95%
-
-### User Experience Metrics
-
-**Usability:**
-- ✅ Intuitive interface (no training required)
-- ✅ Clear results presentation
-- ✅ Helpful error messages
-- ✅ Mobile-friendly
-
-**Accessibility:**
-- ✅ WCAG 2.1 AA compliant
-- ✅ Keyboard navigation
-- ✅ Screen reader compatible
-
-### Challenge Metrics
-
-**Alignment:**
-- ✅ Novel task adaptation demonstrated
-- ✅ Real-world applicability shown
-- ✅ Production-ready deployment
-- ✅ Comprehensive documentation
-- ✅ Professional presentation
+| Risk | Impact | Mitigation Strategy |
+|:-----|:-------|:-------------------|
+| Modal cold starts | Slow first request UX | GPU snapshotting (10x faster starts) + keep-alive pings every 5 min + loading skeleton UI |
+| Gemini Live API issues | Enhanced voice broken | Web Speech API is primary and always available; Gemini Live is optional toggle |
+| Google Places API cost | Budget exceeded | Use free tier ($200/month credit); cache results aggressively |
+| Vercel free tier limits | App availability | Static pages for most content; edge functions are generous; monitor usage |
+| Model quality edge cases | Poor demo experience | Curate demo inputs that showcase strengths; pre-loaded sample data; demo mode |
+| PubMed rate limits | Research feature slow | Respect 3 req/s limit; cache results; optional API key for 10 req/s |
 
 ---
 
-## 🚀 Future Enhancements
+## 📝 Submission Deliverables
 
-### Phase 2 (Post-Challenge)
+### Demo Videos
 
-**1. Advanced Features**
-- [ ] Batch X-ray processing
-- [ ] Treatment timeline visualization
-- [ ] Comparison mode (before/after)
-- [ ] 3D tooth visualization
-- [ ] Periodontal charting
+1. **Main Demo** (3 minutes) — Complete feature walkthrough, cloud architecture overview, impact statement
+2. **Agentic Workflow Demo** (2 minutes) — Multi-step diagnostic agent, tool calling visualization, transparent reasoning, PDF report
 
-**2. Collaboration**
-- [ ] User accounts
-- [ ] Case sharing
-- [ ] Team workspaces
-- [ ] Comments and annotations
+### Demo Video Script (Main - 3 minutes)
 
-**3. Integration**
-- [ ] DICOM support
-- [ ] EHR integration (HL7 FHIR)
-- [ ] Practice management systems
-- [ ] Imaging software plugins
+**0:00-0:30 - Introduction & Problem Statement**
 
-**4. Localization**
-- [ ] Multi-language support (Spanish, French, Portuguese)
-- [ ] Regional dental terminology
-- [ ] Local dentist databases
+*Visual:* Landing page, dental clinic footage  
+*Narration:*
+> "Dental diagnostics face significant challenges: time-consuming analysis, limited access to specialists, and the need for evidence-based decision-making. What if AI could assist dentists in providing faster, more accurate diagnoses?"
 
-**5. Mobile App**
-- [ ] React Native app
-- [ ] Offline mode
-- [ ] Camera integration
-- [ ] Push notifications
+**0:30-1:00 - Solution Overview**
 
-**6. Analytics**
-- [ ] Usage dashboard
-- [ ] Performance tracking
-- [ ] User feedback collection
-- [ ] A/B testing
+*Visual:* Architecture diagram, model training visualization  
+*Narration:*
+> "Introducing DentalGemma - a fine-tuned MedGemma 1.5 4B model specifically adapted for dental diagnostics. We trained it on 1,654 dental X-ray images and 2,494 clinical cases covering 98 dental conditions. This is a novel task adaptation, as MedGemma was not originally trained on dental data."
+
+**1:00-1:45 - Live Demo**
+
+*Visual:* Screen recording of app  
+*Narration:*
+> "Let me show you how it works. First, X-ray analysis - upload an image and get instant cavity detection, pathology classification, and tooth identification. Next, clinical case assessment - input patient information and receive a comprehensive diagnosis with treatment plan, urgency classification, and evidence-based recommendations. Finally, our voice system - use Web Speech API with DentalGemma by default, or toggle to Gemini 2.5 Flash Native Audio for enhanced conversational experience."
+
+**1:45-2:15 - Additional Features & Innovation**
+
+*Visual:* Dentist finder map, research dashboard, edge AI toggle  
+*Narration:*
+> "But that's not all. Find nearby dentists with ratings and reviews using Google Places API. Access evidence-based research through PubMed. And here's the innovation - our multi-agent system orchestrates complex diagnostic workflows automatically."
+
+**2:15-2:45 - Technical Details**
+
+*Visual:* Code snippets, deployment diagram, architecture  
+*Narration:*
+> "Built with Next.js 16 and Tailwind CSS v4, deployed on Vercel with Modal.com handling GPU inference. Vercel AI SDK 6 powers our agentic workflow system. The fine-tuned models achieve high accuracy on dental-specific tasks, demonstrating the power of domain adaptation for medical AI."
+
+**2:45-3:00 - Impact & Conclusion**
+
+*Visual:* Impact statistics, call to action  
+*Narration:*
+> "DentalGemma makes AI-powered dental diagnostics accessible to professionals worldwide. Intelligent with agentic workflows, and comprehensive with 11 integrated features. Try it now at dentalgemma.vercel.app. Together, we're building the future of dental care."
+
+### Written Documentation
+
+- **Submission Writeup** (3 pages) — Project name, problem statement, solution overview, technical details, results, impact
+- **README.md** — Comprehensive with quick start, tech stack, features, deployment guide
+- **ARCHITECTURE.md** — System diagrams, data flow, API documentation
+- **DATASETS.md** — Training data overview, VQA + Instruct details, preprocessing, licensing
+
+### Deployment Artifacts
+
+- **Live Demo:** `dentalgemma.vercel.app`
+- **Model:** HuggingFace (DentalGemma VQA + Instruct fine-tuned models)
+- **Code Repository:** Public GitHub with comprehensive documentation
+
+---
+
+## 🔮 Future Enhancements (Post-Challenge)
+
+### Phase 2: Advanced Features
+- Batch X-ray processing
+- Before/after comparison mode
+- 3D tooth visualization (Three.js)
+- Periodontal charting
+- DICOM format support
+- Treatment timeline visualization
+
+### Phase 3: Integration
+- EHR integration (HL7 FHIR)
+- Practice management system connectors
+- Imaging software plugins
+
+### Phase 4: Collaboration & Scale
+- User accounts and team workspaces
+- Case sharing and collaboration
+- Comments and annotations
+- Multi-language support (Spanish, French, Portuguese, Arabic)
+- Mobile app (React Native / Capacitor)
+- Custom model training pipeline for individual clinics
+- Analytics dashboard
+- Usage tracking and performance monitoring
+- User feedback collection
+- A/B testing capabilities
 
 ---
 
 ## 📚 Documentation Deliverables
 
 ### 1. README.md (Main Repository)
-
-**Sections:**
 - Project overview
 - Features list
 - Tech stack
@@ -2310,18 +1675,14 @@ export async function middleware(request: Request) {
 - License
 
 ### 2. ARCHITECTURE.md
-
-**Sections:**
 - System architecture diagram
 - Component breakdown
 - Data flow
 - API endpoints
-- Database schema (if applicable)
 - Security considerations
+- Cloud architecture details
 
 ### 3. API.md
-
-**Sections:**
 - Endpoint documentation
 - Request/response formats
 - Authentication
@@ -2330,17 +1691,13 @@ export async function middleware(request: Request) {
 - Example requests
 
 ### 4. DATASETS.md
-
-**Sections:**
 - Training data overview
-- VQA dataset details
-- Instruct dataset details
+- VQA dataset details (1,654 samples)
+- Instruct dataset details (2,494 samples)
 - Data preprocessing
 - Licensing information
 
 ### 5. DEPLOYMENT.md
-
-**Sections:**
 - Prerequisites
 - Modal.com setup
 - Vercel deployment
@@ -2348,8 +1705,6 @@ export async function middleware(request: Request) {
 - Troubleshooting
 
 ### 6. USER_GUIDE.md
-
-**Sections:**
 - Getting started
 - Feature walkthroughs
 - Tips and best practices
@@ -2357,8 +1712,6 @@ export async function middleware(request: Request) {
 - Support contact
 
 ### 7. SUBMISSION.md (Challenge Writeup)
-
-**Sections:**
 - Project name and team
 - Problem statement
 - Solution overview
@@ -2368,147 +1721,68 @@ export async function middleware(request: Request) {
 
 ---
 
-## 🎬 Demo Video Script (3 minutes)
-
-### 0:00-0:30 - Introduction & Problem Statement
-
-**Visual:** Landing page, dental clinic footage  
-**Narration:**
-> "Dental diagnostics face significant challenges: time-consuming analysis, limited access to specialists, and the need for evidence-based decision-making. What if AI could assist dentists in providing faster, more accurate diagnoses?"
-
-### 0:30-1:00 - Solution Overview
-
-**Visual:** Architecture diagram, model training visualization  
-**Narration:**
-> "Introducing DentalGemma - a fine-tuned MedGemma 1.5 4B model specifically adapted for dental diagnostics. We trained it on 1,654 dental X-ray images and 2,494 clinical cases covering 98 dental conditions. This is a novel task adaptation, as MedGemma was not originally trained on dental data."
-
-### 1:00-1:45 - Live Demo
-
-**Visual:** Screen recording of app  
-**Narration:**
-> "Let me show you how it works. First, X-ray analysis - upload an image and get instant cavity detection, pathology classification, and tooth identification. Next, clinical case assessment - input patient information and receive a comprehensive diagnosis with treatment plan, urgency classification, and evidence-based recommendations. Finally, real-time voice consultation using Google Gemini Live API for hands-free clinical workflow."
-
-### 1:45-2:15 - Additional Features
-
-**Visual:** Dentist finder map, research dashboard  
-**Narration:**
-> "But that's not all. Find nearby dentists with ratings and reviews using Google Places API. Access evidence-based research with Exa's neural search. All integrated into one seamless platform."
-
-### 2:15-2:45 - Technical Details
-
-**Visual:** Code snippets, deployment diagram  
-**Narration:**
-> "Built with Next.js 14 and deployed on Vercel, with Modal.com handling GPU inference. The fine-tuned models achieve high accuracy on dental-specific tasks, demonstrating the power of domain adaptation for medical AI."
-
-### 2:45-3:00 - Impact & Conclusion
-
-**Visual:** Impact statistics, call to action  
-**Narration:**
-> "DentalGemma makes AI-powered dental diagnostics accessible to professionals worldwide. Try it now at [URL]. Together, we're building the future of dental care."
-
----
-
 ## ✅ Pre-Launch Checklist
 
 ### Code Quality
 - [ ] All TypeScript errors resolved
 - [ ] ESLint warnings addressed
-- [ ] Code formatted with Prettier
-- [ ] No console.log statements in production
+- [ ] No console.log in production
 - [ ] Environment variables documented
 
 ### Testing
 - [ ] All features tested manually
 - [ ] Mobile responsiveness verified
-- [ ] Cross-browser compatibility checked
-- [ ] API endpoints tested
+- [ ] Cross-browser compatibility (Chrome, Firefox, Safari, Edge)
+- [ ] API endpoints tested with edge cases
 - [ ] Error handling verified
 
 ### Performance
 - [ ] Images optimized (WebP, lazy loading)
-- [ ] Bundle size optimized
-- [ ] Lighthouse audit passed
-- [ ] Loading states implemented
-- [ ] Caching configured
+- [ ] Bundle size optimized (code splitting, tree shaking)
+- [ ] Lighthouse audit passed (> 90)
+- [ ] Loading states implemented throughout
+- [ ] Caching configured appropriately
 
 ### Security
-- [ ] API keys in environment variables
-- [ ] Rate limiting implemented
+- [ ] API keys in environment variables only
+- [ ] Rate limiting active
 - [ ] HTTPS enforced
-- [ ] Input validation added
+- [ ] Input validation on all forms
 - [ ] XSS protection enabled
 
-### Documentation
-- [ ] README.md complete
-- [ ] API documentation written
-- [ ] User guide created
-- [ ] Code comments added
-- [ ] Deployment guide ready
-
 ### Legal
-- [ ] Disclaimers added
-- [ ] Privacy policy written
+- [ ] Medical disclaimers on every page
+- [ ] Privacy policy drafted
 - [ ] Terms of service created
 - [ ] License file included
-- [ ] Attribution for datasets
+- [ ] Dataset attributions complete
 
 ### Deployment
-- [ ] Vercel project created
-- [ ] Environment variables set
-- [ ] Custom domain configured (optional)
-- [ ] Analytics set up (optional)
-- [ ] Error monitoring configured
+- [ ] Vercel project configured
+- [ ] Environment variables set in Vercel dashboard
+- [ ] Modal endpoints deployed and verified
+- [ ] PWA manifest and service worker functional
 
-### Challenge Submission
-- [ ] Video recorded and edited
+### Submission
+- [ ] Demo videos recorded and edited (2 videos)
 - [ ] Writeup completed (3 pages)
-- [ ] Code repository public
-- [ ] Live demo URL working
-- [ ] All links verified
+- [ ] Code repository public on GitHub
+- [ ] Live demo URL functional
+- [ ] All submission links verified
 
 ---
 
-## 📞 Support & Resources
+## 📞 Resources
 
-### Documentation
-- [Next.js Docs](https://nextjs.org/docs)
-- [Shadcn UI](https://ui.shadcn.com/)
+- [Next.js 16 Documentation](https://nextjs.org/docs)
+- [Tailwind CSS v4](https://tailwindcss.com/docs)
+- [shadcn/ui](https://ui.shadcn.com/)
+- [Vercel AI SDK 6](https://ai-sdk.dev/)
 - [Modal.com Docs](https://modal.com/docs)
-- [Gemini Live API](https://ai.google.dev/gemini-api/docs/live-guide)
-- [Google Places API](https://developers.google.com/maps/documentation/places/web-service)
-- [Exa Search API](https://docs.exa.ai/)
-
-### Community
-- [MedGemma Challenge Forum](https://kaggle.com/competitions/med-gemma-impact-challenge/discussion)
-- [Modal Discord](https://discord.gg/modal)
-- [Next.js Discord](https://discord.gg/nextjs)
-
-### Contact
-- GitHub Issues: For bug reports and feature requests
-- Email: [your-email@example.com]
-- Twitter: [@your-handle]
-
----
-
-## 🎯 Conclusion
-
-This comprehensive plan outlines a production-ready dental AI diagnostic platform that:
-
-✅ **Demonstrates novel task adaptation** of MedGemma for dental diagnostics  
-✅ **Provides real-world utility** with 5 integrated features  
-✅ **Uses cutting-edge technology** (Gemini Live, Modal, Exa)  
-✅ **Delivers professional UX** with accessibility and performance  
-✅ **Aligns perfectly** with MedGemma Impact Challenge criteria
-
-**Next Steps:**
-1. Review and approve this plan
-2. Set up development environment
-3. Begin Week 1 implementation
-4. Deploy and submit to challenge
-
-**Estimated Timeline:** 4 weeks  
-**Estimated Cost:** $20-45  
-**Expected Impact:** High (novel task, production-ready, comprehensive features)
+- [Gemini Live API](https://ai.google.dev/gemini-api/docs/live)
+- [Google Places API](https://developers.google.com/maps/documentation/places)
+- [PubMed E-Utils](https://www.ncbi.nlm.nih.gov/books/NBK25501/)
+- [MedGemma Challenge](https://kaggle.com/competitions/med-gemma-impact-challenge)
 
 ---
 
