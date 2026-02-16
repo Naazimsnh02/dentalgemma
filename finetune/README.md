@@ -53,8 +53,7 @@ Dental diagnostics remains an underserved domain in medical AI. While MedGemma e
 
 ## 📁 Project Structure
 
-```
-dentalgemma/
+finetune/
 ├── preprocessing/                    # Data processing pipeline
 │   ├── build_dataset.py              # Main orchestrator — builds & pushes both HF datasets
 │   ├── process_cavity_detection.py   # YOLOv5-OBB label parsing → VQA pairs
@@ -91,7 +90,8 @@ dentalgemma/
 │   └── Wildstashdental 2.5k-instruct/
 │       └── dental_training_data_v3.jsonl
 ├── output/                           # Built datasets (not tracked in git)
-├── dentalgemma_fine_tune.ipynb       # Fine-tuning notebook (Colab-ready)
+├── dentalgemma-fine-tune-v1.ipynb    # Fine-tuning notebook (Latest version with bfloat16 LoRA)
+├── dentalgemma_validation.ipynb      # Validation and inference notebook
 └── README.md                         # This file
 ```
 
@@ -228,7 +228,7 @@ Raw datasets should be placed under `datasets/` following the directory structur
 
 ### Running Fine-Tuning
 
-The notebook `dentalgemma_fine_tune.ipynb` is fully Colab-ready:
+The notebook `dentalgemma-fine-tune-v1.ipynb` is fully Colab-ready:
 
 1. **Open in Google Colab** and select an **A100 GPU** runtime (≥40 GB VRAM required for full bfloat16)
 2. **Set your HuggingFace token** in Colab Secrets (name: `HF_TOKEN`, needs write access)
