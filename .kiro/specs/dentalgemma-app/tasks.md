@@ -16,8 +16,8 @@ This implementation plan breaks down the DentalGemma application into discrete, 
   - Create PWA manifest and basic service worker
   - _Requirements: 18.1, 18.2_
 
-- [ ] 2. Core Type Definitions and Data Models
-  - [ ] 2.1 Define core TypeScript interfaces and types
+- [-] 2. Core Type Definitions and Data Models
+  - [x] 2.1 Define core TypeScript interfaces and types
     - Create types/index.ts with all data models (XRayAnalysis, ClinicalCase, VoiceSession, Treatment, etc.)
     - Define common types (UrgencyLevel, AnalysisType)
     - Define API request/response types
