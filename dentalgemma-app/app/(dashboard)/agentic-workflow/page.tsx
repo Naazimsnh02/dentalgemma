@@ -1,0 +1,371 @@
+'use client';
+
+/**
+ * Agentic Workflow Page
+ * 
+ * Multi-agent diagnostic workflow with real-time visualization
+ * Requirements: 4.1-4.10
+ */
+
+import { useState, useRef } from 'react';
+import { WorkflowVisualizer, WorkflowProgressBar } from '@/components/agentic/workflow-visualizer';
+import { AgentGrid } from '@/components/agentic/agent-card';
+import { ToolCallLog, ToolCallSummary } from '@/components/agentic/tool-call-log';
+import { WorkflowControls } from '@/components/agentic/workflow-controls';
+import { createWorkflowEngine } from '@/lib/agentic/workflow-engine';
+import type { WorkflowInput, WorkflowStep, WorkflowResult } from '@/types';
+import { Upload, FileText, MapPin, Sparkles, Download, FileDown } from 'lucide-react';
+
+export default function AgenticWorkflowPage() {
+  const [input, setInput] = useState<WorkflowInput>({
+    text: '',
+    image: undefined,
+    location: '',
+  });
+  const [steps, setSteps] = useState<WorkflowStep[]>([]);
+  const [currentStep, setCurrentStep] = useState<number | undefined>(undefined);
+  const [result, setResult] = useState<WorkflowResult | null>(null);
+  const [status, setStatus] = useState<'idle' | 'running' | 'paused' | 'completed' | 'cancelled' | 'error'>('idle');
+  const [error, setError] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<'timeline' | 'grid' | 'logs'>('timeline');
+
+  const engineRef = useRef<any>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setInput(prev => ({ ...prev, image: file }));
+    }
+  };
+
+  const handleStartWorkflow = async () => {
+    if (!input.text.trim()) {
+      alert('Please enter a description or clinical information');
+      return;
+    }
+
+    try {
+      setStatus('running');
+      setSteps([]);
+      setCurrentStep(0);
+      setResult(null);
+      setError(null);
+
+      // Create workflow engine
+      const engine = createWorkflowEngine(input);
+      engineRef.current = engine;
+
+      // Execute workflow and collect steps
+      const allSteps: WorkflowStep[] = [];
+      let stepIndex = 0;
+
+      for await (const step of engine.execute()) {
+        allSteps.push(step);
+        setSteps([...allSteps]);
+        setCurrentStep(stepIndex);
+        stepIndex++;
+      }
+
+      // Get final result
+      const finalResult = engine.getState();
+      if (finalResult.finalReport) {
+        setResult({
+          steps: allSteps,
+          finalReport: finalResult.finalReport,
+          recommendations: [],
+          referrals: finalResult.specialists,
+          research: finalResult.researchPapers,
+        });
+      }
+
+      setStatus('completed');
+      setCurrentStep(undefined);
+    } catch (err) {
+      console.error('Workflow error:', err);
+      setError((err as Error).message);
+      setStatus('error');
+    }
+  };
+
+  const handlePause = () => {
+    if (engineRef.current) {
+      engineRef.current.pause();
+      setStatus('paused');
+    }
+  };
+
+  const handleResume = () => {
+    if (engineRef.current) {
+      engineRef.current.resume();
+      setStatus('running');
+    }
+  };
+
+  const handleCancel = () => {
+    if (engineRef.current) {
+      engineRef.current.cancel();
+      setStatus('cancelled');
+    }
+  };
+
+  const handleOverride = (instruction: string) => {
+    console.log('Override instruction:', instruction);
+    // In a full implementation, this would modify the workflow behavior
+  };
+
+  const handleDownloadReport = () => {
+    if (!result?.finalReport) return;
+
+    const blob = new Blob([result.finalReport], { type: 'text/markdown' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `diagnostic-report-${Date.now()}.md`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
+  const handleDownloadPDF = async () => {
+    if (!result?.finalReport) return;
+
+    try {
+      // Use jsPDF to generate PDF
+      const { jsPDF } = await import('jspdf');
+      const doc = new jsPDF();
+
+      // Add title
+      doc.setFontSize(18);
+      doc.text('Comprehensive Dental Diagnostic Report', 20, 20);
+
+      // Add content (simplified - in production, format properly)
+      doc.setFontSize(10);
+      const lines = doc.splitTextToSize(result.finalReport, 170);
+      doc.text(lines, 20, 40);
+
+      // Save PDF
+      doc.save(`diagnostic-report-${Date.now()}.pdf`);
+    } catch (err) {
+      console.error('PDF generation error:', err);
+      alert('Failed to generate PDF. Please try downloading as Markdown instead.');
+    }
+  };
+
+  const handleReset = () => {
+    setInput({ text: '', image: undefined, location: '' });
+    setSteps([]);
+    setCurrentStep(undefined);
+    setResult(null);
+    setStatus('idle');
+    setError(null);
+    engineRef.current = null;
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50 p-6">
+      <div className="max-w-7xl mx-auto space-y-6">
+        {/* Header */}
+        <div className="bg-gradient-to-r from-purple-600 to-blue-600 rounded-lg p-6 text-white">
+          <div className="flex items-center gap-3 mb-2">
+            <Sparkles className="h-8 w-8" />
+            <h1 className="text-3xl font-bold">Agentic Diagnostic Workflow</h1>
+          </div>
+          <p className="text-purple-100">
+            Multi-agent AI system that autonomously orchestrates comprehensive dental diagnostics
+          </p>
+        </div>
+
+        {/* Input Section */}
+        {status === 'idle' && (
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">Input Information</h2>
+
+            {/* Text Input */}
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                <FileText className="inline h-4 w-4 mr-1" />
+                Clinical Description
+              </label>
+              <textarea
+                value={input.text}
+                onChange={e => setInput(prev => ({ ...prev, text: e.target.value }))}
+                placeholder="Describe the patient's condition, symptoms, or provide clinical case details..."
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                rows={6}
+              />
+            </div>
+
+            {/* Image Upload */}
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                <Upload className="inline h-4 w-4 mr-1" />
+                X-Ray Image (Optional)
+              </label>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleImageUpload}
+                className="hidden"
+              />
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors text-sm font-medium"
+              >
+                {input.image ? `Selected: ${input.image.name}` : 'Choose Image'}
+              </button>
+            </div>
+
+            {/* Location Input */}
+            <div className="mb-6">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                <MapPin className="inline h-4 w-4 mr-1" />
+                Location (Optional)
+              </label>
+              <input
+                type="text"
+                value={input.location}
+                onChange={e => setInput(prev => ({ ...prev, location: e.target.value }))}
+                placeholder="Enter location for specialist referrals (e.g., New York, NY)"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+
+            {/* Start Button */}
+            <button
+              onClick={handleStartWorkflow}
+              disabled={!input.text.trim()}
+              className="w-full px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 disabled:from-gray-300 disabled:to-gray-300 disabled:cursor-not-allowed text-white rounded-lg transition-all text-base font-semibold shadow-lg"
+            >
+              <Sparkles className="inline h-5 w-5 mr-2" />
+              Start Agentic Workflow
+            </button>
+          </div>
+        )}
+
+        {/* Workflow Controls */}
+        {status !== 'idle' && (
+          <WorkflowControls
+            status={status}
+            onPause={handlePause}
+            onResume={handleResume}
+            onCancel={handleCancel}
+            onOverride={handleOverride}
+          />
+        )}
+
+        {/* Progress Bar */}
+        {steps.length > 0 && status !== 'idle' && (
+          <WorkflowProgressBar steps={steps} currentStep={currentStep} />
+        )}
+
+        {/* View Mode Selector */}
+        {steps.length > 0 && (
+          <div className="flex items-center gap-2 bg-white rounded-lg shadow-sm border border-gray-200 p-2">
+            <button
+              onClick={() => setViewMode('timeline')}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                viewMode === 'timeline'
+                  ? 'bg-blue-500 text-white'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
+            >
+              Timeline View
+            </button>
+            <button
+              onClick={() => setViewMode('grid')}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                viewMode === 'grid'
+                  ? 'bg-blue-500 text-white'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
+            >
+              Grid View
+            </button>
+            <button
+              onClick={() => setViewMode('logs')}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                viewMode === 'logs'
+                  ? 'bg-blue-500 text-white'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
+            >
+              Tool Logs
+            </button>
+          </div>
+        )}
+
+        {/* Workflow Visualization */}
+        {steps.length > 0 && (
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">Workflow Progress</h2>
+
+            {viewMode === 'timeline' && (
+              <WorkflowVisualizer steps={steps} currentStep={currentStep} />
+            )}
+
+            {viewMode === 'grid' && <AgentGrid steps={steps} currentStep={currentStep} />}
+
+            {viewMode === 'logs' && (
+              <div className="space-y-4">
+                <ToolCallSummary steps={steps} />
+                <ToolCallLog steps={steps} />
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Final Report */}
+        {result?.finalReport && status === 'completed' && (
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-semibold text-gray-900">Comprehensive Report</h2>
+              <div className="flex gap-2">
+                <button
+                  onClick={handleDownloadReport}
+                  className="flex items-center gap-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors text-sm font-medium"
+                >
+                  <Download className="h-4 w-4" />
+                  Download Markdown
+                </button>
+                <button
+                  onClick={handleDownloadPDF}
+                  className="flex items-center gap-2 px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-colors text-sm font-medium"
+                >
+                  <FileDown className="h-4 w-4" />
+                  Download PDF
+                </button>
+              </div>
+            </div>
+
+            <div className="prose max-w-none">
+              <pre className="whitespace-pre-wrap text-sm bg-gray-50 p-4 rounded-lg border border-gray-200">
+                {result.finalReport}
+              </pre>
+            </div>
+          </div>
+        )}
+
+        {/* Error Display */}
+        {error && (
+          <div className="bg-red-50 rounded-lg border border-red-200 p-4">
+            <h3 className="text-sm font-semibold text-red-900 mb-2">Error</h3>
+            <p className="text-sm text-red-700">{error}</p>
+          </div>
+        )}
+
+        {/* Reset Button */}
+        {(status === 'completed' || status === 'cancelled' || status === 'error') && (
+          <button
+            onClick={handleReset}
+            className="w-full px-6 py-3 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors text-base font-semibold"
+          >
+            Start New Workflow
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
