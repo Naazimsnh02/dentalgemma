@@ -97,8 +97,8 @@ This implementation plan breaks down the DentalGemma application into discrete, 
     - **Validates: Requirements 10.1, 10.4, 10.5**
 
 
-- [ ] 6. Modal.com Backend Integration
-  - [ ] 6.1 Create Modal.com deployment script
+- [x] 6. Modal.com Backend Integration
+  - [x] 6.1 Create Modal.com deployment script
     - Write modal_dentalgemma.py with DentalGemmaModel class
     - Implement model loading with GPU snapshotting
     - Create analyze_xray endpoint
@@ -106,7 +106,7 @@ This implementation plan breaks down the DentalGemma application into discrete, 
     - Create chat endpoint for voice consultation
     - _Requirements: 1.1-1.5, 2.6-2.13, 3.4_
   
-  - [ ] 6.2 Implement cloud inference client
+  - [x] 6.2 Implement cloud inference client
     - Create lib/api/modal-client.ts
     - Implement analyzeXray method with retry logic
     - Implement assessCase method with retry logic
@@ -114,18 +114,18 @@ This implementation plan breaks down the DentalGemma application into discrete, 
     - Add keep-alive ping mechanism (every 5 minutes)
     - _Requirements: 1.1-1.5, 2.6-2.13, 16.3_
   
-  - [ ] 6.3 Add error handling and fallback
+  - [x] 6.3 Add error handling and fallback
     - Implement exponential backoff retry (max 3 attempts)
     - Add fallback to user-friendly error message on failure
     - Add user-friendly error messages
     - _Requirements: 16.2, 16.3, 17.9_
   
-  - [ ] 6.4 Write property tests for cloud client
+  - [x] 6.4 Write property tests for cloud client
     - **Property 1: X-Ray Analysis Output Completeness**
     - **Property 3: Clinical Assessment Output Completeness**
     - **Validates: Requirements 1.2-1.5, 2.6-2.13**
   
-  - [ ] 6.5 Write property test for error handling
+  - [x] 6.5 Write property test for error handling
     - **Property 25: Error Handling and Fallback**
     - **Validates: Requirements 16.2, 16.3, 16.8**
 
