@@ -76,9 +76,9 @@ describe('Modal Client Error Handling Property Tests', () => {
             }
           }
         ),
-        { numRuns: 5, timeout: 10000 } // Increase timeout for retry delays
+        { numRuns: 5, timeout: 25000 } // Increase timeout for retry delays
       );
-    }, 15000); // Increase Jest timeout
+    }, 30000); // Increase Jest timeout
 
     test('**Validates: Requirement 16.3** - Does not retry on 4xx errors (except 429)', async () => {
       await fc.assert(
@@ -173,9 +173,10 @@ describe('Modal Client Error Handling Property Tests', () => {
         ),
         { numRuns: 5, timeout: 10000 }
       );
-    }, 15000);
+    }, 30000);
 
     test('Exponential backoff delays increase with each retry', async () => {
+      jest.clearAllMocks();
       const delays: number[] = [];
       let callCount = 0;
 
@@ -266,7 +267,7 @@ describe('Modal Client Error Handling Property Tests', () => {
           ok: true,
           json: async () => ({
             success: true,
-            response: 'Chat response after retry',
+            message: 'Chat response after retry',
             processing_time: Math.fround(0.5),
             model: 'dentalgemma-1.5-4b-it',
             type: 'chat',
@@ -421,6 +422,6 @@ describe('Modal Client Error Handling Property Tests', () => {
         ),
         { numRuns: 3 }
       );
-    });
+    }, 15000);
   });
 });

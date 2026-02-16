@@ -87,7 +87,7 @@ export default function TranscriptViewer({
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
         <div className="flex items-center space-x-2">
-          <h3 className="text-lg font-semibold">Conversation Transcript</h3>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Conversation Transcript</h3>
           {isLive && (
             <span className="flex items-center space-x-1 text-sm text-red-500">
               <span className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
@@ -119,7 +119,7 @@ export default function TranscriptViewer({
       {/* Messages */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {messages.length === 0 && !currentTranscript ? (
-          <div className="flex items-center justify-center h-full text-gray-400 dark:text-gray-500">
+          <div className="flex items-center justify-center h-full text-gray-400 dark:text-gray-400">
             <p>No messages yet. Start speaking to begin the conversation.</p>
           </div>
         ) : (

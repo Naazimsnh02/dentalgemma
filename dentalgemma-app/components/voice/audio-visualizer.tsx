@@ -168,7 +168,7 @@ export default function AudioVisualizer({
         {/* Overlay when not active */}
         {!isActive && (
           <div className="absolute inset-0 flex items-center justify-center bg-gray-100 dark:bg-gray-800">
-            <p className="text-gray-400 dark:text-gray-500">Audio visualization inactive</p>
+            <p className="text-gray-400 dark:text-gray-400">Audio visualization inactive</p>
           </div>
         )}
       </div>

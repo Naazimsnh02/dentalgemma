@@ -37,52 +37,52 @@ const navItems: NavItem[] = [
   },
   {
     title: 'X-Ray Analysis',
-    href: '/dashboard/xray-analysis',
+    href: '/xray-analysis',
     icon: Microscope,
   },
   {
     title: 'Clinical Assessment',
-    href: '/dashboard/clinical-assessment',
+    href: '/clinical-assessment',
     icon: FileText,
   },
   {
     title: 'Voice Consultation',
-    href: '/dashboard/voice-consultation',
+    href: '/voice-consultation',
     icon: Mic,
   },
   {
     title: 'Agentic Workflow',
-    href: '/dashboard/agentic-workflow',
+    href: '/agentic-workflow',
     icon: GitBranch,
   },
   {
     title: 'Dentist Finder',
-    href: '/dashboard/dentist-finder',
+    href: '/dentist-finder',
     icon: MapPin,
   },
   {
     title: 'Progress Tracker',
-    href: '/dashboard/progress-tracker',
+    href: '/progress-tracker',
     icon: TrendingUp,
   },
   {
     title: 'Research Dashboard',
-    href: '/dashboard/research',
+    href: '/research',
     icon: BookOpen,
   },
   {
     title: 'Patient Education',
-    href: '/dashboard/education',
+    href: '/education',
     icon: Search,
   },
   {
     title: 'Symptom Checker',
-    href: '/dashboard/symptom-checker',
+    href: '/symptom-checker',
     icon: Stethoscope,
   },
   {
     title: 'Model Information',
-    href: '/dashboard/model-info',
+    href: '/model-info',
     icon: Info,
   },
 ];
@@ -90,12 +90,12 @@ const navItems: NavItem[] = [
 const bottomNavItems: NavItem[] = [
   {
     title: 'History',
-    href: '/dashboard/history',
+    href: '/history',
     icon: History,
   },
   {
     title: 'Settings',
-    href: '/dashboard/settings',
+    href: '/settings',
     icon: Settings,
   },
 ];

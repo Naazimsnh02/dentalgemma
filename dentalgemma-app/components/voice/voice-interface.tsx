@@ -67,20 +67,20 @@ export default function VoiceInterface({
       <div className="flex items-center space-x-4 bg-gray-100 dark:bg-gray-800 rounded-lg p-2">
         <button
           onClick={handleModeToggle}
-          className={`px-4 py-2 rounded-md transition-colors ${
+          className={`px-4 py-2 rounded-md transition-colors font-medium ${
             mode === 'standard'
-              ? 'bg-white dark:bg-gray-700 shadow-sm'
-              : 'hover:bg-gray-200 dark:hover:bg-gray-700'
+              ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-sm'
+              : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700'
           }`}
         >
           Standard Mode
         </button>
         <button
           onClick={handleModeToggle}
-          className={`px-4 py-2 rounded-md transition-colors ${
+          className={`px-4 py-2 rounded-md transition-colors font-medium ${
             mode === 'enhanced'
-              ? 'bg-white dark:bg-gray-700 shadow-sm'
-              : 'hover:bg-gray-200 dark:hover:bg-gray-700'
+              ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-sm'
+              : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700'
           }`}
         >
           Enhanced Mode
@@ -141,7 +141,7 @@ export default function VoiceInterface({
 
       {/* Status Text */}
       <div className="text-center">
-        <p className="text-lg font-medium">
+        <p className="text-lg font-medium text-gray-900 dark:text-gray-100">
           {isProcessing ? (
             'Processing...'
           ) : isListening ? (
@@ -163,14 +163,14 @@ export default function VoiceInterface({
             onChange={(e) => setIsPushToTalk(!e.target.checked)}
             className="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
           />
-          <span className="text-sm">Continuous Mode</span>
+          <span className="text-sm text-gray-700 dark:text-gray-300">Continuous Mode</span>
         </label>
       </div>
 
       {/* Settings Button */}
       <button
         onClick={() => setShowSettings(!showSettings)}
-        className="flex items-center space-x-2 px-4 py-2 bg-gray-100 dark:bg-gray-800 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+        className="flex items-center space-x-2 px-4 py-2 bg-gray-100 dark:bg-gray-800 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors text-gray-700 dark:text-gray-300"
       >
         <Settings className="w-4 h-4" />
         <span>Voice Settings</span>

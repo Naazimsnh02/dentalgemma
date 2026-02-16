@@ -367,7 +367,7 @@ export default function VoiceConsultationPage() {
 
           {/* Audio Visualizer */}
           <div className="bg-white dark:bg-gray-900 rounded-lg shadow-lg p-6">
-            <h3 className="text-lg font-semibold mb-4">Audio Visualization</h3>
+            <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">Audio Visualization</h3>
             <AudioVisualizer
               isActive={isListening}
               audioStream={audioStream || undefined}
@@ -377,21 +377,10 @@ export default function VoiceConsultationPage() {
             />
           </div>
 
-          {/* Medical Disclaimer */}
-          <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
-            <h4 className="font-semibold text-yellow-800 dark:text-yellow-200 mb-2">
-              Medical Disclaimer
-            </h4>
-            <p className="text-sm text-yellow-700 dark:text-yellow-300">
-              This voice consultation provides educational information only and is not a substitute 
-              for professional dental diagnosis or treatment. Always consult with a licensed dentist 
-              for medical advice.
-            </p>
-          </div>
         </div>
 
         {/* Right Column: Transcript */}
-        <div className="h-[800px]">
+        <div className="h-full">
           <TranscriptViewer
             messages={messages}
             currentTranscript={currentTranscript}

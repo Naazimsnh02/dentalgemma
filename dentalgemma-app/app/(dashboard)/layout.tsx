@@ -1,6 +1,5 @@
 import { Sidebar } from '@/components/layout/sidebar';
 import { Navbar } from '@/components/layout/navbar';
-import { Disclaimer } from '@/components/shared/disclaimer';
 
 export default function DashboardLayout({
   children,
@@ -15,7 +14,6 @@ export default function DashboardLayout({
         <main className="flex-1 p-6">
           {children}
         </main>
-        <Disclaimer />
       </div>
     </div>
   );
