@@ -125,7 +125,7 @@ This implementation plan breaks down the DentalGemma application into discrete, 
     - **Property 25: Error Handling and Fallback**
     - **Validates: Requirements 16.3, 16.4, 16.10**
 
-- [ ] 7. (Removed - Edge Inference Deprecated)
+
 
 - [ ] 8. X-Ray Analysis Feature
   - [ ] 8.1 Create X-ray upload component
@@ -670,7 +670,7 @@ This implementation plan breaks down the DentalGemma application into discrete, 
     - Add About tab
     - _Requirements: 14.8, 14.9_
   
-  - [ ] 21.2 (Removed - Inference Mode Settings)
+
   
   - [ ] 21.3 Implement voice settings
     - Add voice mode toggle (standard/enhanced)
@@ -754,8 +754,8 @@ This implementation plan breaks down the DentalGemma application into discrete, 
     - _Requirements: 15.3, 15.5, 15.6_
   
   - [ ] 25.2 Implement privacy measures
-    - Ensure no server-side data storage
-    - Verify edge mode data never leaves device
+    - Ensure no server-side data storage (except for transient processing)
+    - Verify local storage encryption where possible
     - Add data clearing functionality
     - _Requirements: 15.1, 15.2, 15.10_
   
@@ -831,11 +831,11 @@ This implementation plan breaks down the DentalGemma application into discrete, 
     - Test dentist finder flow (search → map → details)
     - _Requirements: All features_
   
-  - [ ]* 29.2 Write E2E tests for mode switching
-    - Test cloud to edge mode switch
-    - Test edge to cloud mode switch
-    - Test fallback on cloud failure
-    - _Requirements: 10.1-10.12_
+  - [ ]* 29.2 Write E2E tests for connection handling
+    - Test online to offline transition
+    - Test offline to online transition
+    - Test fallback on connection failure
+    - _Requirements: 10.1-10.5_
 
 - [ ] 30. Final Polish and Documentation
   - [ ] 30.1 UI polish
