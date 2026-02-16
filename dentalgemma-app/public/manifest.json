@@ -1,0 +1,62 @@
+{
+  "name": "DentalGemma - AI Dental Diagnostics",
+  "short_name": "DentalGemma",
+  "description": "Production-ready dental AI diagnostic platform with X-ray analysis, clinical assessments, and evidence-based recommendations",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#2563eb",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["medical", "health", "productivity"],
+  "screenshots": [
+    {
+      "src": "/screenshot-desktop.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide"
+    },
+    {
+      "src": "/screenshot-mobile.png",
+      "sizes": "750x1334",
+      "type": "image/png",
+      "form_factor": "narrow"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "X-Ray Analysis",
+      "short_name": "X-Ray",
+      "description": "Analyze dental X-ray images",
+      "url": "/xray-analysis",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Clinical Assessment",
+      "short_name": "Assessment",
+      "description": "Assess clinical cases",
+      "url": "/clinical-assessment",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Voice Consultation",
+      "short_name": "Voice",
+      "description": "Start voice consultation",
+      "url": "/voice-consultation",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    }
+  ]
+}

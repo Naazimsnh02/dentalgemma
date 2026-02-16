@@ -454,10 +454,9 @@ interface XRayImage {
   analysisType: AnalysisType;
 }
 
-interface XRayAnalysis {
+interface XRayAnalysisBase {
   id: string;
   imageId: string;
-  type: AnalysisType;
   findings: string[];
   confidence: number;
   urgency: UrgencyLevel;
@@ -466,6 +465,32 @@ interface XRayAnalysis {
   processingTime: number;
   timestamp: Date;
 }
+
+interface CavityAnalysis extends XRayAnalysisBase {
+  type: 'cavity';
+  cavityCount: '0' | '1' | '2' | '3+';
+  classification: 'normal' | 'cavity';
+  perToothConfidence?: Record<string, number>;
+}
+
+interface OPGAnalysis extends XRayAnalysisBase {
+  type: 'opg';
+  pathologyClass: 'Healthy' | 'Caries' | 'Impacted' | 'BDC-BDR' | 'Infection' | 'Fractured';
+}
+
+interface ToothIDAnalysis extends XRayAnalysisBase {
+  type: 'tooth-id';
+  toothCount: number;
+  toothTypes: Array<{ tooth: string; type: string }>;
+}
+
+interface GeneralAnalysis extends XRayAnalysisBase {
+  type: 'general';
+  reportSections: string[];
+  qualityAssessment: string;
+}
+
+type XRayAnalysis = CavityAnalysis | OPGAnalysis | ToothIDAnalysis | GeneralAnalysis;
 
 interface VisualAnnotations {
   boxes: BoundingBox[];
@@ -644,7 +669,7 @@ After analyzing all acceptance criteria, I've identified the following key prope
 - Requirements 8.1-8.2 and 8.4-8.10 test browsing and display → Combined into Property 14
 - Requirements 9.5-9.10 and 9.11-9.14 test results and features → Combined into Property 16
 - Requirements 10.1 and 10.4-10.5 test cloud/offline behavior → Combined into Property 17
-- Requirements 11.1-11.10, 12.1-12.10, 13.1-13.10, 14.1-14.10, 15.1-15.10, 16.5-16.10, 17.1-17.10, 18.1-18.10 all test UI/feature completeness → Combined into respective properties
+- Requirements 11.1-11.10, 12.1-12.10, 13.1-13.10, 14.1-14.10, 15.1-15.10, 16.3-16.8, 17.1-17.10, 18.1-18.10 all test UI/feature completeness → Combined into respective properties
 
 ### Core Properties
 
@@ -716,6 +741,10 @@ After analyzing all acceptance criteria, I've identified the following key prope
 *For any* analysis request, the system SHALL check for internet connectivity. If connected, proceed with cloud inference. If disconnected, prevent inference and offer offline tools (cached content, symptom checker) with clear messaging.  
 **Validates: Requirements 10.1, 10.4, 10.5**
 
+**Property 18: Processing Indicator Display**  
+*For any* inference or analysis request that takes longer than 2 seconds, the system SHALL display a progress indicator showing processing status, and SHALL update the indicator with contextual messages ("Processing your request...", "This is taking longer than usual...") based on elapsed time.  
+**Validates: Requirements 1.9, 10.2, 16.2**
+
 **Property 19: Model Information Display**  
 *For any* user viewing the model information page, the system SHALL display all required sections: architecture details, training data statistics (6 datasets, 4,148 samples, 98 conditions), capabilities showcase with interactive demo, performance metrics, technical details with model card, limitations, and resource links.  
 **Validates: Requirements 11.1, 11.2, 11.3, 11.4, 11.5, 11.6, 11.7, 11.8, 11.9, 11.10**
@@ -742,7 +771,7 @@ After analyzing all acceptance criteria, I've identified the following key prope
 
 **Property 25: Error Handling and Fallback**  
 *For any* failed API request, the system SHALL: retry with exponential backoff (max 3 attempts), fall back to cached data or offline tools after retries exhausted, display user-friendly error messages without stack traces, and log errors for debugging while maintaining privacy.  
-**Validates: Requirements 16.3, 16.4, 16.10**
+**Validates: Requirements 16.2, 16.3, 16.8**
 
 **Property 26: Export Round-Trip Consistency**  
 *For any* analysis result (X-ray or clinical assessment), exporting to JSON then parsing SHALL produce data equivalent to the original result (round-trip property).  
@@ -812,7 +841,8 @@ async function fetchWithRetry<T>(
 const analysis = await fetchWithRetry(
   () => cloudClient.analyzeXray(image, type),
   {
-    fallback: () => edgeClient.analyzeXray(image, type)
+    // No inference fallback — cloud-only architecture
+    // On failure, show user-friendly error message
   }
 );
 ```

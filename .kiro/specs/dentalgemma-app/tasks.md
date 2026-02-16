@@ -6,7 +6,7 @@ This implementation plan breaks down the DentalGemma application into discrete, 
 
 ## Tasks
 
-- [ ] 1. Project Foundation and Infrastructure Setup
+- [x] 1. Project Foundation and Infrastructure Setup
   - Initialize Next.js 16 project with TypeScript, App Router, and Turbopack
   - Configure Tailwind CSS v4 with CSS-first configuration (@theme directive)
   - Install and configure shadcn/ui components
@@ -40,8 +40,12 @@ This implementation plan breaks down the DentalGemma application into discrete, 
     - Handle QuotaExceededError with automatic cleanup
     - _Requirements: 13.9, 15.10_
   
+  - [ ] 3.3 Implement auto-save utility
+    - Create lib/utils/auto-save.ts
+    - Implement debounced save to localStorage every 30 seconds
+    - Implement restore on page load
+    - _Requirements: 2.14_
 
-  
   - [ ]* 3.4 Write property tests for storage operations
     - **Property 11: Treatment Data Persistence**
     - **Validates: Requirements 6.1, 6.7, 6.8, 6.9, 6.10**
@@ -108,13 +112,13 @@ This implementation plan breaks down the DentalGemma application into discrete, 
     - Implement assessCase method with retry logic
     - Implement chat method
     - Add keep-alive ping mechanism (every 5 minutes)
-    - _Requirements: 1.1-1.5, 2.6-2.13, 16.5_
+    - _Requirements: 1.1-1.5, 2.6-2.13, 16.3_
   
   - [ ] 6.3 Add error handling and fallback
     - Implement exponential backoff retry (max 3 attempts)
     - Add fallback to user-friendly error message on failure
     - Add user-friendly error messages
-    - _Requirements: 16.3, 16.4, 17.9_
+    - _Requirements: 16.2, 16.3, 17.9_
   
   - [ ]* 6.4 Write property tests for cloud client
     - **Property 1: X-Ray Analysis Output Completeness**
@@ -123,9 +127,47 @@ This implementation plan breaks down the DentalGemma application into discrete, 
   
   - [ ]* 6.5 Write property test for error handling
     - **Property 25: Error Handling and Fallback**
-    - **Validates: Requirements 16.3, 16.4, 16.10**
+    - **Validates: Requirements 16.2, 16.3, 16.8**
 
-
+- [ ] 7. API Routes Layer
+  - [ ] 7.1 Create X-ray analysis API route
+    - Create app/api/analyze-xray/route.ts
+    - Accept image + analysis type, forward to Modal.com
+    - Return structured analysis response
+    - _Requirements: 1.1-1.5, 17.8_
+  
+  - [ ] 7.2 Create clinical assessment API route
+    - Create app/api/assess-case/route.ts
+    - Accept clinical case data, forward to Modal.com
+    - Return structured assessment response
+    - _Requirements: 2.6-2.13, 17.8_
+  
+  - [ ] 7.3 Create chat API route
+    - Create app/api/chat/route.ts
+    - Accept message + history, forward to Modal.com
+    - Return AI response
+    - _Requirements: 3.4, 17.8_
+  
+  - [ ] 7.4 Create agentic workflow API route
+    - Create app/api/agent/diagnose/route.ts
+    - Use Vercel AI SDK 6 agent with streaming
+    - _Requirements: 4.1-4.6_
+  
+  - [ ] 7.5 Create research search API route
+    - Create app/api/research/search/route.ts
+    - Proxy PubMed E-Utils with rate limiting
+    - _Requirements: 7.1, 17.4, 17.5_
+  
+  - [ ] 7.6 Create dentist search API route
+    - Create app/api/dentists/nearby/route.ts
+    - Proxy Google Places API
+    - _Requirements: 5.2, 17.1, 17.2_
+  
+  - [ ] 7.7 Create health check endpoint
+    - Create app/api/health/route.ts
+    - Check Modal.com connectivity
+    - Return system status
+    - _Requirements: 16.1_
 
 - [ ] 8. X-Ray Analysis Feature
   - [ ] 8.1 Create X-ray upload component
@@ -354,7 +396,7 @@ This implementation plan breaks down the DentalGemma application into discrete, 
 
 - [ ] 12. Checkpoint - Core AI Features Complete
   - Ensure all tests pass for X-ray analysis, clinical assessment, voice consultation, and agentic workflow
-  - Verify cloud and edge inference modes work correctly
+  - Verify cloud inference and offline fallback modes work correctly
   - Test error handling and fallback mechanisms
   - Ask the user if questions arise
 
@@ -878,6 +920,31 @@ This implementation plan breaks down the DentalGemma application into discrete, 
   - Verify all external APIs work correctly
   - Review and fix any remaining issues
   - Ask the user if questions arise
+
+- [ ] 32. Competition Submission Deliverables
+  - [ ] 32.1 Record demo videos
+    - Record main demo video (3 minutes max)
+    - Record agentic workflow demo (2 minutes)
+    - Edit and polish videos
+    - _Requirements: Challenge submission requirements_
+  
+  - [ ] 32.2 Write submission writeup
+    - Follow Kaggle writeup template (3 pages max)
+    - Cover project name, team, problem statement, solution, technical details
+    - Include links to video, code repo, live demo, HuggingFace model
+    - _Requirements: Challenge submission requirements_
+  
+  - [ ] 32.3 Prepare public repository
+    - Ensure all code is clean and documented
+    - Verify README.md is comprehensive
+    - Remove any sensitive data or keys
+    - _Requirements: Challenge submission requirements_
+  
+  - [ ] 32.4 Final submission package
+    - Submit Kaggle Writeup with all required links
+    - Select tracks: Main Track + one special award (Agentic Workflow or Novel Task)
+    - Verify live demo URL is functional
+    - _Requirements: Challenge submission requirements_
 
 ## Notes
 

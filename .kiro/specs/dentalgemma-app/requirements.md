@@ -293,13 +293,13 @@ The application targets dental professionals, students, researchers, and patient
 #### Acceptance Criteria
 
 1. WHEN Cloud_Inference is requested, THE DentalGemma_System SHALL complete analysis within 5 seconds under normal conditions
-4. WHEN API requests fail after retries, THE DentalGemma_System SHALL fall back to cached data if available, or display an error
-5. WHEN Modal.com cold start occurs, THE DentalGemma_System SHALL use GPU snapshotting for 10x faster initialization
-6. WHEN images are loaded, THE DentalGemma_System SHALL use WebP format with lazy loading
-7. WHEN JavaScript bundles are loaded, THE DentalGemma_System SHALL use code splitting and tree shaking
-8. WHEN a User installs PWA, THE DentalGemma_System SHALL cache static assets for offline access
-9. WHEN offline, THE DentalGemma_System SHALL provide cached knowledge base, symptom checker, and treatment tracker
-10. WHEN errors occur, THE DentalGemma_System SHALL log errors for debugging while maintaining user privacy
+2. WHEN API requests fail after retries, THE DentalGemma_System SHALL fall back to cached data if available, or display an error
+3. WHEN Modal.com cold start occurs, THE DentalGemma_System SHALL use GPU snapshotting for 10x faster initialization
+4. WHEN images are loaded, THE DentalGemma_System SHALL use WebP format with lazy loading
+5. WHEN JavaScript bundles are loaded, THE DentalGemma_System SHALL use code splitting and tree shaking
+6. WHEN a User installs PWA, THE DentalGemma_System SHALL cache static assets for offline access
+7. WHEN offline, THE DentalGemma_System SHALL provide cached knowledge base, symptom checker, and treatment tracker
+8. WHEN errors occur, THE DentalGemma_System SHALL log errors for debugging while maintaining user privacy
 
 ### Requirement 17: External API Integration
 
@@ -334,4 +334,19 @@ The application targets dental professionals, students, researchers, and patient
 8. WHEN offline, THE DentalGemma_System SHALL display offline indicator in UI
 9. WHEN connection is restored, THE DentalGemma_System SHALL sync pending operations if applicable
 10. WHEN a User views PWA, THE DentalGemma_System SHALL provide app-like experience with no browser chrome
+
+### Requirement 19: Settings and Preferences
+
+**User Story:** As a User, I want to customize voice, display, and privacy settings, so that I can tailor the application to my preferences and workflow.
+
+#### Acceptance Criteria
+
+1. WHEN a User views settings, THE DentalGemma_System SHALL display tabbed interface with Voice, Display, Privacy, and About sections
+2. WHEN a User changes voice mode, THE DentalGemma_System SHALL toggle between standard (Web Speech API) and enhanced (Gemini Native Audio) modes
+3. WHEN a User adjusts voice settings, THE DentalGemma_System SHALL apply speech rate, pitch, and language preferences
+4. WHEN a User changes theme, THE DentalGemma_System SHALL apply light, dark, or system preference
+5. WHEN a User adjusts display preferences, THE DentalGemma_System SHALL support font size, reduced animations, high contrast, and color-blind friendly modes
+6. WHEN a User clears data, THE DentalGemma_System SHALL remove specified localStorage entries immediately
+7. WHEN a User exports data, THE DentalGemma_System SHALL generate JSON export of all stored data
+8. WHEN settings are changed, THE DentalGemma_System SHALL persist preferences to localStorage immediately
 
