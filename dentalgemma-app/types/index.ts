@@ -438,6 +438,7 @@ export interface AnalyzeXRayRequest {
 
 export interface AnalyzeXRayResponse {
   success: boolean;
+  analysis: string;
   type: AnalysisType;
   findings: string[];
   confidence: number;
@@ -451,7 +452,11 @@ export interface AssessCaseRequest {
   caseData: ClinicalCase;
 }
 
-export interface AssessCaseResponse extends CaseAssessment {}
+export interface AssessCaseResponse {
+  success: boolean;
+  assessment: string;
+  processingTime?: number;
+}
 
 export interface ChatRequest {
   message: string;

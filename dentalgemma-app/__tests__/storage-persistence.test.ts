@@ -270,7 +270,7 @@ describe('Property 11: Treatment Data Persistence', () => {
   it('should correctly persist and load empty treatment arrays', () => {
     fc.assert(
       fc.property(fc.constant([]), (emptyArray) => {
-        save('dentalgemma:treatments', emptyArray);
+        save('dentalgemma:treatments', emptyArray as unknown as Treatment[]);
         const loaded = load('dentalgemma:treatments');
         
         expect(loaded).not.toBeNull();
