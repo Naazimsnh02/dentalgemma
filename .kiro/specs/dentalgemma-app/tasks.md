@@ -129,41 +129,41 @@ This implementation plan breaks down the DentalGemma application into discrete, 
     - **Property 25: Error Handling and Fallback**
     - **Validates: Requirements 16.2, 16.3, 16.8**
 
-- [ ] 7. API Routes Layer
-  - [ ] 7.1 Create X-ray analysis API route
+- [x] 7. API Routes Layer
+  - [x] 7.1 Create X-ray analysis API route
     - Create app/api/analyze-xray/route.ts
     - Accept image + analysis type, forward to Modal.com
     - Return structured analysis response
     - _Requirements: 1.1-1.5, 17.8_
   
-  - [ ] 7.2 Create clinical assessment API route
+  - [x] 7.2 Create clinical assessment API route
     - Create app/api/assess-case/route.ts
     - Accept clinical case data, forward to Modal.com
     - Return structured assessment response
     - _Requirements: 2.6-2.13, 17.8_
   
-  - [ ] 7.3 Create chat API route
+  - [x] 7.3 Create chat API route
     - Create app/api/chat/route.ts
     - Accept message + history, forward to Modal.com
     - Return AI response
     - _Requirements: 3.4, 17.8_
   
-  - [ ] 7.4 Create agentic workflow API route
+  - [x] 7.4 Create agentic workflow API route
     - Create app/api/agent/diagnose/route.ts
     - Use Vercel AI SDK 6 agent with streaming
     - _Requirements: 4.1-4.6_
   
-  - [ ] 7.5 Create research search API route
+  - [x] 7.5 Create research search API route
     - Create app/api/research/search/route.ts
     - Proxy PubMed E-Utils with rate limiting
     - _Requirements: 7.1, 17.4, 17.5_
   
-  - [ ] 7.6 Create dentist search API route
+  - [x] 7.6 Create dentist search API route
     - Create app/api/dentists/nearby/route.ts
     - Proxy Google Places API
     - _Requirements: 5.2, 17.1, 17.2_
   
-  - [ ] 7.7 Create health check endpoint
+  - [x] 7.7 Create health check endpoint
     - Create app/api/health/route.ts
     - Check Modal.com connectivity
     - Return system status
