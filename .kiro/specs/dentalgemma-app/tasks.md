@@ -79,20 +79,20 @@ This implementation plan breaks down the DentalGemma application into discrete, 
     - **Property 22: Accessibility Compliance**
     - **Validates: Requirements 14.1-14.10**
 
-- [ ] 5. Connection Status Management
-  - [ ] 5.1 Create connection monitor utility
+- [x] 5. Connection Status Management
+  - [x] 5.1 Create connection monitor utility
     - Create lib/utils/connection.ts
     - Implement listeners for 'online' and 'offline' events
     - Expose current status via hook
     - _Requirements: 10.1, 10.4_
   
-  - [ ] 5.2 Create connection status indicator
+  - [x] 5.2 Create connection status indicator
     - Implement components/shared/status-indicator.tsx
     - Show discreet indicator when offline
     - Add "Reconnecting..." state
     - _Requirements: 10.5_
   
-  - [ ]* 5.3 Write property tests for connection handling
+  - [x] 5.3 Write property tests for connection handling
     - **Property 17: Cloud-Only & Offline Behavior**
     - **Validates: Requirements 10.1, 10.4, 10.5**
 
@@ -120,12 +120,12 @@ This implementation plan breaks down the DentalGemma application into discrete, 
     - Add user-friendly error messages
     - _Requirements: 16.2, 16.3, 17.9_
   
-  - [ ]* 6.4 Write property tests for cloud client
+  - [ ] 6.4 Write property tests for cloud client
     - **Property 1: X-Ray Analysis Output Completeness**
     - **Property 3: Clinical Assessment Output Completeness**
     - **Validates: Requirements 1.2-1.5, 2.6-2.13**
   
-  - [ ]* 6.5 Write property test for error handling
+  - [ ] 6.5 Write property test for error handling
     - **Property 25: Error Handling and Fallback**
     - **Validates: Requirements 16.2, 16.3, 16.8**
 
