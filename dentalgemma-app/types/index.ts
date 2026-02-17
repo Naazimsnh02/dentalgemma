@@ -348,15 +348,27 @@ export interface SearchOptions {
 // Education Portal Types
 // ----------------------------------------------------------------------------
 
+export type ConditionCategory = 
+  | 'Preventive Care'
+  | 'Restorative Procedures'
+  | 'Periodontal Conditions'
+  | 'Endodontic Issues'
+  | 'Oral Surgery'
+  | 'Orthodontics'
+  | 'Pediatric Dentistry'
+  | 'Emergency Care';
+
 export interface DentalCondition {
   id: string;
   name: string;
-  category: string;
+  category: ConditionCategory;
+  description: string;
   symptoms: string[];
   causes: string[];
   treatments: string[];
   prevention: string[];
   relatedConditions: string[];
+  icon?: string;
 }
 
 // ----------------------------------------------------------------------------
