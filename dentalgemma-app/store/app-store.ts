@@ -77,6 +77,13 @@ export const useAppStore = create<AppState>()(
           analysisHistory: [item, ...state.analysisHistory],
         })),
 
+      removeFromHistory: (ids) =>
+        set((state) => ({
+          analysisHistory: state.analysisHistory.filter(
+            (item) => !ids.includes(item.id)
+          ),
+        })),
+
       clearHistory: () =>
         set({ analysisHistory: [] }),
 

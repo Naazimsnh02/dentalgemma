@@ -554,6 +554,7 @@ export interface AppState {
   setCurrentCaseAssessment: (assessment: CaseAssessment | null) => void;
   setCurrentVoiceSession: (session: VoiceSession | null) => void;
   addToHistory: (item: AnalysisHistoryItem) => void;
+  removeFromHistory: (ids: string[]) => void;
   clearHistory: () => void;
   addTreatment: (treatment: Treatment) => void;
   updateTreatment: (id: string, updates: Partial<Treatment>) => void;
