@@ -577,21 +577,21 @@ This implementation plan breaks down the DentalGemma application into discrete, 
     - **Validates: Requirements 8.1-8.10**
 
 
-- [ ] 17. Dental Symptom Checker Feature
-  - [ ] 17.1 Create symptom questionnaire component
+- [x] 17. Dental Symptom Checker Feature
+  - [x] 17.1 Create symptom questionnaire component
     - Implement components/symptom-checker/questionnaire.tsx
     - Create multi-step form (location, pain type, duration, triggers, symptoms, history)
     - Add progress indicator
     - Display medical disclaimer at start
     - _Requirements: 9.1, 9.2_
   
-  - [ ] 17.2 Implement diagnosis logic
+  - [x] 17.2 Implement diagnosis logic
     - Create rule-based engine for simple cases (offline capable)
     - Integrate DentalGemma for complex cases
     - Implement differential diagnosis ranking
     - _Requirements: 9.3, 9.4, 9.5_
   
-  - [ ] 17.3 Create results display component
+  - [x] 17.3 Create results display component
     - Implement components/symptom-checker/results-display.tsx
     - Display possible conditions ranked by likelihood
     - Add urgency classification with color-coded recommendations
@@ -599,7 +599,7 @@ This implementation plan breaks down the DentalGemma application into discrete, 
     - Display red flag warnings
     - _Requirements: 9.5-9.11_
   
-  - [ ] 17.4 Implement symptom checker page
+  - [x] 17.4 Implement symptom checker page
     - Create app/(dashboard)/symptom-checker/page.tsx
     - Wire up questionnaire and results components
     - Add save to history functionality
