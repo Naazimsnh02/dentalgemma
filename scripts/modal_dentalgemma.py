@@ -255,15 +255,51 @@ RADIOGRAPHIC FINDINGS:
 MEDICAL HISTORY:
 {request.medical_history}
 
-Please provide:
-1. Primary Diagnosis with ICD-10 code
-2. Differential Diagnoses
-3. Etiology Analysis
-4. Urgency Classification
-5. Comprehensive Management Plan
-6. Antibiotic Recommendations (if indicated)
-7. Follow-up Schedule
-8. Patient Counseling Points
+You MUST respond with ONLY a valid JSON object (no markdown fences, no extra text before or after). Use this exact schema:
+
+{{
+  "diagnosis": {{
+    "primary": "primary diagnosis text",
+    "icd10": "ICD-10 code like K04.0",
+    "confidence": 0.85,
+    "differential": ["differential diagnosis 1", "differential diagnosis 2"]
+  }},
+  "etiology": {{
+    "rootCause": "root cause description",
+    "contributingFactors": ["factor 1", "factor 2"],
+    "riskFactors": ["risk 1", "risk 2"]
+  }},
+  "urgency": "routine",
+  "managementPlan": {{
+    "immediate": ["immediate step 1"],
+    "protocol": ["treatment step 1", "treatment step 2"],
+    "alternatives": ["alternative treatment 1"],
+    "expectedOutcomes": "expected outcomes description",
+    "duration": "treatment duration"
+  }},
+  "followUp": {{
+    "initialTiming": "1-2 weeks",
+    "monitoring": ["what to monitor"],
+    "longTerm": "long term care plan",
+    "redFlags": ["warning sign 1"]
+  }},
+  "patientCounseling": {{
+    "explanation": "patient-friendly explanation",
+    "homeCare": ["home care instruction 1"],
+    "dietary": ["dietary recommendation 1"],
+    "painManagement": "pain management advice",
+    "emergencyTriggers": ["when to seek emergency care"]
+  }},
+  "guidelines": {{
+    "relevant": ["relevant guideline 1"],
+    "references": [],
+    "evidenceLevel": "B"
+  }}
+}}
+
+The "urgency" field must be one of: "emergency", "urgent", "routine", or "home-care".
+The "confidence" field must be a number between 0 and 1.
+Fill all fields with clinically appropriate values based on the case details above.
 """
             
             max_tokens = request.max_tokens
@@ -303,15 +339,38 @@ Please provide:
                 skip_special_tokens=True
             )
             
+            # Try to parse structured JSON from model output
+            import json
+            
+            case_assessment = None
+            try:
+                # Strip any markdown fences if present
+                clean = assessment.strip()
+                if clean.startswith("```"):
+                    clean = clean.split("\n", 1)[1] if "\n" in clean else clean[3:]
+                if clean.endswith("```"):
+                    clean = clean[:-3]
+                clean = clean.strip()
+                if clean.startswith("json"):
+                    clean = clean[4:].strip()
+                case_assessment = json.loads(clean)
+            except (json.JSONDecodeError, Exception) as parse_err:
+                print(f"⚠️ JSON parse failed, returning raw text: {parse_err}")
+            
             processing_time = time.time() - start_time
             
-            return {
+            result = {
                 "success": True,
                 "assessment": assessment,
                 "processing_time": round(processing_time, 3),
                 "model": "dentalgemma-1.5-4b-it",
                 "type": "clinical_assessment"
             }
+            
+            if case_assessment is not None:
+                result["case_assessment"] = case_assessment
+            
+            return result
             
         except Exception as e:
             return {
@@ -411,7 +470,8 @@ Please provide:
             
             return {
                 "success": True,
-                "response": response,
+                "message": response,
+                "response": response,  # backward compat
                 "processing_time": round(processing_time, 3),
                 "model": "dentalgemma-1.5-4b-it",
                 "type": "chat"

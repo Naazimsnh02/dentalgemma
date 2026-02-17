@@ -361,7 +361,53 @@ export class ModalClient {
 
       const processingTime = Math.max(Date.now() - startTime, 1); // Ensure at least 1ms
 
-      // Parse the assessment text into structured format
+      // Prefer structured JSON from backend; fall back to text parsing
+      if ((response as any).case_assessment) {
+        const ca = (response as any).case_assessment;
+        return {
+          success: true,
+          diagnosis: {
+            primary: ca.diagnosis?.primary || 'Diagnosis pending',
+            icd10: ca.diagnosis?.icd10 || 'K00-K14',
+            confidence: ca.diagnosis?.confidence || 0.8,
+            differential: ca.diagnosis?.differential || [],
+          },
+          etiology: {
+            rootCause: ca.etiology?.rootCause || 'To be determined',
+            contributingFactors: ca.etiology?.contributingFactors || [],
+            riskFactors: ca.etiology?.riskFactors || [],
+          },
+          urgency: ca.urgency || 'routine',
+          managementPlan: {
+            immediate: ca.managementPlan?.immediate || [],
+            protocol: ca.managementPlan?.protocol || [],
+            alternatives: ca.managementPlan?.alternatives || [],
+            expectedOutcomes: ca.managementPlan?.expectedOutcomes || 'Favorable with proper treatment',
+            duration: ca.managementPlan?.duration || 'Variable',
+          },
+          followUp: {
+            initialTiming: ca.followUp?.initialTiming || '1-2 weeks',
+            monitoring: ca.followUp?.monitoring || [],
+            longTerm: ca.followUp?.longTerm || 'Regular dental checkups',
+            redFlags: ca.followUp?.redFlags || [],
+          },
+          patientCounseling: {
+            explanation: ca.patientCounseling?.explanation || '',
+            homeCare: ca.patientCounseling?.homeCare || [],
+            dietary: ca.patientCounseling?.dietary || [],
+            painManagement: ca.patientCounseling?.painManagement || 'As directed by dentist',
+            emergencyTriggers: ca.patientCounseling?.emergencyTriggers || [],
+          },
+          guidelines: {
+            relevant: ca.guidelines?.relevant || [],
+            references: ca.guidelines?.references || [],
+            evidenceLevel: ca.guidelines?.evidenceLevel || 'B',
+          },
+          processingTime,
+        };
+      }
+
+      // Fallback: parse free-form text (legacy)
       return this.parseAssessment(response.assessment, processingTime);
     } catch (error) {
       if (error instanceof ModalClientError) {
@@ -407,7 +453,7 @@ export class ModalClient {
         }
       );
 
-      return response.message || '';
+      return response.message || (response as any).response || '';
     } catch (error) {
       if (error instanceof ModalClientError) {
         throw error;
