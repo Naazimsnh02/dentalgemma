@@ -616,8 +616,8 @@ This implementation plan breaks down the DentalGemma application into discrete, 
     - Test medical disclaimer shown at start
     - _Requirements: 9.1_
 
-- [ ] 18. Model Information Page
-  - [ ] 18.1 Create model info page
+- [x] 18. Model Information Page
+  - [x] 18.1 Create model info page
     - Create app/(dashboard)/model-info/page.tsx
     - Display architecture details (MedGemma 1.5 4B IT + SigLIP + LoRA)
     - Show training data statistics (6 datasets, 4,148 samples, 98 conditions)
@@ -737,15 +737,15 @@ This implementation plan breaks down the DentalGemma application into discrete, 
     - Add data retention settings
     - _Requirements: 15.10_
 
-- [ ] 22. Checkpoint - All Features Complete
+- [x] 22. Checkpoint - All Features Complete
   - Ensure all 11 features are implemented and functional
   - Verify all property tests pass
   - Test offline functionality (PWA)
   - Test responsive design on mobile, tablet, desktop
   - Ask the user if questions arise
 
-- [ ] 23. Landing Page and Marketing
-  - [ ] 23.1 Create landing page
+- [x] 23. Landing Page and Marketing
+  - [x] 23.1 Create landing page
     - Create app/(marketing)/page.tsx
     - Add hero section with animated gradient
     - Add features grid (11 features)
@@ -755,7 +755,7 @@ This implementation plan breaks down the DentalGemma application into discrete, 
     - Add footer with links
     - _Requirements: 14.1_
   
-  - [ ] 23.2 Create about page
+  - [x] 23.2 Create about page
     - Create app/(marketing)/about/page.tsx
     - Add project overview
     - Add team information

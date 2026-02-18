@@ -88,7 +88,7 @@ describe('Modal Client Property-Based Tests', () => {
             expect(result.confidence).toBeGreaterThanOrEqual(0);
             expect(result.confidence).toBeLessThanOrEqual(1);
             
-            expect(['low', 'medium', 'high']).toContain(result.urgency);
+            expect(['emergency', 'urgent', 'routine', 'home-care']).toContain(result.urgency);
             
             expect(Array.isArray(result.recommendations)).toBe(true);
             expect(result.recommendations.length).toBeGreaterThan(0);
@@ -158,7 +158,7 @@ describe('Modal Client Property-Based Tests', () => {
 
             const result = await client.analyzeXray(imageData, analysisType);
 
-            expect(['low', 'medium', 'high']).toContain(result.urgency);
+            expect(['emergency', 'urgent', 'routine', 'home-care']).toContain(result.urgency);
           }
         ),
         { numRuns: 20 }

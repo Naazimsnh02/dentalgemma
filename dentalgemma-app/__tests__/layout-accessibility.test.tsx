@@ -94,7 +94,7 @@ describe('Property 22: Accessibility Compliance - Layout Components', () => {
      */
     it('should highlight active navigation item', () => {
       const { usePathname } = require('next/navigation');
-      usePathname.mockReturnValue('/dashboard/xray-analysis');
+      usePathname.mockReturnValue('/xray-analysis');
 
       render(<Sidebar />);
 
@@ -278,18 +278,18 @@ describe('Property 22: Accessibility Compliance - Layout Components', () => {
         fc.property(
           fc.constantFrom(
             '/dashboard',
-            '/dashboard/xray-analysis',
-            '/dashboard/clinical-assessment',
-            '/dashboard/voice-consultation',
-            '/dashboard/agentic-workflow',
-            '/dashboard/dentist-finder',
-            '/dashboard/progress-tracker',
-            '/dashboard/research',
-            '/dashboard/education',
-            '/dashboard/symptom-checker',
-            '/dashboard/model-info',
-            '/dashboard/history',
-            '/dashboard/settings'
+            '/xray-analysis',
+            '/clinical-assessment',
+            '/voice-consultation',
+            '/agentic-workflow',
+            '/dentist-finder',
+            '/progress-tracker',
+            '/research',
+            '/education',
+            '/symptom-checker',
+            '/model-info',
+            '/history',
+            '/settings'
           ),
           (pathname) => {
             const { usePathname } = require('next/navigation');
