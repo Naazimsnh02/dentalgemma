@@ -7,7 +7,7 @@
 // ----------------------------------------------------------------------------
 
 export type UrgencyLevel = 'emergency' | 'urgent' | 'routine' | 'home-care';
-export type AnalysisType = 'photo' | 'xray' | 'cavity' | 'opg' | 'tooth-id' | 'general';
+export type AnalysisType = 'photo' | 'xray';
 export type ImageFormat = 'jpeg' | 'png' | 'dicom';
 export type VoiceMode = 'standard' | 'enhanced';
 export type Theme = 'light' | 'dark' | 'system';

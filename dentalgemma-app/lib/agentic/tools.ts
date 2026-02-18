@@ -18,7 +18,7 @@ import type { AnalysisType, ClinicalCase, DentistInfo, ResearchPaper } from '@/t
  */
 export const analyzeXraySchema = z.object({
   image: z.string().describe('Base64 encoded X-ray image'),
-  analysisType: z.enum(['cavity', 'opg', 'tooth-id', 'general']).describe('Type of analysis to perform'),
+  analysisType: z.enum(['photo', 'xray']).describe('Type of analysis to perform'),
 });
 
 export type AnalyzeXrayInput = z.infer<typeof analyzeXraySchema>;

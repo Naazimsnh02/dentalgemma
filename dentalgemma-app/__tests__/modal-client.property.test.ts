@@ -40,10 +40,8 @@ describe('Modal Client Property-Based Tests', () => {
 
     // Arbitrary for analysis types
     const analysisTypeArb = fc.constantFrom<AnalysisType>(
-      'cavity',
-      'opg',
-      'tooth-id',
-      'general'
+      'photo',
+      'xray'
     );
 
     // Arbitrary for base64 image strings
@@ -98,22 +96,20 @@ describe('Modal Client Property-Based Tests', () => {
 
             // Type-specific fields
             switch (analysisType) {
-              case 'cavity':
-                expect(['0', '1', '2', '3+']).toContain((result as any).cavityCount);
-                expect(['normal', 'cavity']).toContain((result as any).classification);
+              case 'photo':
+                expect(['healthy', 'decay', 'other']).toContain((result as any).condition);
+                if ((result as any).severity) {
+                  expect(['mild', 'moderate', 'severe']).toContain((result as any).severity);
+                }
                 break;
-              case 'opg':
-                expect(['Healthy', 'Caries', 'Impacted', 'BDC-BDR', 'Infection', 'Fractured'])
-                  .toContain((result as any).pathologyClass);
-                break;
-              case 'tooth-id':
-                expect(typeof (result as any).toothCount).toBe('number');
-                expect((result as any).toothCount).toBeGreaterThanOrEqual(0);
-                expect((result as any).toothCount).toBeLessThanOrEqual(32);
-                break;
-              case 'general':
-                expect(Array.isArray((result as any).reportSections)).toBe(true);
-                expect(typeof (result as any).qualityAssessment).toBe('string');
+              case 'xray':
+                if ((result as any).pathologyClass) {
+                  expect(['Healthy', 'Caries', 'Impacted', 'BDC-BDR', 'Infection', 'Fractured'])
+                    .toContain((result as any).pathologyClass);
+                }
+                if ((result as any).differentialDiagnosis) {
+                  expect(Array.isArray((result as any).differentialDiagnosis)).toBe(true);
+                }
                 break;
             }
           }
@@ -328,7 +324,7 @@ describe('Modal Client Property-Based Tests', () => {
         json: async () => mockResponse,
       });
 
-      const result = await client.analyzeXray('data:image/jpeg;base64,test', 'general');
+      const result = await client.analyzeXray('data:image/jpeg;base64,test', 'xray');
 
       expect(result.processingTime).toBeGreaterThan(0);
     });
@@ -347,7 +343,7 @@ describe('Modal Client Property-Based Tests', () => {
         json: async () => mockResponse,
       });
 
-      const result = await client.analyzeXray('data:image/jpeg;base64,test', 'general');
+      const result = await client.analyzeXray('data:image/jpeg;base64,test', 'xray');
 
       expect(Array.isArray(result.findings)).toBe(true);
       expect(Array.isArray(result.recommendations)).toBe(true);

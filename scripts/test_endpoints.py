@@ -40,6 +40,8 @@ def test_chat():
         "max_tokens": 512
     }
     
+    print(f"Message sent: \"{payload['message']}\"")
+    
     try:
         response = requests.post(ENDPOINTS["chat"], json=payload)
         print_result("Chat", response)
@@ -60,18 +62,31 @@ def test_assessment():
         "max_tokens": 1024
     }
     
+    print(f"Assessment prompt (JSON payload) sent:\n{json.dumps(payload, indent=2)}")
+    
     try:
         response = requests.post(ENDPOINTS["assess"], json=payload)
         print_result("Clinical Assessment", response)
     except Exception as e:
         print(f"Assessment Test Failed: {e}")
 
-def test_xray(image_path):
-    print(f"\nTesting X-Ray Analysis Endpoint with {image_path}...")
+def test_image_analysis(image_path, analysis_type='xray'):
+    """
+    Test Image Analysis Endpoint with specific V2 prompts.
+    analysis_type: 'photo' or 'xray'
+    """
+    type_label = "Clinical Photo Analysis" if analysis_type == 'photo' else "X-Ray Analysis"
+    print(f"\nTesting {type_label} Endpoint with {image_path}...")
     
     if not os.path.exists(image_path):
         print(f"Error: Image file not found at {image_path}")
         return
+
+    # V2 Prompts from Plan
+    prompts = {
+        "photo": "Analyze this clinical dental photograph. Describe the condition of the teeth and gums visible. Note any signs of decay, discoloration, or other abnormalities. Assess the severity and recommend follow-up actions.",
+        "xray": "Analyze this dental radiograph. Describe any pathological findings and their locations. Provide your assessment of the condition, possible differential diagnoses, and clinical recommendations."
+    }
 
     try:
         with open(image_path, "rb") as image_file:
@@ -79,17 +94,16 @@ def test_xray(image_path):
         
         payload = {
             "image": encoded_string,
-            "question": 'Analyze this dental X-ray for cavities. Respond ONLY in JSON format: { "findings": ["..."], "confidence": 0.0-1.0, "cavityCount": "0"|"1"|"2"|"3+", "classification": "normal"|"cavity", "recommendations": ["..."] }.',
+            "question": prompts.get(analysis_type, prompts['xray']),
             "max_tokens": 512
         }
         
+        print(f"Prompt sent: \"{payload['question']}\"")
+        
         response = requests.post(ENDPOINTS["xray"], json=payload)
-        # Uncomment to see raw response text for debugging
-        # print("Raw Response Text:")
-        # print(response.text[:2000] + "..." if len(response.text) > 2000 else response.text)
-        print_result("X-Ray Analysis", response)
+        print_result(type_label, response)
     except Exception as e:
-        print(f"X-Ray Test Failed: {e}")
+        print(f"{type_label} Test Failed: {e}")
 
 if __name__ == "__main__":
     # Force UTF-8 encoding for stdout to handle potential unicode in AI responses
@@ -108,12 +122,15 @@ if __name__ == "__main__":
     # 3. Test Assessment
     test_assessment()
     
-    # 4. Test X-Ray
-    # Assuming script is run from 'scripts' folder or root, adjust path accordingly
+    # 4. Test Image Analysis (Photo & X-Ray)
     script_dir = os.path.dirname(os.path.abspath(__file__))
-    image_filename = "dental_xray.jpg"
-    image_path = os.path.join(script_dir, image_filename)
     
-    test_xray(image_path)
+    # Test xray mode with dental_xray.jpg
+    xray_image_path = os.path.join(script_dir, "dental_xray.jpg")
+    test_image_analysis(xray_image_path, analysis_type='xray')
+    
+    # Test photo mode with dental_photo.jpg
+    photo_image_path = os.path.join(script_dir, "dental_photo.jpg")
+    test_image_analysis(photo_image_path, analysis_type='photo')
     
     print("\nTesting Complete.")

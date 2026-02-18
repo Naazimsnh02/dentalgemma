@@ -501,20 +501,21 @@ export class AgenticWorkflowEngine {
   /**
    * Determine X-ray analysis type from text
    */
-  private determineAnalysisType(text: string): 'cavity' | 'opg' | 'tooth-id' | 'general' {
+  private determineAnalysisType(text: string): 'photo' | 'xray' {
     const lowerText = text.toLowerCase();
 
-    if (lowerText.includes('cavity') || lowerText.includes('caries')) {
-      return 'cavity';
-    }
-    if (lowerText.includes('panoramic') || lowerText.includes('opg')) {
-      return 'opg';
-    }
-    if (lowerText.includes('tooth') || lowerText.includes('count')) {
-      return 'tooth-id';
+    // Check for clinical photo indicators
+    if (
+      lowerText.includes('photograph') ||
+      lowerText.includes('clinical photo') ||
+      lowerText.includes('intraoral photo') ||
+      lowerText.includes('picture of teeth')
+    ) {
+      return 'photo';
     }
 
-    return 'general';
+    // Default to X-ray for radiographs
+    return 'xray';
   }
 
   /**

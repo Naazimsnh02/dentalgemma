@@ -62,7 +62,7 @@ describe('Modal Client Error Handling Property Tests', () => {
 
             // Attempt to analyze X-ray
             try {
-              await client.analyzeXray('data:image/jpeg;base64,test', 'general');
+              await client.analyzeXray('data:image/jpeg;base64,test', 'xray');
               // Should not reach here
               expect(true).toBe(false);
             } catch (error) {
@@ -97,7 +97,7 @@ describe('Modal Client Error Handling Property Tests', () => {
             });
 
             try {
-              await client.analyzeXray('data:image/jpeg;base64,test', 'general');
+              await client.analyzeXray('data:image/jpeg;base64,test', 'xray');
               expect(true).toBe(false);
             } catch (error) {
               // Verify it's a ModalClientError
@@ -125,7 +125,7 @@ describe('Modal Client Error Handling Property Tests', () => {
       });
 
       try {
-        await client.analyzeXray('data:image/jpeg;base64,test', 'general');
+        await client.analyzeXray('data:image/jpeg;base64,test', 'xray');
         expect(true).toBe(false);
       } catch (error) {
         // Verify it's a NetworkError (after retries)
@@ -150,7 +150,7 @@ describe('Modal Client Error Handling Property Tests', () => {
             );
 
             try {
-              await client.analyzeXray('data:image/jpeg;base64,test', 'general');
+              await client.analyzeXray('data:image/jpeg;base64,test', 'xray');
               expect(true).toBe(false);
             } catch (error) {
               const err = error as NetworkError;
@@ -190,7 +190,7 @@ describe('Modal Client Error Handling Property Tests', () => {
       });
 
       try {
-        await client.analyzeXray('data:image/jpeg;base64,test', 'general');
+        await client.analyzeXray('data:image/jpeg;base64,test', 'xray');
       } catch (error) {
         // Verify delays increased (exponential backoff)
         // Note: This is a timing-sensitive test, so we just verify the pattern
@@ -221,7 +221,7 @@ describe('Modal Client Error Handling Property Tests', () => {
       });
 
       // Should succeed on third attempt
-      const result = await client.analyzeXray('data:image/jpeg;base64,test', 'general');
+      const result = await client.analyzeXray('data:image/jpeg;base64,test', 'xray');
 
       expect(result).toBeDefined();
       expect(result.findings).toBeDefined();
@@ -345,7 +345,7 @@ describe('Modal Client Error Handling Property Tests', () => {
       (global.fetch as jest.Mock).mockRejectedValue(originalError);
 
       try {
-        await client.analyzeXray('data:image/jpeg;base64,test', 'general');
+        await client.analyzeXray('data:image/jpeg;base64,test', 'xray');
         expect(true).toBe(false);
       } catch (error) {
         const err = error as NetworkError;
@@ -360,7 +360,7 @@ describe('Modal Client Error Handling Property Tests', () => {
       const clientWithoutUrl = new ModalClient('');
 
       try {
-        await clientWithoutUrl.analyzeXray('data:image/jpeg;base64,test', 'general');
+        await clientWithoutUrl.analyzeXray('data:image/jpeg;base64,test', 'xray');
         expect(true).toBe(false);
       } catch (error) {
         expect(error).toBeInstanceOf(ModalClientError);
@@ -381,7 +381,7 @@ describe('Modal Client Error Handling Property Tests', () => {
       (global.fetch as jest.Mock).mockRejectedValue(new Error('Test error'));
 
       try {
-        await client.analyzeXray('data:image/jpeg;base64,test', 'general');
+        await client.analyzeXray('data:image/jpeg;base64,test', 'xray');
       } catch (error) {
         expect(error).toBeInstanceOf(ModalClientError);
       }
@@ -392,7 +392,7 @@ describe('Modal Client Error Handling Property Tests', () => {
       (global.fetch as jest.Mock).mockRejectedValue(new Error('Network failure'));
 
       try {
-        await client.analyzeXray('data:image/jpeg;base64,test', 'general');
+        await client.analyzeXray('data:image/jpeg;base64,test', 'xray');
       } catch (error) {
         expect((error as NetworkError).code).toBe('NETWORK_ERROR');
       }
@@ -412,7 +412,7 @@ describe('Modal Client Error Handling Property Tests', () => {
             });
 
             try {
-              await client.analyzeXray('data:image/jpeg;base64,test', 'general');
+              await client.analyzeXray('data:image/jpeg;base64,test', 'xray');
             } catch (error) {
               expect((error as ModalClientError).message).toBeDefined();
               expect(typeof (error as ModalClientError).message).toBe('string');

@@ -231,7 +231,7 @@ Raw datasets should be placed under `datasets/` following the directory structur
 - **Image Padding:** Enabled padding to square before resize (preserves aspect ratios, fixes distortion)
 - **Higher LoRA Rank:** Increased from 16→64 for better model capacity
 - **Lower Learning Rate:** Reduced from 2e-4→5e-5 with longer warmup for stability
-- **Early Stopping:** Best checkpoints selected based on validation loss (VQA: step 1200, Instruct: step 700)
+- **Early Stopping:** Best checkpoints selected based on validation loss (VQA: step 2100, Instruct: step 700)
 
 ### Running Fine-Tuning
 
@@ -257,7 +257,7 @@ DentalGemma VQA dataset (HuggingFace Hub)
     ↓ load & parse messages with label masking
 MedGemma 1.5 4B IT (full bfloat16)
     ↓ LoRA fine-tuning (SFTTrainer, 10 epochs)
-    ↓ early stopping at step 1200 (val loss: 0.0281)
+    ↓ early stopping at step 2100 (val loss: 0.1585)
 VQA-adapted model
 
 Stage 2: Instruct Training (Text-only)
@@ -265,7 +265,7 @@ DentalGemma Instruct dataset (HuggingFace Hub)
     ↓ load & parse messages with label masking
 VQA-adapted model
     ↓ LoRA fine-tuning (SFTTrainer, 10 epochs)
-    ↓ early stopping at step 700 (val loss: 0.0209)
+    ↓ early stopping at step 500 (val loss: 0.0224)
 Final LoRA adapter
     ↓ merge with base model
     ↓ push to Hub

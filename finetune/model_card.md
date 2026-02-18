@@ -21,10 +21,10 @@ pipeline_tag: image-text-to-text
 widget:
 - text: Analyze this dental X-ray for any abnormalities.
   example_title: X-ray Analysis
-- text: >-
-    A 35-year-old patient presents with severe tooth pain. What are the possible
+- text: A 35-year-old patient presents with severe tooth pain. What are the possible
     diagnoses?
   example_title: Clinical Case
+library_name: transformers
 model-index:
 - name: DentalGemma-1.5-4B-IT
   results:
@@ -36,9 +36,8 @@ model-index:
       type: naazimsnh02/dentalgemma-vqa
     metrics:
     - type: loss
-      value: 0.0209
+      value: 0.0224
       name: Final Validation Loss (Instruct)
-library_name: transformers
 ---
 
 # 🦷 DentalGemma 1.5 4B IT
@@ -107,7 +106,7 @@ To ensure the highest fidelity in X-ray analysis, we trained the model in **nati
 
 | Parameter | Value |
 |:----------|:------|
-| **Epochs** | 10 (Stopped early at ~6 due to convergence) |
+| **Epochs** | 5 (Stopped early at ~4 due to convergence) |
 | **Batch Size** | 1 per device × 4 gradient accumulation |
 | **Learning Rate** | 5e-5 (linear scheduler) |
 | **Warmup Ratio** | 0.1 |
@@ -118,13 +117,13 @@ To ensure the highest fidelity in X-ray analysis, we trained the model in **nati
 | **LoRA Dropout** | 0.05 |
 | **Target Modules** | All linear layers |
 | **Max Grad Norm** | 1.0 |
-| **Training Time** | ~4.5 hours |
+| **Training Time** | ~4 hours |
 
 #### Stage 2: Instruct Training (Text-only)
 
 | Parameter | Value |
 |:----------|:------|
-| **Epochs** | 10 (Stopped at ~3 due to convergence) |
+| **Epochs** | 5 (Stopped at ~4 due to convergence) |
 | **Batch Size** | 2 per device × 4 gradient accumulation |
 | **Learning Rate** | 5e-5 (linear scheduler) |
 | **Warmup Ratio** | 0.1 |
@@ -136,41 +135,38 @@ To ensure the highest fidelity in X-ray analysis, we trained the model in **nati
 
 | Step | Training Loss | Validation Loss |
 |-----:|--------------:|----------------:|
-| 100  | 0.4546        | 0.2074          |
-| 200  | 0.0543        | 0.0488          |
-| 300  | 0.0459        | 0.0516          |
-| 400  | 0.0346        | 0.0403          |
-| ...  | ...           | ...             |
-| 1200 | 0.0261        | **0.0281** (Best) |
-| 1300 | 0.0192        | 0.0295          |
-| 2000 | 0.0194        | 0.0324          |
+| 100  | 1.5756        | 1.3255          |
+| 500  | 0.1846        | 0.1917          |
+| 1000 | 0.1611        | 0.1665          |
+| 1500 | 0.1408        | 0.1628          |
+| 2000 | 0.1466        | 0.1612          |
+| **2100** | **0.1339** | **0.1585** (Best) |
+| 2300 | 0.1150        | 0.1595          |
 
-*Note: Training was stopped after Step 2000 as validation loss began to plateau/rise. The checkpoint from Step 1200 was selected as the optimal VQA model.*
+*Note: Training was stopped after Step 2300 as validation loss began to plateau. The checkpoint from Step 2100 was selected as the optimal VQA model.*
 
 **Final VQA Metrics:**
-- **Best Validation Loss:** 0.0281
-- **Improvement:** Significant reduction from initial loss of ~0.20
+- **Best Validation Loss:** 0.1585
+- **Improvement:** Significant reduction from initial loss of ~1.32
 
 #### Instruct Training (Stage 2)
 
 | Step | Training Loss | Validation Loss |
 |-----:|--------------:|----------------:|
-| 100  | 0.4982        | 0.3448          |
-| 200  | 0.0873        | 0.0565          |
-| 300  | 0.0281        | 0.0409          |
-| 400  | 0.0180        | 0.0303          |
-| 500  | 0.0073        | 0.0224          |
-| 600  | 0.0082        | 0.0211          |
-| **700** | **0.0040** | **0.0209**      |
-| 800  | 0.0030        | 0.0229          |
-| 900  | 0.0038        | 0.0232          |
+| 100  | 0.2984        | 0.2111          |
+| 200  | 0.0594        | 0.0447          |
+| 300  | 0.0131        | 0.0331          |
+| 400  | 0.0100        | 0.0293          |
+| **500** | **0.0045** | **0.0224** (Best) |
+| 600  | 0.0068        | 0.0225          |
+| 1000 | 0.0018        | 0.0270          |
 
-*Note: Training was stopped after Step 900 as validation loss began to rise. The checkpoint from Step 700 was selected as the final model.*
+*Note: Training was stopped after Step 1000 as validation loss began to rise. The checkpoint from Step 500 was selected as the final model.*
 
 **Final Instruct Metrics:**
-- **Best Validation Loss:** 0.0209 (at step 700)
-- **Training Loss at Best Checkpoint:** 0.0040
-- **Performance Gain:** ~50% reduction in error compared to previous QLoRA runs (old best: 0.0435).
+- **Best Validation Loss:** 0.0224 (at step 500)
+- **Training Loss at Best Checkpoint:** 0.0045
+- **Performance Gain:** Strong convergence with minimal overfitting at optimal step.
 
 ### Training Infrastructure
 

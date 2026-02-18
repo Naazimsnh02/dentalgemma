@@ -307,27 +307,16 @@ Structure your response with:
         start_time = time.time()
         
         try:
-            # Build structured case text using request attributes
-            case_text = f"""Please provide a comprehensive clinical assessment for this dental patient:
+            # Build structured case text using request attributes (JSON-first prompt)
+            case_text = f"""You are an expert dental AI. Your task is to analyze the patient case below and extract specific clinical data into a JSON object.
 
-PATIENT INFORMATION:
-- Age: {request.patient.age} years old
-- Gender: {request.patient.gender}
+OUTPUT RULES:
+1. Respond ONLY with valid JSON.
+2. Do NOT use markdown code blocks (```json).
+3. Do NOT repeat the patient info or findings in chat format.
+4. Fill all fields based on clinical reasoning.
 
-CHIEF COMPLAINT:
-{request.chief_complaint}
-
-CLINICAL FINDINGS:
-{request.clinical_findings}
-
-RADIOGRAPHIC FINDINGS:
-{request.radiographic_findings}
-
-MEDICAL HISTORY:
-{request.medical_history}
-
-You MUST respond with ONLY a valid JSON object (no markdown fences, no extra text before or after). Use this exact schema:
-
+JSON SCHEMA:
 {{
   "diagnosis": {{
     "primary": "primary diagnosis text",
@@ -354,7 +343,23 @@ You MUST respond with ONLY a valid JSON object (no markdown fences, no extra tex
 }}
 
 The "urgency" field must be one of: "emergency", "urgent", "routine", or "home-care".
-Fill all fields with clinically appropriate values based on the case details above.
+
+CASE DETAILS:
+PATIENT INFORMATION:
+- Age: {request.patient.age} years old
+- Gender: {request.patient.gender}
+
+CHIEF COMPLAINT:
+{request.chief_complaint}
+
+CLINICAL FINDINGS:
+{request.clinical_findings}
+
+RADIOGRAPHIC FINDINGS:
+{request.radiographic_findings}
+
+MEDICAL HISTORY:
+{request.medical_history}
 """
             
             max_tokens = request.max_tokens

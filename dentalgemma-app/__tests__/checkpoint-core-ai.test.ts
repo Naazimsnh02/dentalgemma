@@ -200,7 +200,7 @@ describe('Checkpoint 12: Core AI Features Complete', () => {
         }),
       });
 
-      const result = await client.analyzeXray('data:image/jpeg;base64,abc', 'general');
+      const result = await client.analyzeXray('data:image/jpeg;base64,abc', 'xray');
       expect(result).toBeDefined();
       expect(typeof result.confidence).toBe('number');
       expect(Array.isArray(result.findings)).toBe(true);
@@ -248,7 +248,7 @@ describe('Checkpoint 12: Core AI Features Complete', () => {
         json: async () => ({ error: 'Server error' }),
       });
 
-      await expect(client.analyzeXray('data:image/jpeg;base64,abc', 'general'))
+      await expect(client.analyzeXray('data:image/jpeg;base64,abc', 'xray'))
         .rejects
         .toThrow(NetworkError);
 
@@ -285,7 +285,7 @@ describe('Checkpoint 12: Core AI Features Complete', () => {
       test('analyzeXraySchema parses valid input', () => {
         const result = analyzeXraySchema.safeParse({
           image: 'base64string',
-          analysisType: 'cavity',
+          analysisType: 'photo',
         });
         expect(result.success).toBe(true);
       });
@@ -528,8 +528,8 @@ describe('Checkpoint 12: Core AI Features Complete', () => {
     });
 
     test('AnalysisType union covers all types', () => {
-      const types: AnalysisType[] = ['cavity', 'opg', 'tooth-id', 'general'];
-      expect(types).toHaveLength(4);
+      const types: AnalysisType[] = ['photo', 'xray'];
+      expect(types).toHaveLength(2);
     });
 
     test('UrgencyLevel union covers all levels', () => {

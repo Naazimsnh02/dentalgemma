@@ -46,7 +46,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Validate analysis type
-    const validTypes: AnalysisType[] = ['cavity', 'opg', 'tooth-id', 'general'];
+    const validTypes: AnalysisType[] = ['photo', 'xray'];
     if (!validTypes.includes(body.analysisType)) {
       return NextResponse.json(
         {
