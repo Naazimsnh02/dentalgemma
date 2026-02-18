@@ -87,18 +87,13 @@ export function AboutTab() {
                 Model on HuggingFace
               </Button>
             </a>
-            <a href="https://github.com/yourusername/dentalgemma" target="_blank" rel="noopener noreferrer">
+            <a href="https://github.com/naazimsnh02/dentalgemma" target="_blank" rel="noopener noreferrer">
               <Button variant="outline" className="justify-start w-full">
                 <Github className="mr-2 h-4 w-4" />
                 GitHub Repository
               </Button>
             </a>
-            <a href="/docs" target="_blank" rel="noopener noreferrer">
-              <Button variant="outline" className="justify-start w-full">
-                <BookOpen className="mr-2 h-4 w-4" />
-                Documentation
-              </Button>
-            </a>
+
           </div>
         </div>
 
@@ -120,12 +115,7 @@ export function AboutTab() {
               with any questions you may have regarding a medical condition.
             </p>
           </div>
-          <div className="text-xs text-muted-foreground space-y-1">
-            <p>• This application is NOT HIPAA compliant</p>
-            <p>• Do not upload real patient data or PHI</p>
-            <p>• All data is stored locally in your browser</p>
-            <p>• AI processing is ephemeral and not retained on servers</p>
-          </div>
+
         </div>
 
         <Separator />
@@ -133,17 +123,17 @@ export function AboutTab() {
         {/* Contact */}
         <div className="space-y-3">
           <h3 className="font-medium">Contact & Support</h3>
-          <a href="mailto:support@dentalgemma.com">
+          <a href="mailto:naazimsnh02@gmail.com">
             <Button variant="outline" className="justify-start w-full">
               <Mail className="mr-2 h-4 w-4" />
-              support@dentalgemma.com
+              naazimsnh02@gmail.com
             </Button>
           </a>
         </div>
 
         {/* Copyright */}
         <div className="pt-4 text-center text-xs text-muted-foreground">
-          <p>© 2024 DentalGemma. All rights reserved.</p>
+          <p>© 2026 DentalGemma. All rights reserved.</p>
           <p className="mt-1">Built with Next.js, React, and Tailwind CSS</p>
         </div>
       </CardContent>

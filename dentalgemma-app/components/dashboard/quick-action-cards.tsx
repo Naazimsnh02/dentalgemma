@@ -13,6 +13,7 @@ import {
   Stethoscope,
   Info,
   LayoutDashboard,
+  Settings,
 } from 'lucide-react';
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
@@ -102,6 +103,13 @@ const quickActions: QuickAction[] = [
     href: '/dashboard',
     icon: LayoutDashboard,
     color: 'bg-slate-500/10 text-slate-600 dark:text-slate-400',
+  },
+  {
+    title: 'Settings',
+    description: 'Manage app preferences',
+    href: '/settings',
+    icon: Settings,
+    color: 'bg-zinc-500/10 text-zinc-600 dark:text-zinc-400',
   },
 ];
 

@@ -136,8 +136,8 @@ export function Navbar() {
             className={cn(
               'flex items-center gap-2 rounded-md px-3 py-1.5 text-sm',
               isOnline
-                ? 'bg-green-50 text-green-700 dark:bg-green-950 dark:text-green-300'
-                : 'bg-red-50 text-red-700 dark:bg-red-950 dark:text-red-300'
+                ? 'bg-green-500 dark:bg-green-600 text-white border border-black'
+                : 'bg-red-500 dark:bg-red-600 text-white border border-black'
             )}
             role="status"
             aria-live="polite"

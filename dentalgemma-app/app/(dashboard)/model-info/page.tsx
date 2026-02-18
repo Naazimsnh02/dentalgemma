@@ -32,7 +32,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 const trainingDatasets = [
   { name: 'Cavity Detection (VQA)', samples: 418, type: 'X-Ray', description: 'Binary classification: normal vs cavity, with cavity count (0–3+)' },
   { name: 'OPG Classification (VQA)', samples: 517, type: 'X-Ray', description: '6-class pathology: Healthy, Caries, Impacted, BDC-BDR, Infection, Fractured' },
-  { name: 'Tooth Identification (VQA)', samples: 64, type: 'X-Ray', description: '8-class tooth type classification with per-tooth identification' },
   { name: 'General Radiographic Assessment (VQA)', samples: 655, type: 'X-Ray', description: 'Systematic evaluation, clinical findings, quality assessment' },
   { name: 'Clinical Case Assessment (Instruct)', samples: 2494, type: 'Clinical', description: '98 dental conditions with expert-validated diagnosis and treatment plans' },
   { name: 'Conversational Dental Q&A (Instruct)', samples: 0, type: 'Clinical', description: 'Supplementary dialog data for voice consultation mode' },
@@ -42,8 +41,8 @@ const capabilities = [
   {
     title: 'Dental X-Ray Analysis',
     icon: ImageIcon,
-    description: 'Multimodal VQA on dental radiographs — cavity detection, OPG pathology classification, tooth identification, and general radiographic assessment.',
-    examples: ['Cavity count detection', 'Panoramic OPG classification', 'Tooth type identification', 'Radiographic quality assessment'],
+    description: 'Multimodal VQA on dental radiographs — cavity detection, OPG pathology classification, and general radiographic assessment.',
+    examples: ['Cavity count detection', 'Panoramic OPG classification', 'Radiographic quality assessment'],
   },
   {
     title: 'Clinical Case Assessment',
@@ -62,7 +61,6 @@ const capabilities = [
 const performanceMetrics = [
   { task: 'Cavity Detection', metric: 'Accuracy', value: 87, unit: '%' },
   { task: 'OPG Classification', metric: 'F1 Score', value: 82, unit: '%' },
-  { task: 'Tooth Identification', metric: 'Accuracy', value: 79, unit: '%' },
   { task: 'Clinical Assessment', metric: 'Relevance', value: 91, unit: '%' },
   { task: 'General Assessment', metric: 'Completeness', value: 88, unit: '%' },
 ];
@@ -85,7 +83,6 @@ const hyperparameters = [
 const limitations = [
   'Not intended for clinical diagnosis — educational and research purposes only.',
   'Performance may vary on X-ray images from equipment not represented in training data.',
-  'Tooth identification accuracy is lower due to limited training samples (64).',
   'Model may hallucinate or produce plausible-sounding but incorrect diagnoses.',
   'Not validated against board-certified radiologist interpretations at scale.',
   'Does not handle DICOM metadata — works on rasterized images only.',
@@ -103,7 +100,7 @@ const resourceLinks = [
 ];
 
 export default function ModelInfoPage() {
-  const totalVQA = 418 + 517 + 64 + 655;
+  const totalVQA = 418 + 517 + 655;
   const totalInstruct = 2494;
   const totalSamples = totalVQA + totalInstruct;
 

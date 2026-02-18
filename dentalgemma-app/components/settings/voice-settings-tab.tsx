@@ -171,14 +171,14 @@ export function VoiceSettingsTab() {
             Voice
           </Label>
           <Select
-            value={settings.voiceSettings.voice || ''}
-            onValueChange={handleVoiceChange}
+            value={settings.voiceSettings.voice || 'system-default'}
+            onValueChange={(value) => handleVoiceChange(value === 'system-default' ? '' : value)}
           >
             <SelectTrigger id="voice">
               <SelectValue placeholder="Select voice (default)" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Default Voice</SelectItem>
+              <SelectItem value="system-default">Default Voice</SelectItem>
               {voices
                 .filter(v => v.lang.startsWith(settings.voiceSettings.language.split('-')[0]))
                 .map((voice) => (

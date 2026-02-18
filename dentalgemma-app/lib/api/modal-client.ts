@@ -506,6 +506,11 @@ export class ModalClient {
   // Helper methods for parsing responses
 
   private extractFindings(text: string): string[] {
+    // If the text contains markdown headers, preserve the structure
+    if (text.includes('##') || text.includes('###')) {
+      return [text.trim()];
+    }
+
     // Extract bullet points or numbered lists
     const findings: string[] = [];
     const lines = text.split('\n');
@@ -517,7 +522,7 @@ export class ModalClient {
       }
     }
 
-    return findings.length > 0 ? findings : [text];
+    return findings.length > 0 ? findings : [text.trim()];
   }
 
   private extractConfidence(text: string): number {
@@ -565,6 +570,23 @@ export class ModalClient {
   }
 
   private extractRecommendations(text: string): string[] {
+    // If the text contains markdown headers in the recommendations section, preserve it
+    if ((text.includes('##') || text.includes('###')) && text.toLowerCase().includes('recommend')) {
+      // Find where recommendations start
+      const lines = text.split('\n');
+      let recStartIndex = -1;
+      for (let i = 0; i < lines.length; i++) {
+        if (lines[i].toLowerCase().includes('recommend')) {
+          recStartIndex = i;
+          break;
+        }
+      }
+      
+      if (recStartIndex !== -1) {
+        return [lines.slice(recStartIndex).join('\n').trim()];
+      }
+    }
+
     const recommendations: string[] = [];
     const lines = text.split('\n');
     let inRecommendations = false;
@@ -574,6 +596,7 @@ export class ModalClient {
       
       if (trimmed.toLowerCase().includes('recommend')) {
         inRecommendations = true;
+        continue; // Skip the "Recommendations:" header line if it matches bullet pattern
       }
 
       if (inRecommendations && (trimmed.match(/^[-*•]\s+/) || trimmed.match(/^\d+\.\s+/))) {

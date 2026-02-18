@@ -7,6 +7,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { Download, Copy, Trash2, User, Bot } from 'lucide-react';
+import { MarkdownRenderer } from '@/components/shared/markdown-renderer';
 import { VoiceMessage } from '@/types';
 
 export interface TranscriptViewerProps {
@@ -213,7 +214,10 @@ function MessageBubble({ message, onCopy, isCopied }: MessageBubbleProps) {
               : 'bg-green-50 dark:bg-green-900/30'
           }`}
         >
-          <p className="text-sm whitespace-pre-wrap">{message.text}</p>
+          <MarkdownRenderer 
+            content={message.text} 
+            className={`text-sm ${isUser ? 'text-blue-900 dark:text-blue-100' : 'text-green-900 dark:text-green-100'}`} 
+          />
         </div>
 
         {/* Timestamp and Actions */}

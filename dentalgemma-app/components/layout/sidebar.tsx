@@ -2,9 +2,10 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import {
-  Activity,
+
   Microscope,
   FileText,
   Mic,
@@ -123,7 +124,7 @@ export function Sidebar() {
         <div className="flex h-16 items-center justify-between border-b px-4">
           {!collapsed && (
             <div className="flex items-center gap-2">
-              <Activity className="h-6 w-6 text-primary" />
+              <Image src="/icon.png" alt="DentalGemma Logo" width={24} height={24} className="h-6 w-6" />
               <span className="font-semibold text-lg">DentalGemma</span>
             </div>
           )}

@@ -91,4 +91,22 @@
   body {
     @apply bg-background text-foreground;
   }
+
+  /* Accessibility Preferences */
+  .reduce-motion *,
+  .reduce-motion *::before,
+  .reduce-motion *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .high-contrast {
+    filter: contrast(1.25);
+  }
+
+  .color-blind-mode {
+    filter: saturate(1.2) contrast(1.1);
+  }
 }

@@ -23,6 +23,7 @@
 
 import { useState } from 'react';
 import { ChevronDown, ChevronUp, AlertTriangle, Clock, CheckCircle, Info } from 'lucide-react';
+import { MarkdownRenderer } from '@/components/shared/markdown-renderer';
 import type { CaseAssessment, UrgencyLevel } from '@/types';
 
 interface AssessmentReportProps {
@@ -106,10 +107,10 @@ export function AssessmentReport({ assessment, onExport }: AssessmentReportProps
     const isExpanded = expandedSections.has(id);
 
     return (
-      <div className="border rounded-lg overflow-hidden mb-4">
+      <div className="border rounded-lg shadow-sm overflow-hidden mb-4">
         <button
           onClick={() => toggleSection(id)}
-          className="w-full px-6 py-4 bg-gray-50 hover:bg-gray-100 flex items-center justify-between transition-colors"
+          className="w-full px-6 py-4 bg-gray-50/50 hover:bg-gray-100/50 flex items-center justify-between transition-colors"
         >
           <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
           {isExpanded ? (
@@ -128,7 +129,7 @@ export function AssessmentReport({ assessment, onExport }: AssessmentReportProps
   };
 
   return (
-    <div className="w-full max-w-4xl mx-auto">
+    <div className="w-full max-w-4xl mx-auto pb-10">
       {/* Header */}
       <div className="bg-white rounded-lg shadow-md p-6 mb-6">
         <div className="flex items-center justify-between mb-4">
@@ -136,7 +137,7 @@ export function AssessmentReport({ assessment, onExport }: AssessmentReportProps
           {onExport && (
             <button
               onClick={onExport}
-              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
             >
               Export PDF
             </button>
@@ -148,7 +149,7 @@ export function AssessmentReport({ assessment, onExport }: AssessmentReportProps
       </div>
 
       {/* Urgency Banner */}
-      <div className={`rounded-lg border-l-4 p-6 mb-6 ${getUrgencyColor(assessment.urgency)}`}>
+      <div className={`rounded-lg border-l-4 p-6 mb-6 shadow-sm ${getUrgencyColor(assessment.urgency)}`}>
         <div className="flex items-center gap-3">
           {getUrgencyIcon(assessment.urgency)}
           <div>
@@ -168,12 +169,14 @@ export function AssessmentReport({ assessment, onExport }: AssessmentReportProps
         <div className="space-y-4">
           <div>
             <h4 className="font-semibold text-gray-700 mb-2">Primary Diagnosis</h4>
-            <p className="text-lg font-medium text-gray-900">{assessment.diagnosis.primary}</p>
+            <div className="text-lg font-medium">
+              <MarkdownRenderer content={assessment.diagnosis.primary} className="text-gray-900" />
+            </div>
             <p className="text-sm text-gray-600 mt-1">ICD-10 Code: {assessment.diagnosis.icd10}</p>
-            <div className="mt-2">
+            <div className="mt-4">
               <span className="text-sm text-gray-600">Confidence: </span>
               <span className="font-semibold">{(assessment.diagnosis.confidence * 100).toFixed(1)}%</span>
-              <div className="w-full bg-gray-200 rounded-full h-2 mt-1">
+              <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
                 <div
                   className="bg-blue-600 h-2 rounded-full"
                   style={{ width: `${assessment.diagnosis.confidence * 100}%` }}
@@ -185,11 +188,14 @@ export function AssessmentReport({ assessment, onExport }: AssessmentReportProps
           {assessment.diagnosis.differential.length > 0 && (
             <div>
               <h4 className="font-semibold text-gray-700 mb-2">Differential Diagnoses</h4>
-              <ul className="list-disc list-inside space-y-1">
+              <div className="space-y-2">
                 {assessment.diagnosis.differential.map((diff, index) => (
-                  <li key={index} className="text-gray-700">{diff}</li>
+                  <div key={index} className="flex items-start space-x-2">
+                    <span className="text-gray-400 mt-1.5">•</span>
+                    <MarkdownRenderer content={diff} className="text-gray-700 text-sm" />
+                  </div>
                 ))}
-              </ul>
+              </div>
             </div>
           )}
         </div>
@@ -200,28 +206,34 @@ export function AssessmentReport({ assessment, onExport }: AssessmentReportProps
         <div className="space-y-4">
           <div>
             <h4 className="font-semibold text-gray-700 mb-2">Root Cause</h4>
-            <p className="text-gray-700">{assessment.etiology.rootCause}</p>
+            <MarkdownRenderer content={assessment.etiology.rootCause} className="text-gray-700" />
           </div>
 
           {assessment.etiology.contributingFactors.length > 0 && (
             <div>
               <h4 className="font-semibold text-gray-700 mb-2">Contributing Factors</h4>
-              <ul className="list-disc list-inside space-y-1">
+              <div className="space-y-2">
                 {assessment.etiology.contributingFactors.map((factor, index) => (
-                  <li key={index} className="text-gray-700">{factor}</li>
+                  <div key={index} className="flex items-start space-x-2">
+                    <span className="text-gray-400 mt-1.5">•</span>
+                    <MarkdownRenderer content={factor} className="text-gray-700 text-sm" />
+                  </div>
                 ))}
-              </ul>
+              </div>
             </div>
           )}
 
           {assessment.etiology.riskFactors.length > 0 && (
             <div>
               <h4 className="font-semibold text-gray-700 mb-2">Risk Factors</h4>
-              <ul className="list-disc list-inside space-y-1">
+              <div className="space-y-2">
                 {assessment.etiology.riskFactors.map((risk, index) => (
-                  <li key={index} className="text-gray-700">{risk}</li>
+                  <div key={index} className="flex items-start space-x-2">
+                    <span className="text-gray-400 mt-1.5">•</span>
+                    <MarkdownRenderer content={risk} className="text-gray-700 text-sm" />
+                  </div>
                 ))}
-              </ul>
+              </div>
             </div>
           )}
         </div>
@@ -233,44 +245,53 @@ export function AssessmentReport({ assessment, onExport }: AssessmentReportProps
           {assessment.managementPlan.immediate.length > 0 && (
             <div>
               <h4 className="font-semibold text-gray-700 mb-2">Immediate Actions</h4>
-              <ul className="list-decimal list-inside space-y-1">
+              <div className="space-y-2">
                 {assessment.managementPlan.immediate.map((action, index) => (
-                  <li key={index} className="text-gray-700">{action}</li>
+                  <div key={index} className="flex items-start space-x-2">
+                    <span className="font-bold text-gray-400 mt-0.5">{index + 1}.</span>
+                    <MarkdownRenderer content={action} className="text-gray-700 text-sm" />
+                  </div>
                 ))}
-              </ul>
+              </div>
             </div>
           )}
 
           {assessment.managementPlan.protocol.length > 0 && (
             <div>
               <h4 className="font-semibold text-gray-700 mb-2">Treatment Protocol</h4>
-              <ol className="list-decimal list-inside space-y-1">
+              <div className="space-y-3">
                 {assessment.managementPlan.protocol.map((step, index) => (
-                  <li key={index} className="text-gray-700">{step}</li>
+                  <div key={index} className="flex items-start space-x-2 p-2 bg-gray-50 rounded border border-gray-100">
+                    <span className="font-bold text-blue-500 mt-0.5">{index + 1}.</span>
+                    <MarkdownRenderer content={step} className="text-gray-700 text-sm" />
+                  </div>
                 ))}
-              </ol>
+              </div>
             </div>
           )}
 
           {assessment.managementPlan.alternatives.length > 0 && (
             <div>
               <h4 className="font-semibold text-gray-700 mb-2">Alternative Treatments</h4>
-              <ul className="list-disc list-inside space-y-1">
+              <div className="space-y-2">
                 {assessment.managementPlan.alternatives.map((alt, index) => (
-                  <li key={index} className="text-gray-700">{alt}</li>
+                  <div key={index} className="flex items-start space-x-2">
+                    <span className="text-gray-400 mt-1.5">•</span>
+                    <MarkdownRenderer content={alt} className="text-gray-700 text-sm" />
+                  </div>
                 ))}
-              </ul>
+              </div>
             </div>
           )}
 
-          <div className="grid grid-cols-2 gap-4 pt-4 border-t">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 border-t">
             <div>
               <h4 className="font-semibold text-gray-700 mb-1">Expected Outcomes</h4>
-              <p className="text-gray-700">{assessment.managementPlan.expectedOutcomes}</p>
+              <MarkdownRenderer content={assessment.managementPlan.expectedOutcomes} className="text-gray-700 text-sm" />
             </div>
             <div>
               <h4 className="font-semibold text-gray-700 mb-1">Duration</h4>
-              <p className="text-gray-700">{assessment.managementPlan.duration}</p>
+              <MarkdownRenderer content={assessment.managementPlan.duration} className="text-gray-700 text-sm" />
             </div>
           </div>
         </div>
@@ -282,38 +303,41 @@ export function AssessmentReport({ assessment, onExport }: AssessmentReportProps
           <div className="space-y-4">
             <div className="bg-yellow-50 border border-yellow-200 rounded-md p-4">
               <h4 className="font-semibold text-gray-700 mb-2">Indication</h4>
-              <p className="text-gray-700">{assessment.antibiotics.indication}</p>
+              <MarkdownRenderer content={assessment.antibiotics.indication} className="text-gray-700 text-sm" />
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div>
                 <h4 className="font-semibold text-gray-700 mb-1">Drug</h4>
-                <p className="text-gray-700">{assessment.antibiotics.drug}</p>
+                <MarkdownRenderer content={assessment.antibiotics.drug} className="text-gray-700 text-sm font-medium" />
               </div>
               <div>
                 <h4 className="font-semibold text-gray-700 mb-1">Dosage</h4>
-                <p className="text-gray-700">{assessment.antibiotics.dosage}</p>
+                <MarkdownRenderer content={assessment.antibiotics.dosage} className="text-gray-700 text-sm" />
               </div>
               <div>
                 <h4 className="font-semibold text-gray-700 mb-1">Duration</h4>
-                <p className="text-gray-700">{assessment.antibiotics.duration}</p>
+                <MarkdownRenderer content={assessment.antibiotics.duration} className="text-gray-700 text-sm" />
               </div>
             </div>
 
             {assessment.antibiotics.alternatives.length > 0 && (
               <div>
                 <h4 className="font-semibold text-gray-700 mb-2">Alternative Antibiotics</h4>
-                <ul className="list-disc list-inside space-y-1">
+                <div className="space-y-2">
                   {assessment.antibiotics.alternatives.map((alt, index) => (
-                    <li key={index} className="text-gray-700">{alt}</li>
+                    <div key={index} className="flex items-start space-x-2">
+                      <span className="text-gray-400 mt-1.5">•</span>
+                      <MarkdownRenderer content={alt} className="text-gray-700 text-sm" />
+                    </div>
                   ))}
-                </ul>
+                </div>
               </div>
             )}
 
             <div>
               <h4 className="font-semibold text-gray-700 mb-2">Rationale</h4>
-              <p className="text-gray-700">{assessment.antibiotics.rationale}</p>
+              <MarkdownRenderer content={assessment.antibiotics.rationale} className="text-gray-700 text-sm" />
             </div>
           </div>
         </Section>
@@ -324,23 +348,26 @@ export function AssessmentReport({ assessment, onExport }: AssessmentReportProps
         <div className="space-y-4">
           <div>
             <h4 className="font-semibold text-gray-700 mb-2">Initial Follow-up</h4>
-            <p className="text-gray-700">{assessment.followUp.initialTiming}</p>
+            <MarkdownRenderer content={assessment.followUp.initialTiming} className="text-gray-700" />
           </div>
 
           {assessment.followUp.monitoring.length > 0 && (
             <div>
               <h4 className="font-semibold text-gray-700 mb-2">Monitoring Parameters</h4>
-              <ul className="list-disc list-inside space-y-1">
+              <div className="space-y-2">
                 {assessment.followUp.monitoring.map((param, index) => (
-                  <li key={index} className="text-gray-700">{param}</li>
+                  <div key={index} className="flex items-start space-x-2">
+                    <span className="text-gray-400 mt-1.5">•</span>
+                    <MarkdownRenderer content={param} className="text-gray-700 text-sm" />
+                  </div>
                 ))}
-              </ul>
+              </div>
             </div>
           )}
 
           <div>
             <h4 className="font-semibold text-gray-700 mb-2">Long-term Care</h4>
-            <p className="text-gray-700">{assessment.followUp.longTerm}</p>
+            <MarkdownRenderer content={assessment.followUp.longTerm} className="text-gray-700" />
           </div>
 
           {assessment.followUp.redFlags.length > 0 && (
@@ -349,11 +376,14 @@ export function AssessmentReport({ assessment, onExport }: AssessmentReportProps
                 <AlertTriangle className="w-4 h-4" />
                 Red Flags - Seek Immediate Care If:
               </h4>
-              <ul className="list-disc list-inside space-y-1">
+              <div className="space-y-2">
                 {assessment.followUp.redFlags.map((flag, index) => (
-                  <li key={index} className="text-red-700">{flag}</li>
+                  <div key={index} className="flex items-start space-x-2">
+                    <span className="text-red-400 mt-1.5">•</span>
+                    <MarkdownRenderer content={flag} className="text-red-700 text-sm" />
+                  </div>
                 ))}
-              </ul>
+              </div>
             </div>
           )}
         </div>
@@ -364,45 +394,54 @@ export function AssessmentReport({ assessment, onExport }: AssessmentReportProps
         <div className="space-y-4">
           <div>
             <h4 className="font-semibold text-gray-700 mb-2">Explanation for Patient</h4>
-            <p className="text-gray-700">{assessment.patientCounseling.explanation}</p>
+            <MarkdownRenderer content={assessment.patientCounseling.explanation} className="text-gray-700" />
           </div>
 
           {assessment.patientCounseling.homeCare.length > 0 && (
             <div>
               <h4 className="font-semibold text-gray-700 mb-2">Home Care Instructions</h4>
-              <ul className="list-disc list-inside space-y-1">
+              <div className="space-y-2">
                 {assessment.patientCounseling.homeCare.map((instruction, index) => (
-                  <li key={index} className="text-gray-700">{instruction}</li>
+                  <div key={index} className="flex items-start space-x-2">
+                    <span className="text-gray-400 mt-1.5">•</span>
+                    <MarkdownRenderer content={instruction} className="text-gray-700 text-sm" />
+                  </div>
                 ))}
-              </ul>
+              </div>
             </div>
           )}
 
           {assessment.patientCounseling.dietary.length > 0 && (
             <div>
               <h4 className="font-semibold text-gray-700 mb-2">Dietary Recommendations</h4>
-              <ul className="list-disc list-inside space-y-1">
+              <div className="space-y-2">
                 {assessment.patientCounseling.dietary.map((diet, index) => (
-                  <li key={index} className="text-gray-700">{diet}</li>
+                  <div key={index} className="flex items-start space-x-2">
+                    <span className="text-gray-400 mt-1.5">•</span>
+                    <MarkdownRenderer content={diet} className="text-gray-700 text-sm" />
+                  </div>
                 ))}
-              </ul>
+              </div>
             </div>
           )}
 
           <div>
             <h4 className="font-semibold text-gray-700 mb-2">Pain Management</h4>
-            <p className="text-gray-700">{assessment.patientCounseling.painManagement}</p>
+            <MarkdownRenderer content={assessment.patientCounseling.painManagement} className="text-gray-700" />
           </div>
 
           {assessment.patientCounseling.emergencyTriggers.length > 0 && (
             <div className="bg-orange-50 border border-orange-200 rounded-md p-4">
               <h4 className="font-semibold text-orange-700 mb-2">Emergency Triggers</h4>
-              <p className="text-sm text-orange-600 mb-2">Seek immediate care if you experience:</p>
-              <ul className="list-disc list-inside space-y-1">
+              <p className="text-sm text-orange-600 mb-2 font-medium">Seek immediate care if you experience:</p>
+              <div className="space-y-2">
                 {assessment.patientCounseling.emergencyTriggers.map((trigger, index) => (
-                  <li key={index} className="text-orange-700">{trigger}</li>
+                  <div key={index} className="flex items-start space-x-2">
+                    <span className="text-orange-400 mt-1.5">•</span>
+                    <MarkdownRenderer content={trigger} className="text-orange-700 text-sm" />
+                  </div>
                 ))}
-              </ul>
+              </div>
             </div>
           )}
         </div>
@@ -413,14 +452,14 @@ export function AssessmentReport({ assessment, onExport }: AssessmentReportProps
         <div className="space-y-4">
           <div className="flex items-center gap-2 mb-4">
             <span className="text-sm font-semibold text-gray-700">Evidence Level:</span>
-            <span className={`px-3 py-1 rounded-full text-sm font-semibold ${
+            <span className={`px-3 py-1 rounded-full text-xs font-bold ${
               assessment.guidelines.evidenceLevel === 'A' ? 'bg-green-100 text-green-800' :
               assessment.guidelines.evidenceLevel === 'B' ? 'bg-blue-100 text-blue-800' :
               'bg-yellow-100 text-yellow-800'
             }`}>
               Level {assessment.guidelines.evidenceLevel}
             </span>
-            <span className="text-xs text-gray-600">
+            <span className="text-xs text-gray-600 font-medium">
               {assessment.guidelines.evidenceLevel === 'A' && '(High-quality evidence)'}
               {assessment.guidelines.evidenceLevel === 'B' && '(Moderate-quality evidence)'}
               {assessment.guidelines.evidenceLevel === 'C' && '(Low-quality evidence)'}
@@ -430,26 +469,33 @@ export function AssessmentReport({ assessment, onExport }: AssessmentReportProps
           {assessment.guidelines.relevant.length > 0 && (
             <div>
               <h4 className="font-semibold text-gray-700 mb-2">Relevant Guidelines</h4>
-              <ul className="list-disc list-inside space-y-1">
+              <div className="space-y-2">
                 {assessment.guidelines.relevant.map((guideline, index) => (
-                  <li key={index} className="text-gray-700">{guideline}</li>
+                  <div key={index} className="flex items-start space-x-2">
+                    <span className="text-gray-400 mt-1.5">•</span>
+                    <MarkdownRenderer content={guideline} className="text-gray-700 text-sm" />
+                  </div>
                 ))}
-              </ul>
+              </div>
             </div>
           )}
 
           {assessment.guidelines.references.length > 0 && (
             <div>
               <h4 className="font-semibold text-gray-700 mb-2">References</h4>
-              <ol className="list-decimal list-inside space-y-1">
+              <div className="space-y-2">
                 {assessment.guidelines.references.map((ref, index) => (
-                  <li key={index} className="text-sm text-gray-600">{ref}</li>
+                  <div key={index} className="flex items-start space-x-2">
+                    <span className="font-bold text-gray-300 text-xs mt-1">{index + 1}.</span>
+                    <MarkdownRenderer content={ref} className="text-gray-600 text-xs leading-relaxed" />
+                  </div>
                 ))}
-              </ol>
+              </div>
             </div>
           )}
         </div>
       </Section>
+
 
       {/* Medical Disclaimer */}
       <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 mt-6">

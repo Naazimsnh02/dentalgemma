@@ -195,7 +195,7 @@ export function XRayUploader({
               ${
                 isDragging
                   ? 'bg-blue-100 dark:bg-blue-900/30'
-                  : 'bg-gray-100 dark:bg-gray-800'
+                  : 'bg-muted'
               }
             `}
             >
@@ -207,7 +207,7 @@ export function XRayUploader({
             </div>
 
             <div className="space-y-2">
-              <p className="text-lg font-medium text-gray-700 dark:text-gray-300">
+              <p className="text-lg font-medium text-foreground">
                 {isDragging ? 'Drop your X-ray here' : 'Upload X-ray Image'}
               </p>
               <p className="text-sm text-gray-500 dark:text-gray-400">
@@ -246,7 +246,7 @@ export function XRayUploader({
             )}
 
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
+              <p className="text-sm font-medium text-black dark:text-gray-100 truncate">
                 {selectedFile.name}
               </p>
               <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">

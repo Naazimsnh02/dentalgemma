@@ -7,7 +7,7 @@
 // ----------------------------------------------------------------------------
 
 export type UrgencyLevel = 'emergency' | 'urgent' | 'routine' | 'home-care';
-export type AnalysisType = 'cavity' | 'opg' | 'tooth-id' | 'general';
+export type AnalysisType = 'cavity' | 'opg' | 'general';
 export type ImageFormat = 'jpeg' | 'png' | 'dicom';
 export type VoiceMode = 'standard' | 'enhanced';
 export type Theme = 'light' | 'dark' | 'system';
@@ -82,7 +82,7 @@ export interface GeneralAnalysis extends XRayAnalysisBase {
   qualityAssessment: string;
 }
 
-export type XRayAnalysis = CavityAnalysis | OPGAnalysis | ToothIDAnalysis | GeneralAnalysis;
+export type XRayAnalysis = CavityAnalysis | OPGAnalysis | GeneralAnalysis;
 
 // ----------------------------------------------------------------------------
 // Clinical Case Types

@@ -1,6 +1,7 @@
 'use client';
 
 import { Download, FileJson, FileText, AlertTriangle, CheckCircle, Info } from 'lucide-react';
+import { MarkdownRenderer } from '@/components/shared/markdown-renderer';
 import type { XRayAnalysis, UrgencyLevel } from '@/types';
 
 interface AnalysisResultsProps {
@@ -33,9 +34,9 @@ const urgencyConfig: Record<
     label: 'Routine',
   },
   'home-care': {
-    color: 'text-green-700 dark:text-green-400',
-    bgColor: 'bg-green-50 dark:bg-green-950/20 border-green-200 dark:border-green-800',
-    icon: <CheckCircle className="w-5 h-5" />,
+    color: 'text-foreground',
+    bgColor: 'bg-card border-border',
+    icon: <CheckCircle className="w-5 h-5 text-green-500" />,
     label: 'Home Care',
   },
 };
@@ -54,22 +55,22 @@ export function AnalysisResults({
         return (
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+              <span className="text-sm font-medium text-muted-foreground">
                 Cavity Count:
               </span>
-              <span className="text-lg font-bold text-gray-900 dark:text-gray-100">
+              <span className="text-lg font-bold text-foreground">
                 {analysis.cavityCount}
               </span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+              <span className="text-sm font-medium text-muted-foreground">
                 Classification:
               </span>
               <span
-                className={`px-3 py-1 rounded-full text-sm font-medium ${
+                className={`px-3 py-1 rounded-full text-sm font-medium border ${
                   analysis.classification === 'cavity'
-                    ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'
-                    : 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'
+                    ? 'bg-destructive text-destructive-foreground border-destructive'
+                    : 'bg-success text-success-foreground border-success'
                 }`}
               >
                 {analysis.classification === 'cavity' ? 'Cavity Detected' : 'Normal'}
@@ -82,10 +83,10 @@ export function AnalysisResults({
         return (
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+              <span className="text-sm font-medium text-muted-foreground">
                 Pathology Class:
               </span>
-              <span className="px-3 py-1 rounded-full text-sm font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400">
+              <span className="px-3 py-1 rounded-full text-sm font-medium bg-primary text-primary-foreground border border-primary">
                 {analysis.pathologyClass}
               </span>
             </div>
@@ -96,26 +97,26 @@ export function AnalysisResults({
         return (
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+              <span className="text-sm font-medium text-muted-foreground">
                 Total Teeth:
               </span>
-              <span className="text-lg font-bold text-gray-900 dark:text-gray-100">
+              <span className="text-lg font-bold text-foreground">
                 {analysis.toothCount}
               </span>
             </div>
             {analysis.toothTypes.length > 0 && (
               <div className="mt-4">
-                <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <p className="text-sm font-medium text-muted-foreground mb-2">
                   Tooth Types:
                 </p>
                 <div className="space-y-1 max-h-40 overflow-y-auto">
                   {analysis.toothTypes.map((tooth, index) => (
                     <div
                       key={index}
-                      className="flex items-center justify-between text-sm py-1 px-2 bg-gray-50 dark:bg-gray-800 rounded"
+                      className="flex items-center justify-between text-sm py-1 px-2 bg-muted rounded"
                     >
-                      <span className="text-gray-600 dark:text-gray-400">{tooth.tooth}</span>
-                      <span className="text-gray-900 dark:text-gray-100">{tooth.type}</span>
+                      <span className="text-muted-foreground">{tooth.tooth}</span>
+                      <span className="text-foreground">{tooth.type}</span>
                     </div>
                   ))}
                 </div>
@@ -128,25 +129,23 @@ export function AnalysisResults({
         return (
           <div className="space-y-2">
             <div>
-              <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <p className="text-sm font-medium text-muted-foreground mb-2">
                 Quality Assessment:
               </p>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                {analysis.qualityAssessment}
-              </p>
+              <MarkdownRenderer content={analysis.qualityAssessment} className="text-sm" />
             </div>
             {analysis.reportSections.length > 0 && (
               <div className="mt-4">
-                <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <p className="text-sm font-medium text-muted-foreground mb-2">
                   Report Sections:
                 </p>
-                <div className="space-y-2">
+                <div className="space-y-4">
                   {analysis.reportSections.map((section, index) => (
                     <div
                       key={index}
-                      className="text-sm text-gray-600 dark:text-gray-400 p-2 bg-gray-50 dark:bg-gray-800 rounded"
+                      className="p-3 bg-muted/50 rounded-lg border border-border/50"
                     >
-                      {section}
+                      <MarkdownRenderer content={section} className="text-sm" />
                     </div>
                   ))}
                 </div>
@@ -167,13 +166,13 @@ export function AnalysisResults({
             <h3 className={`text-lg font-semibold ${urgency.color}`}>
               {urgency.label} Priority
             </h3>
-            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+            <p className="text-sm text-muted-foreground mt-1">
               Analysis Type: {analysis.type.toUpperCase()}
             </p>
           </div>
           <div className="text-right">
-            <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Confidence</p>
-            <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+            <p className="text-sm font-medium text-muted-foreground">Confidence</p>
+            <p className="text-2xl font-bold text-foreground">
               {Math.round(analysis.confidence * 100)}%
             </p>
           </div>
@@ -181,8 +180,8 @@ export function AnalysisResults({
       </div>
 
       {/* Type-specific information */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
-        <h4 className="text-md font-semibold text-gray-900 dark:text-gray-100 mb-4">
+      <div className="bg-card rounded-lg border border-border p-4 shadow-sm">
+        <h4 className="text-md font-semibold text-foreground mb-4">
           Analysis Details
         </h4>
         {renderTypeSpecificInfo()}
@@ -190,43 +189,44 @@ export function AnalysisResults({
 
       {/* Findings */}
       {analysis.findings.length > 0 && (
-        <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
-          <h4 className="text-md font-semibold text-gray-900 dark:text-gray-100 mb-3">
+        <div className="bg-card rounded-lg border border-border p-4 shadow-sm">
+          <h4 className="text-md font-semibold text-foreground mb-3">
             Findings
           </h4>
-          <ul className="space-y-2">
+          <div className="space-y-3">
             {analysis.findings.map((finding, index) => (
-              <li
-                key={index}
-                className="flex items-start space-x-2 text-sm text-gray-700 dark:text-gray-300"
-              >
-                <span className="text-blue-500 mt-1">•</span>
-                <span>{finding}</span>
-              </li>
+              <div key={index} className="flex items-start space-x-2">
+                {!finding.includes('#') && (
+                  <span className="text-blue-500 mt-1.5 flex-shrink-0">•</span>
+                )}
+                <div className="flex-1 min-w-0">
+                  <MarkdownRenderer content={finding} className="text-sm" />
+                </div>
+              </div>
             ))}
-          </ul>
+          </div>
         </div>
       )}
 
       {/* Recommendations */}
       {analysis.recommendations.length > 0 && (
-        <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
-          <h4 className="text-md font-semibold text-gray-900 dark:text-gray-100 mb-3">
+        <div className="bg-card rounded-lg border border-border p-4 shadow-sm">
+          <h4 className="text-md font-semibold text-foreground mb-3">
             Recommendations
           </h4>
-          <ul className="space-y-2">
+          <div className="space-y-3">
             {analysis.recommendations.map((recommendation, index) => (
-              <li
-                key={index}
-                className="flex items-start space-x-2 text-sm text-gray-700 dark:text-gray-300"
-              >
-                <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
-                <span>{recommendation}</span>
-              </li>
+              <div key={index} className="flex items-start space-x-2">
+                <CheckCircle className="w-4 h-4 text-green-500 mt-1 flex-shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <MarkdownRenderer content={recommendation} className="text-sm" />
+                </div>
+              </div>
             ))}
-          </ul>
+          </div>
         </div>
       )}
+
 
       {/* Processing time */}
       <div className="text-xs text-gray-500 dark:text-gray-400 text-center">

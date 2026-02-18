@@ -38,14 +38,6 @@ const SAMPLE_XRAYS: SampleXRay[] = [
     thumbnail: '/samples/opg-sample-thumb.jpg',
   },
   {
-    id: 'sample-3',
-    name: 'Tooth Identification Sample',
-    description: 'Periapical X-ray for tooth counting and classification',
-    imageUrl: '/samples/tooth-id-sample.jpg',
-    analysisType: 'tooth-id',
-    thumbnail: '/samples/tooth-id-sample-thumb.jpg',
-  },
-  {
     id: 'sample-4',
     name: 'General Assessment Sample',
     description: 'Standard dental X-ray for comprehensive evaluation',
@@ -90,15 +82,13 @@ const SAMPLE_XRAYS: SampleXRay[] = [
 const analysisTypeLabels: Record<AnalysisType, string> = {
   cavity: 'Cavity Detection',
   opg: 'OPG Classification',
-  'tooth-id': 'Tooth Identification',
   general: 'General Assessment',
 };
 
 const analysisTypeColors: Record<AnalysisType, string> = {
-  cavity: 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400',
-  opg: 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400',
-  'tooth-id': 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400',
-  general: 'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400',
+  cavity: 'bg-red-500 dark:bg-red-600 text-white border border-black',
+  opg: 'bg-blue-500 dark:bg-blue-600 text-white border border-black',
+  general: 'bg-purple-500 dark:bg-purple-600 text-white border border-black',
 };
 
 export function SampleXRays({ onSelectSample, className = '' }: SampleXRaysProps) {
@@ -119,7 +109,7 @@ export function SampleXRays({ onSelectSample, className = '' }: SampleXRaysProps
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-2">
           <Sparkles className="w-5 h-5 text-blue-500" />
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+          <h3 className="text-lg font-semibold text-foreground">
             Sample X-Rays
           </h3>
         </div>
@@ -164,10 +154,10 @@ export function SampleXRays({ onSelectSample, className = '' }: SampleXRaysProps
           <button
             key={sample.id}
             onClick={() => handleSampleClick(sample)}
-            className="group relative bg-white dark:bg-gray-800 rounded-lg border-2 border-gray-200 dark:border-gray-700 hover:border-blue-500 dark:hover:border-blue-500 transition-all overflow-hidden text-left"
+            className="group relative bg-card text-card-foreground rounded-lg border-2 border-border hover:border-blue-500 dark:hover:border-blue-500 transition-all overflow-hidden text-left"
           >
             {/* Image placeholder */}
-            <div className="aspect-video bg-gray-100 dark:bg-gray-900 flex items-center justify-center relative overflow-hidden">
+            <div className="aspect-video bg-muted flex items-center justify-center relative overflow-hidden">
               <ImageIcon className="w-12 h-12 text-gray-400" />
               
               {/* Hover overlay */}
@@ -182,12 +172,12 @@ export function SampleXRays({ onSelectSample, className = '' }: SampleXRaysProps
             {/* Content */}
             <div className="p-3 space-y-2">
               <div className="flex items-start justify-between">
-                <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100 line-clamp-1">
+                <h4 className="text-sm font-semibold text-card-foreground line-clamp-1">
                   {sample.name}
                 </h4>
               </div>
               
-              <p className="text-xs text-gray-600 dark:text-gray-400 line-clamp-2">
+              <p className="text-xs text-muted-foreground line-clamp-2">
                 {sample.description}
               </p>
 
@@ -216,8 +206,8 @@ export function SampleXRays({ onSelectSample, className = '' }: SampleXRaysProps
       )}
 
       {/* Note */}
-      <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg">
-        <p className="text-sm text-blue-700 dark:text-blue-400">
+      <div className="mt-6 p-4 bg-blue-500 dark:bg-blue-600 border border-black rounded-lg">
+        <p className="text-sm text-white">
           <strong>Note:</strong> These are placeholder sample images. In production, actual dental
           X-ray images would be provided here for demonstration purposes.
         </p>

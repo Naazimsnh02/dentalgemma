@@ -6,10 +6,10 @@ import sys
 
 # Endpoint URLs
 ENDPOINTS = {
-    "health": "https://naazimsnh02--dentalgemma-dentalgemmamodel-health.modal.run",
-    "chat": "https://naazimsnh02--dentalgemma-dentalgemmamodel-chat.modal.run",
-    "xray": "https://naazimsnh02--dentalgemma-dentalgemmamodel-analyze-xray.modal.run",
-    "assess": "https://naazimsnh02--dentalgemma-dentalgemmamodel-assess-case.modal.run"
+    "health": "https://sumaiyanaazim--dentalgemma-dentalgemmamodel-health.modal.run",
+    "chat": "https://sumaiyanaazim--dentalgemma-dentalgemmamodel-chat.modal.run",
+    "xray": "https://sumaiyanaazim--dentalgemma-dentalgemmamodel-analyze-xray.modal.run",
+    "assess": "https://sumaiyanaazim--dentalgemma-dentalgemmamodel-assess-case.modal.run"
 }
 
 def print_result(name, response, time_taken=None):

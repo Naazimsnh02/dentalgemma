@@ -20,7 +20,7 @@ const features: Feature[] = [
     icon: ScanLine,
     title: 'X-Ray Analysis',
     description:
-      'Upload dental X-rays for instant AI-powered cavity detection, OPG classification, tooth identification, and comprehensive radiographic assessment.',
+      'Upload dental X-rays for instant AI-powered cavity detection, OPG classification, and comprehensive radiographic assessment.',
   },
   {
     icon: ClipboardList,

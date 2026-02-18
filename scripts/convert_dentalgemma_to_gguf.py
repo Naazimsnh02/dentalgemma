@@ -58,18 +58,39 @@ os.environ["HF_HUB_ENABLE_HF_TRANSFER"] = "1"
 !git clone --depth 1 https://github.com/ggml-org/llama.cpp.git /content/llama.cpp
 
 # %%
-# Build llama.cpp (CPU build is sufficient for conversion + quantization)
-# GPU build only needed if you want to test inference in this notebook
+# %%
+# Determine the correct multimodal CLI target
+# Modern llama.cpp uses `llama-mtmd-cli`, older experimental branches used `llama-gemma3-cli`
+import os
+
+cmake_path = "/content/llama.cpp/CMakeLists.txt"
+target_cli = "llama-mtmd-cli" # Default for Feb 2026
+
+if os.path.exists(cmake_path):
+    with open(cmake_path, "r") as f:
+        content = f.read()
+        if "llama-mtmd-cli" in content:
+            target_cli = "llama-mtmd-cli"
+        elif "llama-gemma3-cli" in content:
+            target_cli = "llama-gemma3-cli"
+        elif "llama-llava-cli" in content:
+            # Fallback for generic multimodal if specific ones aren't found
+            target_cli = "llama-llava-cli"
+
+print(f"🎯 Targeted Multimodal CLI: {target_cli}")
+
+# %%
+# Build llama.cpp with the detected target
 !cd /content/llama.cpp && cmake -B build \
     -DBUILD_SHARED_LIBS=OFF \
     -DGGML_CUDA=ON \
     -DLLAMA_CURL=OFF && \
-    cmake --build build -j$(nproc) --target llama-quantize llama-mtmd-cli llama-cli
+    cmake --build build -j$(nproc) --target llama-quantize {target_cli} llama-cli
 
 # %%
 # Verify builds
 !ls -lh /content/llama.cpp/build/bin/llama-quantize
-!ls -lh /content/llama.cpp/build/bin/llama-mtmd-cli
+!ls -lh /content/llama.cpp/build/bin/{target_cli}
 
 # %% [markdown]
 # ## 3. Download DentalGemma from HuggingFace
@@ -107,6 +128,45 @@ print("✅ Download complete!")
 #
 # This converts the full model weights to GGUF format in BF16 precision.
 # The BF16 GGUF will be ~7.8 GB — we'll quantize it next.
+#
+# **Patch:** MedGemma 1.5 (Jan 2026) ships a tokenizer whose hash isn't
+# registered in llama.cpp yet. We patch `convert_hf_to_gguf.py` to add it.
+
+# %%
+# Patch llama.cpp's converter to recognize DentalGemma/MedGemma 1.5 tokenizer
+CONVERT_SCRIPT = "/content/llama.cpp/convert_hf_to_gguf.py"
+TOKENIZER_HASH = "789696f5946cc0fc59371f39f6097cafed196b3acded6140432f26bbb1ae1669"
+
+with open(CONVERT_SCRIPT, "r") as f:
+    lines = f.readlines()
+
+if TOKENIZER_HASH not in "".join(lines):
+    # Find the line with the raise NotImplementedError about BPE pre-tokenizer
+    # and insert our hash check just before it, matching the file's indentation
+    new_lines = []
+    patched = False
+    for line in lines:
+        if not patched and 'raise NotImplementedError("BPE pre-tokenizer was not recognized' in line:
+            # Detect the indentation of the raise line
+            indent = line[:len(line) - len(line.lstrip())]
+            # Insert our hash check before the raise, turning the raise into an else
+            new_lines.append(f'{indent}if chkhsh == "{TOKENIZER_HASH}":\n')
+            new_lines.append(f'{indent}    # DentalGemma / MedGemma 1.5 (Gemma 3 tokenizer)\n')
+            new_lines.append(f'{indent}    res = "default"\n')
+            new_lines.append(f'{indent}else:\n')
+            new_lines.append(f'{indent}    {line.lstrip()}')
+            patched = True
+        else:
+            new_lines.append(line)
+
+    if patched:
+        with open(CONVERT_SCRIPT, "w") as f:
+            f.writelines(new_lines)
+        print(f"✅ Patched convert_hf_to_gguf.py with tokenizer hash: {TOKENIZER_HASH[:16]}...")
+    else:
+        print("⚠️ Could not find the raise NotImplementedError line to patch")
+else:
+    print("✅ Tokenizer hash already recognized — no patch needed")
 
 # %%
 !cd /content/llama.cpp && python convert_hf_to_gguf.py \
@@ -124,19 +184,46 @@ print("✅ Download complete!")
 # This creates a separate `mmproj.gguf` file (~860 MB).
 
 # %%
-# Check if the Gemma 3 vision encoder conversion script exists
-!ls /content/llama.cpp/examples/llava/gemma3_convert_encoder_to_gguf.py 2>/dev/null || \
-    echo "⚠️ Script not found — checking alternative locations..."
+# %%
+# Find the correct vision encoder conversion script
+import glob
+
+# Search for the script in examples/llava or examples/gemma3
+possible_paths = [
+    "/content/llama.cpp/examples/llava/gemma3_convert_encoder_to_gguf.py",
+    "/content/llama.cpp/examples/gemma3/gemma3_convert_encoder_to_gguf.py",
+    "/content/llama.cpp/examples/llava/convert_image_encoder_to_gguf.py" # Fallback
+]
+
+vision_script = None
+for path in possible_paths:
+    if os.path.exists(path):
+        vision_script = path
+        break
+
+if not vision_script:
+    # Try a broader search
+    found = glob.glob("/content/llama.cpp/examples/**/gemma3*convert*encoder*.py", recursive=True)
+    if found:
+        vision_script = found[0]
+
+if vision_script:
+    print(f"✅ Found vision conversion script: {vision_script}")
+    # Install pillow if needed (the script usually needs it)
+    !pip install -q pillow
+    
+    # Convert the vision encoder
+    !python {vision_script} \
+        -m {MODEL_DIR} \
+        --output {OUTPUT_DIR}/dentalgemma-mmproj-bf16.gguf
+else:
+    print("❌ ERROR: Could not find gemma3_convert_encoder_to_gguf.py or verified equivalent.")
+    print("Please check the llama.cpp version or file structure.")
+    # Halt execution to prevent confusion
+    raise FileNotFoundError("Vision encoder script not found")
 
 # %%
-# Install any extra deps the vision conversion script might need
-!pip install -q pillow
-
-# %%
-# Convert the vision encoder to mmproj GGUF
-!cd /content/llama.cpp && python examples/llava/gemma3_convert_encoder_to_gguf.py \
-    {MODEL_DIR} \
-    --output {OUTPUT_DIR}/dentalgemma-mmproj-bf16.gguf
+!ls -lh {OUTPUT_DIR}/dentalgemma-mmproj-bf16.gguf
 
 # %%
 !ls -lh {OUTPUT_DIR}/dentalgemma-mmproj-bf16.gguf
@@ -217,18 +304,18 @@ print(f"Total size (Q4_K_M + mmproj): ", end="")
 
 # %%
 # Test multimodal inference (text + image)
-# This uses the llama-mtmd-cli (multimodal CLI)
+# This uses the dynamically determined multimodal CLI (llama-mtmd-cli or equivalent)
 if os.path.exists("/content/test_xray.jpg"):
     print("🔍 Running multimodal inference test...")
     !echo "Analyze this dental X-ray for any abnormalities." | \
-        /content/llama.cpp/build/bin/llama-mtmd-cli \
+        /content/llama.cpp/build/bin/{target_cli} \
         -m {OUTPUT_DIR}/dentalgemma-4b-Q4_K_M.gguf \
         --mmproj {OUTPUT_DIR}/dentalgemma-mmproj-f16.gguf \
         --image /content/test_xray.jpg \
         -n 200 \
         -ngl 99 \
         --no-conversation \
-        -p "<start_of_turn>user\n<start_of_image>Analyze this dental X-ray for any abnormalities.<end_of_turn>\n<start_of_turn>model\n"
+        -p "<start_of_turn>user\nAnalyze this dental X-ray for any abnormalities.<end_of_turn>\n<start_of_turn>model\n"
 else:
     print("⚠️ No test image available — skipping multimodal test")
 

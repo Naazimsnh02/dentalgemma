@@ -161,7 +161,7 @@ export default function XRayAnalysisPage() {
     <div className="container mx-auto px-4 py-8 max-w-7xl">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
+        <h1 className="text-3xl font-bold text-foreground mb-2">
           X-Ray Analysis
         </h1>
         <p className="text-gray-600 dark:text-gray-400">
@@ -173,8 +173,8 @@ export default function XRayAnalysisPage() {
       {step === 'upload' && (
         <div className="space-y-8">
           {/* Upload section */}
-          <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">
+          <div className="bg-card text-card-foreground rounded-lg border shadow-sm p-6">
+            <h2 className="text-xl font-semibold mb-4">
               Upload X-Ray
             </h2>
             <XRayUploader onUpload={handleFileUpload} onError={setError} />
@@ -182,15 +182,14 @@ export default function XRayAnalysisPage() {
 
           {/* Analysis type selector */}
           {imageUrl && (
-            <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
-              <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">
+            <div className="bg-card text-card-foreground rounded-lg border shadow-sm p-6">
+              <h2 className="text-xl font-semibold mb-4">
                 Select Analysis Type
               </h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {[
                   { value: 'cavity', label: 'Cavity Detection', desc: 'Detect and count cavities' },
                   { value: 'opg', label: 'OPG Classification', desc: 'Classify panoramic X-rays' },
-                  { value: 'tooth-id', label: 'Tooth Identification', desc: 'Count and identify teeth' },
                   { value: 'general', label: 'General Assessment', desc: 'Comprehensive evaluation' },
                 ].map((type) => (
                   <button
@@ -202,7 +201,7 @@ export default function XRayAnalysisPage() {
                         : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
                     }`}
                   >
-                    <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-1">
+                    <h3 className="font-semibold mb-1">
                       {type.label}
                     </h3>
                     <p className="text-sm text-gray-600 dark:text-gray-400">{type.desc}</p>
@@ -222,7 +221,7 @@ export default function XRayAnalysisPage() {
           )}
 
           {/* Sample X-rays */}
-          <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
+          <div className="bg-card text-card-foreground rounded-lg border shadow-sm p-6">
             <SampleXRays onSelectSample={handleSampleSelect} />
           </div>
 
@@ -236,12 +235,12 @@ export default function XRayAnalysisPage() {
       )}
 
       {step === 'analyzing' && (
-        <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-12">
+        <div className="bg-card text-card-foreground rounded-lg border shadow-sm p-12">
           <div className="max-w-md mx-auto text-center space-y-6">
             <Loader2 className="w-16 h-16 text-blue-500 animate-spin mx-auto" />
             
             <div>
-              <h2 className="text-2xl font-semibold text-gray-900 dark:text-gray-100 mb-2">
+              <h2 className="text-2xl font-semibold mb-2">
                 Analyzing X-Ray...
               </h2>
               <p className="text-gray-600 dark:text-gray-400">{progressMessage}</p>
@@ -276,8 +275,8 @@ export default function XRayAnalysisPage() {
           {/* Results layout */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* Left: Image viewer */}
-            <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
-              <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">
+            <div className="bg-card text-card-foreground rounded-lg border shadow-sm p-6">
+              <h2 className="text-xl font-semibold mb-4">
                 X-Ray Image
               </h2>
               <XRayViewer
@@ -288,9 +287,9 @@ export default function XRayAnalysisPage() {
             </div>
 
             {/* Right: Analysis results */}
-            <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
+            <div className="bg-card text-card-foreground rounded-lg border shadow-sm p-6">
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
+                <h2 className="text-xl font-semibold">
                   Analysis Results
                 </h2>
                 <button

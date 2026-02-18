@@ -525,7 +525,7 @@ def test():
     print("    Use the URLs below to test your endpoints:\n")
     
     # Get the base URL (dev environment when running with 'modal run')
-    base_url = "https://naazimsnh02--dentalgemma-dentalgemmamodel"
+    base_url = "https://sumaiyanaazim--dentalgemma-dentalgemmamodel"
     
     print("📡 Deployed Endpoints:")
     print(f"   Health:     {base_url}-health-dev.modal.run")
