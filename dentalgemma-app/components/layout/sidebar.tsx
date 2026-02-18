@@ -37,7 +37,7 @@ const navItems: NavItem[] = [
     icon: LayoutDashboard,
   },
   {
-    title: 'X-Ray Analysis',
+    title: 'Image Analysis',
     href: '/xray-analysis',
     icon: Microscope,
   },

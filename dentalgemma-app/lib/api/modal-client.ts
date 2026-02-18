@@ -273,11 +273,12 @@ export class ModalClient {
       const base64Image = await toBase64(image);
 
       // Determine the question based on analysis type
+      // Note: The actual structured prompts are in the Modal backend
+      // These are fallback questions if the backend doesn't apply structured prompts
       const questions: Record<AnalysisType, string> = {
-        cavity: 'Analyze this dental X-ray for cavities. Provide cavity count (0, 1, 2, or 3+), classification (normal or cavity), and confidence scores.',
-        opg: 'Classify this OPG (panoramic) X-ray into one of these categories: Healthy, Caries, Impacted, BDC-BDR, Infection, or Fractured. Provide detailed findings.',
-        'tooth-id': 'Identify and count all teeth in this X-ray. Provide total tooth count and classify each tooth type.',
-        general: 'Provide a comprehensive systematic evaluation of this dental X-ray. Include quality assessment and all clinical findings.',
+        cavity: 'Analyze this dental X-ray for cavities. Respond ONLY in JSON format: { "findings": ["..."], "confidence": 0.0-1.0, "cavityCount": "0"|"1"|"2"|"3+", "classification": "normal"|"cavity", "recommendations": ["..."] }.',
+        opg: 'Classify this OPG (panoramic) X-ray. Respond ONLY in JSON format: { "findings": ["..."], "confidence": 0.0-1.0, "pathologyClass": "Healthy"|"Caries"|"Impacted"|"BDC-BDR"|"Infection"|"Fractured", "recommendations": ["..."] }.',
+        general: 'Provide a comprehensive systematic evaluation of this dental X-ray. Respond ONLY in JSON format: { "findings": ["..."], "confidence": 0.0-1.0, "urgency": "emergency"|"urgent"|"routine"|"home-care", "qualityAssessment": "string", "reportSections": ["..."], "recommendations": ["..."] }.',
       };
 
       const question = questions[analysisType];
@@ -299,7 +300,21 @@ export class ModalClient {
       // Parse response into structured format
       const processingTime = Math.max(Date.now() - startTime, 1); // Ensure at least 1ms
 
-      // Create base analysis object
+      // Check if we have structured JSON response from backend (direct object)
+      if ((response as any).xray_analysis) {
+        const xrayData = (response as any).xray_analysis;
+        return this.createAnalysisFromData(analysisType, xrayData, response.analysis, processingTime);
+      }
+
+      // Try to parse JSON from the analysis string (which might contain thought traces)
+      const parsedJSON = this.cleanAndParseResponse(response.analysis);
+
+      if (parsedJSON) {
+        console.log('Using parsed JSON data for X-Ray analysis');
+        return this.createAnalysisFromData(analysisType, parsedJSON, response.analysis, processingTime);
+      }
+
+      // Fallback: Parse plain text response (legacy)
       const baseAnalysis = {
         id: crypto.randomUUID(),
         imageId: crypto.randomUUID(),
@@ -323,6 +338,59 @@ export class ModalClient {
         { error }
       );
     }
+  }
+
+  /**
+   * Clean and parse JSON from AI response, handling thought traces and markdown
+   */
+  private cleanAndParseResponse(text: string): any {
+    try {
+      if (!text) return null;
+
+      // 1. Remove <thought>...</thought> or <unused94>thought... blocks
+      // This regex matches <unused94>thought... and keeps non-greedy until it finds valid JSON start
+      let cleanText = text.replace(/<unused\d+>thought[\s\S]*?(?=\{)/, '').trim();
+      
+      // Also remove standard xml-style thought tags if present
+      cleanText = cleanText.replace(/<thought>[\s\S]*?<\/thought>/gi, '').trim();
+
+      // 2. Extract JSON block if marked with markdown code blocks
+      const jsonBlockMatch = cleanText.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
+      if (jsonBlockMatch) {
+        cleanText = jsonBlockMatch[1].trim();
+      }
+
+      // 3. Find the first '{' and last '}' to isolate the JSON object
+      const jsonStart = cleanText.indexOf('{');
+      const jsonEnd = cleanText.lastIndexOf('}');
+      
+      if (jsonStart !== -1 && jsonEnd !== -1 && jsonEnd > jsonStart) {
+        const jsonStr = cleanText.substring(jsonStart, jsonEnd + 1);
+        return JSON.parse(jsonStr);
+      }
+      
+      return null;
+    } catch (e) {
+      console.warn('Failed to parse JSON from analysis text:', e);
+      return null;
+    }
+  }
+
+  private createAnalysisFromData(analysisType: AnalysisType, data: any, originalText: string, processingTime: number): XRayAnalysis {
+    const baseAnalysis = {
+      id: crypto.randomUUID(),
+      imageId: crypto.randomUUID(),
+      findings: Array.isArray(data.findings) ? data.findings : this.extractFindings(originalText),
+      confidence: (typeof data.confidence === 'number' && data.confidence >= 0 && data.confidence <= 1) 
+        ? data.confidence 
+        : this.extractConfidence(originalText),
+      urgency: this.validateUrgency(data.urgency) || this.determineUrgency(originalText, analysisType),
+      recommendations: Array.isArray(data.recommendations) ? data.recommendations : this.extractRecommendations(originalText),
+      processingTime,
+      timestamp: new Date(),
+    };
+
+    return this.createTypedAnalysisFromJSON(analysisType, baseAnalysis, data);
   }
 
   /**
@@ -505,63 +573,190 @@ export class ModalClient {
 
   // Helper methods for parsing responses
 
-  private extractFindings(text: string): string[] {
-    // If the text contains markdown headers, preserve the structure
-    if (text.includes('##') || text.includes('###')) {
-      return [text.trim()];
+  private validateUrgency(urgency: any): UrgencyLevel | null {
+    const validLevels: UrgencyLevel[] = ['emergency', 'urgent', 'routine', 'home-care'];
+    if (typeof urgency === 'string' && validLevels.includes(urgency as UrgencyLevel)) {
+      return urgency as UrgencyLevel;
     }
+    return null;
+  }
 
-    // Extract bullet points or numbered lists
-    const findings: string[] = [];
-    const lines = text.split('\n');
+  private createTypedAnalysisFromJSON(
+    type: AnalysisType,
+    base: any,
+    jsonData: any
+  ): XRayAnalysis {
+    switch (type) {
+      case 'cavity':
+        return {
+          ...base,
+          type: 'cavity',
+          cavityCount: this.validateCavityCount(jsonData.cavityCount) || '0',
+          classification: this.validateClassification(jsonData.classification) || 'normal',
+        };
+
+      case 'opg':
+        return {
+          ...base,
+          type: 'opg',
+          pathologyClass: this.validateOPGClass(jsonData.pathologyClass) || 'Healthy',
+        };
+
+      case 'general':
+        return {
+          ...base,
+          type: 'general',
+          reportSections: Array.isArray(jsonData.reportSections) ? jsonData.reportSections : [],
+          qualityAssessment: typeof jsonData.qualityAssessment === 'string' 
+            ? jsonData.qualityAssessment 
+            : 'Good quality image suitable for diagnostic purposes',
+        };
+    }
+  }
+
+  private validateCavityCount(count: any): '0' | '1' | '2' | '3+' | null {
+    const validCounts = ['0', '1', '2', '3+'];
+    if (typeof count === 'string' && validCounts.includes(count)) {
+      return count as '0' | '1' | '2' | '3+';
+    }
+    return null;
+  }
+
+  private validateClassification(classification: any): 'normal' | 'cavity' | null {
+    if (classification === 'normal' || classification === 'cavity') {
+      return classification;
+    }
+    return null;
+  }
+
+  private validateOPGClass(pathologyClass: any): 'Healthy' | 'Caries' | 'Impacted' | 'BDC-BDR' | 'Infection' | 'Fractured' | null {
+    const validClasses = ['Healthy', 'Caries', 'Impacted', 'BDC-BDR', 'Infection', 'Fractured'];
+    if (typeof pathologyClass === 'string' && validClasses.includes(pathologyClass)) {
+      return pathologyClass as any;
+    }
+    return null;
+  }
+
+  private extractFindings(text: string): string[] {
+    // 1. Try to isolate the "Findings" section
+    // Regex matches "## Findings" or "**Findings**" until the next header or end of string
+    const sectionMatch = text.match(/(?:##|\*\*)\s*Findings?(?:Details)?(?:\*\*)?[:\s]*\n([\s\S]*?)(?=\n(?:##|\*\*)|$)/i);
     
-    for (const line of lines) {
-      const trimmed = line.trim();
-      if (trimmed.match(/^[-*•]\s+/) || trimmed.match(/^\d+\.\s+/)) {
-        findings.push(trimmed.replace(/^[-*•]\s+/, '').replace(/^\d+\.\s+/, ''));
+    let targetText = text;
+    if (sectionMatch) {
+      targetText = sectionMatch[1].trim();
+    } else {
+      // If no specific subsection, try to avoid the Recommendations section if it exists
+      const recStart = text.search(/(?:##|\*\*)\s*Recommendations?/i);
+      if (recStart > 0) {
+        targetText = text.substring(0, recStart);
       }
     }
 
-    return findings.length > 0 ? findings : [text.trim()];
+    // 2. Extract bullet points
+    const findings: string[] = [];
+    const lines = targetText.split('\n');
+    
+    for (const line of lines) {
+      const trimmed = line.trim();
+      // Match bullet points, numbered lists, or lines starting with - or *
+      if (trimmed.match(/^[-*•]\s+/) || trimmed.match(/^\d+\.\s+/)) {
+        const cleaned = trimmed.replace(/^[-*•]\s+/, '').replace(/^\d+\.\s+/, '');
+        // Filtering out empty or very short lines, and header-like lines
+        if (cleaned.length > 5 && !cleaned.startsWith('**') && !cleaned.endsWith(':')) {
+          findings.push(cleaned);
+        }
+      }
+    }
+    
+    // If we found specific section bullets, return them
+    if (findings.length > 0) return findings;
+
+    // Fallback: If no bullets found in section, return the whole section text as one item (if not too long)
+    if (sectionMatch && targetText.length > 0) {
+      return [targetText];
+    }
+
+    // Final Fallback: If original text structure was used and failed to parse
+    return [text.substring(0, 500) + '...']; 
   }
 
   private extractConfidence(text: string): number {
-    // Look for confidence mentions
-    const confidenceMatch = text.match(/confidence[:\s]+(\d+)%/i);
-    if (confidenceMatch) {
-      return parseInt(confidenceMatch[1]) / 100;
+    // Look for confidence mentions in various formats
+    const patterns = [
+      /confidence[:\s]+(\d+)%/i,
+      /confidence[:\s]+(\d+\.\d+)/i,
+      /\*\*Confidence\*\*[:\s]+(\d+)%/i, // Matches **Confidence**: 85%
+      /\*\*Confidence:\*\*[:\s]*(\d+)%/i, // Matches **Confidence:** 85%
+      /\*\*confidence\*\*[:\s]+(\d+)%/i,
+      /Confidence[:\s]+(?:\w+\s+)?\((\d+)%\)/i, // Matches Confidence: High (85%)
+      /confidence\s*score[:\s]+(\d+)%/i,
+      /confidence[:\s]+\[?(\d+)%\]?/i,
+      /"confidence":\s*(\d+\.?\d*)/i,  // JSON format
+    ];
+    
+    for (const pattern of patterns) {
+      const match = text.match(pattern);
+      if (match) {
+        let value = parseFloat(match[1]);
+        // Normalize 0-100 to 0-1
+        if (value > 1) value = value / 100;
+        return value;
+      }
     }
 
-    // Default confidence based on text certainty
-    if (text.toLowerCase().includes('definite') || text.toLowerCase().includes('clear')) {
+    // Default confidence based on text certainty keywords (only if no explicit confidence found)
+    const lowerText = text.toLowerCase();
+    if (lowerText.includes('definite') || lowerText.includes('clear') || lowerText.includes('certain')) {
       return 0.9;
     }
-    if (text.toLowerCase().includes('likely') || text.toLowerCase().includes('probable')) {
-      return 0.7;
+    if (lowerText.includes('likely') || lowerText.includes('probable') || lowerText.includes('consistent with')) {
+      return 0.75;
     }
-    if (text.toLowerCase().includes('possible') || text.toLowerCase().includes('may')) {
-      return 0.5;
+    // Only use 0.6 for "possible" or "may", not for "suggest" which is too common
+    if (lowerText.includes('possible') || lowerText.includes('may be') || lowerText.includes('suspicious for')) {
+      return 0.6;
     }
 
-    return 0.8; // Default
+    // Default to a reasonable high confidence if nothing else found but analysis succeeded
+    return 0.8; 
   }
 
   private determineUrgency(text: string, analysisType: AnalysisType): UrgencyLevel {
     const lowerText = text.toLowerCase();
 
+    // Look for explicit urgency level mentions in structured format
+    const urgencyMatch = text.match(/\*\*urgency\s+level\*\*[:\s]+(\w+(?:-\w+)?)/i);
+    if (urgencyMatch) {
+      const level = urgencyMatch[1].toLowerCase();
+      if (level === 'emergency') return 'emergency';
+      if (level === 'urgent') return 'urgent';
+      if (level === 'routine') return 'routine';
+      if (level === 'home-care' || level === 'home care') return 'home-care';
+    }
+
+    // Keyword-based urgency detection
     if (
       lowerText.includes('emergency') ||
+      lowerText.includes('immediate attention') ||
+      lowerText.includes('severe pain') ||
+      lowerText.includes('acute infection')
+    ) {
+      return 'emergency';
+    }
+
+    if (
       lowerText.includes('urgent') ||
-      lowerText.includes('immediate') ||
-      lowerText.includes('severe')
+      lowerText.includes('prompt treatment') ||
+      lowerText.includes('soon as possible')
     ) {
       return 'urgent';
     }
 
     if (
-      lowerText.includes('moderate') ||
-      lowerText.includes('attention') ||
-      lowerText.includes('monitor')
+      lowerText.includes('routine') ||
+      lowerText.includes('schedule appointment') ||
+      lowerText.includes('moderate')
     ) {
       return 'routine';
     }
@@ -570,39 +765,37 @@ export class ModalClient {
   }
 
   private extractRecommendations(text: string): string[] {
-    // If the text contains markdown headers in the recommendations section, preserve it
-    if ((text.includes('##') || text.includes('###')) && text.toLowerCase().includes('recommend')) {
-      // Find where recommendations start
-      const lines = text.split('\n');
-      let recStartIndex = -1;
-      for (let i = 0; i < lines.length; i++) {
-        if (lines[i].toLowerCase().includes('recommend')) {
-          recStartIndex = i;
-          break;
-        }
-      }
-      
-      if (recStartIndex !== -1) {
-        return [lines.slice(recStartIndex).join('\n').trim()];
+    // 1. Try to isolate the "Recommendations" section
+    const sectionMatch = text.match(/(?:##|\*\*)\s*(?:Clinical\s+)?(?:Priority\s+)?Recommendations?\s*(?:Details)?(?:\*\*)?[:\s]*\n([\s\S]*?)(?=\n(?:##|\*\*)|$)/i);
+    
+    let targetText = '';
+    if (sectionMatch) {
+      targetText = sectionMatch[1].trim();
+    } else {
+      // Look for any part starting with "Recommendations" even without fancy headers
+      const match = text.match(/Recommendations?[:\s]*\n([\s\S]*)/i);
+      if (match) {
+        targetText = match[1].trim();
       }
     }
+
+    if (!targetText) return [];
 
     const recommendations: string[] = [];
-    const lines = text.split('\n');
-    let inRecommendations = false;
-
+    const lines = targetText.split('\n');
+    
     for (const line of lines) {
       const trimmed = line.trim();
-      
-      if (trimmed.toLowerCase().includes('recommend')) {
-        inRecommendations = true;
-        continue; // Skip the "Recommendations:" header line if it matches bullet pattern
-      }
-
-      if (inRecommendations && (trimmed.match(/^[-*•]\s+/) || trimmed.match(/^\d+\.\s+/))) {
-        recommendations.push(trimmed.replace(/^[-*•]\s+/, '').replace(/^\d+\.\s+/, ''));
+      // Match bullet points, numbered lists
+      if (trimmed.match(/^[-*•]\s+/) || trimmed.match(/^\d+\.\s+/)) {
+        const cleaned = trimmed.replace(/^[-*•]\s+/, '').replace(/^\d+\.\s+/, '');
+        if (cleaned.length > 5 && !cleaned.startsWith('**') && !cleaned.endsWith(':')) {
+          recommendations.push(cleaned);
+        }
       }
     }
+    
+    return recommendations.length > 0 ? recommendations : ['Consult with a dental professional for proper diagnosis and treatment.'];
 
     return recommendations.length > 0 ? recommendations : ['Consult with a dental professional for proper diagnosis and treatment.'];
   }
@@ -647,30 +840,93 @@ export class ModalClient {
   }
 
   private extractCavityCount(text: string): '0' | '1' | '2' | '3+' {
-    const match = text.match(/(\d+)\s*cav/i);
-    if (match) {
-      const count = parseInt(match[1]);
-      if (count === 0) return '0';
-      if (count === 1) return '1';
-      if (count === 2) return '2';
-      return '3+';
+    // Look for structured cavity count in markdown format
+    const patterns = [
+      /(?:Count\s*cavities|Cavity\s*Count)[:\s]+(\d+|\d+\+)/i,
+      /\*\*cavity\s+count\*\*[:\s]+(\d+|\d+\+)/i,
+      /cavity\s+count[:\s]+\[?(\d+|\d+\+)\]?/i,
+      /(\d+)\s+cav(?:ity|ities)\s+detected/i,
+      /detected\s+(\d+)\s+cav/i,
+    ];
+    
+    for (const pattern of patterns) {
+      const match = text.match(pattern);
+      if (match) {
+        const countStr = match[1];
+        if (countStr.includes('+')) {
+          return '3+';
+        }
+        const count = parseInt(countStr);
+        if (count === 0) return '0';
+        if (count === 1) return '1';
+        if (count === 2) return '2';
+        if (count >= 3) return '3+';
+      }
     }
+    
+    // Fallback: check for "no cavities" or "normal"
+    const lowerText = text.toLowerCase();
+    if (lowerText.includes('no cav') || lowerText.includes('0 cav')) {
+      return '0';
+    }
+    
     return '0';
   }
 
   private extractCavityClassification(text: string): 'normal' | 'cavity' {
-    return text.toLowerCase().includes('cavity') || text.toLowerCase().includes('caries')
+    // Look for structured classification in markdown format
+    const patterns = [
+      /(?:Classify|Classification)[:\s]+(normal|cavity\s+detected|cavity)/i,
+      /\*\*classification\*\*[:\s]+(normal|cavity\s+detected|cavity)/i,
+      /classification[:\s]+\[?"?(normal|cavity\s+detected|cavity)"?\]?/i,
+    ];
+    
+    for (const pattern of patterns) {
+      const match = text.match(pattern);
+      if (match) {
+        const classification = match[1].toLowerCase();
+        if (classification.includes('cavity')) return 'cavity';
+        if (classification.includes('normal')) return 'normal';
+      }
+    }
+    
+    // Fallback: keyword search
+    const lowerText = text.toLowerCase();
+    return lowerText.includes('cavity') || lowerText.includes('caries') || lowerText.includes('decay')
       ? 'cavity'
       : 'normal';
   }
 
   private extractOPGClass(text: string): 'Healthy' | 'Caries' | 'Impacted' | 'BDC-BDR' | 'Infection' | 'Fractured' {
+    // Look for structured classification in markdown format
+    const patterns = [
+      /\*\*primary\s+classification\*\*[:\s]+(healthy|caries|impacted|bdc-bdr|infection|fractured)/i,
+      /classification[:\s]+\[?"?(healthy|caries|impacted|bdc-bdr|infection|fractured)"?\]?/i,
+      /opg\s+classification[:\s]+(healthy|caries|impacted|bdc-bdr|infection|fractured)/i,
+    ];
+    
+    for (const pattern of patterns) {
+      const match = text.match(pattern);
+      if (match) {
+        const classification = match[1].toLowerCase();
+        if (classification === 'healthy') return 'Healthy';
+        if (classification === 'caries') return 'Caries';
+        if (classification === 'impacted') return 'Impacted';
+        if (classification === 'bdc-bdr') return 'BDC-BDR';
+        if (classification === 'infection') return 'Infection';
+        if (classification === 'fractured') return 'Fractured';
+      }
+    }
+    
+    // Fallback: keyword search with priority order
     const lowerText = text.toLowerCase();
     if (lowerText.includes('impacted')) return 'Impacted';
-    if (lowerText.includes('caries') || lowerText.includes('cavity')) return 'Caries';
-    if (lowerText.includes('infection') || lowerText.includes('abscess')) return 'Infection';
-    if (lowerText.includes('fracture') || lowerText.includes('broken')) return 'Fractured';
+    if (lowerText.includes('caries') || lowerText.includes('cavity') || lowerText.includes('decay')) return 'Caries';
+    if (lowerText.includes('infection') || lowerText.includes('abscess') || lowerText.includes('periapical')) return 'Infection';
+    if (lowerText.includes('fracture') || lowerText.includes('broken') || lowerText.includes('fractured')) return 'Fractured';
     if (lowerText.includes('bdc') || lowerText.includes('bdr')) return 'BDC-BDR';
+    if (lowerText.includes('healthy') || lowerText.includes('normal') || lowerText.includes('no significant')) return 'Healthy';
+    
     return 'Healthy';
   }
 
@@ -685,12 +941,56 @@ export class ModalClient {
   }
 
   private extractReportSections(text: string): string[] {
-    return text.split('\n\n').filter(s => s.trim().length > 0);
+    // Split by markdown headers (## or ###)
+    const sections: string[] = [];
+    const headerRegex = /^#{2,3}\s+(.+)$/gm;
+    const matches = [...text.matchAll(headerRegex)];
+    
+    if (matches.length > 0) {
+      for (let i = 0; i < matches.length; i++) {
+        const currentMatch = matches[i];
+        const nextMatch = matches[i + 1];
+        
+        const startIndex = currentMatch.index! + currentMatch[0].length;
+        const endIndex = nextMatch ? nextMatch.index! : text.length;
+        
+        const sectionContent = text.substring(startIndex, endIndex).trim();
+        
+        if (sectionContent.length > 0) {
+          // Include the header with the content
+          sections.push(`## ${currentMatch[1]}\n\n${sectionContent}`);
+        }
+      }
+      
+      return sections;
+    }
+    
+    // Fallback: split by double newlines
+    return text.split('\n\n').filter(s => s.trim().length > 20);
   }
 
   private extractQualityAssessment(text: string): string {
-    const match = text.match(/quality[:\s]+([^\n]+)/i);
-    return match ? match[1] : 'Good quality image';
+    // Look for Image Quality Assessment section
+    const qualityMatch = text.match(/##\s*Image\s+Quality\s+Assessment\s*\n([\s\S]*?)(?=\n##|$)/i);
+    if (qualityMatch) {
+      return qualityMatch[1].trim();
+    }
+    
+    // Look for technical quality mentions
+    const patterns = [
+      /\*\*technical\s+quality\*\*[:\s]+([^\n]+)/i,
+      /quality[:\s]+([^\n]+?)(?:\.|$)/i,
+      /image\s+quality[:\s]+([^\n]+)/i,
+    ];
+    
+    for (const pattern of patterns) {
+      const match = text.match(pattern);
+      if (match && match[1].trim().length > 5) {
+        return match[1].trim();
+      }
+    }
+    
+    return 'Good quality image suitable for diagnostic purposes';
   }
 
   private parseAssessment(text: string, processingTime: number): CaseAssessment {

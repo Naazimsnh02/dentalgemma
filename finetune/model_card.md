@@ -50,7 +50,7 @@ Built for the [MedGemma Impact Challenge](https://kaggle.com/competitions/med-ge
 ## 🎯 Model Description
 
 DentalGemma is a multimodal vision-language model that combines:
-- **Visual understanding** of dental X-rays (intraoral and panoramic radiographs)
+- **Visual understanding** of dental images (clinical photographs and radiographs)
 - **Clinical reasoning** for diagnosis, treatment planning, and patient counseling
 - **Structured assessment** following evidence-based dental protocols
 
@@ -63,7 +63,7 @@ The model was fine-tuned using LoRA (Low-Rank Adaptation) in a two-stage trainin
 
 | Capability | Description |
 |:-----------|:------------|
-| 🔍 **Cavity Detection** | Identify and count cavities in intraoral X-rays |
+| 🔍 **Cavity Detection** | Identify and count cavities in clinical dental photographs |
 | 🏥 **Pathology Classification** | Classify 6 dental conditions from panoramic X-rays (Healthy, Caries, Impacted Teeth, BDC-BDR, Infection, Fractured Teeth) |
 | 🦷 **Tooth Identification** | Count and classify tooth types from panoramic radiographs |
 | 📋 **Radiographic Assessment** | Systematic evaluation of dental radiographs |
@@ -76,10 +76,10 @@ The model was fine-tuned using LoRA (Low-Rank Adaptation) in a two-stage trainin
 - **Samples:** 1,654 (1,488 train / 166 validation)
 - **Format:** Dental X-ray images paired with clinical questions and expert answers
 - **Sources:** 
-  - Dental Cavity Detection Dataset (418 samples)
-  - Dental OPG Classification (517 samples, 6 classes)
-  - Dental Radiography (655 samples, deduplicated)
-  - Panoramic Dental X-ray Dataset (64 samples with tooth annotations)
+  - Dental Cavity Detection Dataset (418 samples, clinical photographs)
+  - Dental OPG Classification (517 samples, 6 classes, panoramic radiographs)
+  - Dental Radiography (655 samples, intraoral radiographs)
+  - Panoramic Dental X-ray Dataset (64 samples, panoramic radiographs)
 
 ### DentalGemma Instruct (Text-only)
 - **Dataset:** [naazimsnh02/dentalgemma-instruct](https://huggingface.co/datasets/naazimsnh02/dentalgemma-instruct)

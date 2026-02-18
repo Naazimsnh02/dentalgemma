@@ -2,7 +2,7 @@
 
 **Fine-tuning [MedGemma 1.5 4B IT](https://huggingface.co/google/medgemma-1.5-4b-it) for dental diagnostics — a novel domain adaptation for the [MedGemma Impact Challenge](https://kaggle.com/competitions/med-gemma-impact-challenge).**
 
-MedGemma was **not** trained on dental data, making this a true novel task adaptation. This project builds a complete pipeline — from raw dental datasets to fine-tuned model — adapting Google's medical foundation model for dental X-ray analysis, pathology classification, and clinical case assessment using full-precision LoRA fine-tuning.
+MedGemma was **not** trained on dental data, making this a true novel task adaptation. This project builds a complete pipeline — from raw dental datasets to fine-tuned model — adapting Google's medical foundation model for dental image analysis (radiographs and clinical photos), pathology classification, and clinical case assessment using full-precision LoRA fine-tuning.
 
 [![HuggingFace VQA Dataset](https://img.shields.io/badge/🤗%20Dataset-dentalgemma--vqa-blue)](https://huggingface.co/datasets/naazimsnh02/dentalgemma-vqa)
 [![HuggingFace Instruct Dataset](https://img.shields.io/badge/🤗%20Dataset-dentalgemma--instruct-blue)](https://huggingface.co/datasets/naazimsnh02/dentalgemma-instruct)
@@ -35,7 +35,7 @@ MedGemma was **not** trained on dental data, making this a true novel task adapt
 
 Dental diagnostics remains an underserved domain in medical AI. While MedGemma excels at general medical imaging tasks, it has no exposure to dental-specific data. **DentalGemma** bridges this gap by:
 
-1. **Curating** 6 diverse dental datasets spanning X-ray analysis, pathology classification, tooth identification, and clinical case assessment
+1. **Curating** 6 diverse dental datasets spanning radiography, clinical photography, pathology classification, and clinical case assessment
 2. **Preprocessing** raw data into standardized HuggingFace datasets with clinically accurate chat-format annotations
 3. **Fine-tuning** MedGemma 1.5 4B IT using full bfloat16 LoRA with critical fixes for label masking and image preprocessing
 
@@ -43,7 +43,7 @@ Dental diagnostics remains an underserved domain in medical AI. While MedGemma e
 
 | Capability | Description |
 |:-----------|:------------|
-| 🔍 **Cavity Detection** | Identify and count cavities in intraoral X-rays |
+| 🔍 **Cavity Detection** | Identify and count cavities in clinical dental photographs |
 | 🏥 **Pathology Classification** | Classify 6 dental conditions from panoramic X-rays |
 | 🦷 **Tooth Identification** | Count and classify tooth types from panoramic radiographs |
 | 📋 **Radiographic Assessment** | Systematic evaluation of dental radiographs |
@@ -112,7 +112,7 @@ Two curated HuggingFace datasets power the fine-tuning:
 | **Total** | **1,654** |
 
 **Features:**
-- `image` — Dental X-ray (PIL Image)
+- `image` — Dental image (Clinical photo or Radiograph)
 - `messages` — JSON string of chat-format conversation (system / user[image + text] / assistant)
 - `source` — Dataset origin tag
 - `condition` — Dental condition label
@@ -123,7 +123,7 @@ Two curated HuggingFace datasets power the fine-tuning:
   {"role": "system", "content": "You are an expert dental clinician and radiologist AI assistant..."},
   {"role": "user", "content": [
     {"type": "image"},
-    {"type": "text", "text": "Analyze this dental X-ray image..."}
+    {"type": "text", "text": "Analyze this dental image..."}
   ]},
   {"role": "assistant", "content": "This dental X-ray shows 2 cavity region(s) detected..."}
 ]
@@ -154,7 +154,7 @@ Each case includes structured clinical information: patient demographics, chief 
 
 | # | Dataset | Raw Size | Output Samples | Image Type | Task | License |
 |:-:|:--------|:---------|:--------------:|:-----------|:-----|:--------|
-| 1 | **[Dental Cavity Detection](https://www.kaggle.com/datasets/maazmakhdoom/dental-cavity-detection-dataset)** | 418 images + YOLOv5-OBB labels | ~418 | Intraoral X-rays | Cavity/normal detection with region counts | CC BY-SA 4.0 |
+| 1 | **[Dental Cavity Detection](https://www.kaggle.com/datasets/maazmakhdoom/dental-cavity-detection-dataset)** | 418 images + YOLOv5-OBB labels | ~418 | Clinical Photographs | Cavity/normal detection with region counts | CC BY-SA 4.0 |
 | 2 | **[Dental OPG Classification](https://www.kaggle.com/datasets/imtkaggleteam/dental-opg-xray-dataset)** (v1 + v4, merged & deduped) | 517 images, 6 classes | ~517 | Panoramic OPG | Pathology classification | CC BY-NC-SA 4.0 |
 | 3 | **[Dental Radiography](https://www.kaggle.com/datasets/imtkaggleteam/dental-radiography)** (deduped by numeric prefix) | 1,272 → 655 unique | ~655 | Intraoral X-rays | General radiographic assessment | CC BY-NC-SA 4.0 |
 | 4 | **[Panoramic Dental Xray](https://www.kaggle.com/datasets/orvile/panoramic-dental-xray-dataset)** (firstpart + secondpart) | 64 images + polygon/COCO annotations | ~64 | Panoramic X-rays | Tooth counting & type identification | CC BY-SA 4.0 |

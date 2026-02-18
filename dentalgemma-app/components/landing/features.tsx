@@ -18,9 +18,9 @@ interface Feature {
 const features: Feature[] = [
   {
     icon: ScanLine,
-    title: 'X-Ray Analysis',
+    title: 'Dental Image Analysis',
     description:
-      'Upload dental X-rays for instant AI-powered cavity detection, OPG classification, and comprehensive radiographic assessment.',
+      'Upload dental images (clinical photos or radiographs) for instant AI-powered cavity detection, OPG classification, and comprehensive assessment.',
   },
   {
     icon: ClipboardList,

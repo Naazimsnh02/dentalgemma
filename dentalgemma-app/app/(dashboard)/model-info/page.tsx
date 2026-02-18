@@ -30,19 +30,19 @@ import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 const trainingDatasets = [
-  { name: 'Cavity Detection (VQA)', samples: 418, type: 'X-Ray', description: 'Binary classification: normal vs cavity, with cavity count (0–3+)' },
+  { name: 'Cavity Detection (VQA)', samples: 418, type: 'Photo', description: 'Binary classification: normal vs cavity, with cavity count (0–3+)' },
   { name: 'OPG Classification (VQA)', samples: 517, type: 'X-Ray', description: '6-class pathology: Healthy, Caries, Impacted, BDC-BDR, Infection, Fractured' },
-  { name: 'General Radiographic Assessment (VQA)', samples: 655, type: 'X-Ray', description: 'Systematic evaluation, clinical findings, quality assessment' },
+  { name: 'General Radiographic Assessment (VQA)', samples: 655, type: 'X-Ray', description: 'Evaluate intraoral X-rays: systematic evaluation, clinical findings, etc.' },
   { name: 'Clinical Case Assessment (Instruct)', samples: 2494, type: 'Clinical', description: '98 dental conditions with expert-validated diagnosis and treatment plans' },
   { name: 'Conversational Dental Q&A (Instruct)', samples: 0, type: 'Clinical', description: 'Supplementary dialog data for voice consultation mode' },
 ];
 
 const capabilities = [
   {
-    title: 'Dental X-Ray Analysis',
+    title: 'Dental Image Analysis',
     icon: ImageIcon,
-    description: 'Multimodal VQA on dental radiographs — cavity detection, OPG pathology classification, and general radiographic assessment.',
-    examples: ['Cavity count detection', 'Panoramic OPG classification', 'Radiographic quality assessment'],
+    description: 'Multimodal VQA on dental images — cavity detection (photos), OPG classification (panoramic), and systematic radiographic assessment (intraoral).',
+    examples: ['Cavity photo detection', 'Panoramic OPG classification', 'Intraoral radiographic assessment'],
   },
   {
     title: 'Clinical Case Assessment',
@@ -188,7 +188,7 @@ export default function ModelInfoPage() {
                     Vision Encoder
                   </div>
                   <p className="text-sm text-muted-foreground">
-                    SigLIP vision encoder for processing dental radiographs. Handles panoramic OPG,
+                    SigLIP vision encoder for processing dental images. Handles clinical photos, panoramic OPG,
                     periapical, and bitewing X-ray formats.
                   </p>
                   <Badge variant="secondary">Multimodal</Badge>

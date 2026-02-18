@@ -46,21 +46,21 @@ configs:
 
 # DentalGemma VQA Dataset
 
-A multimodal Visual Question Answering dataset for fine-tuning MedGemma 1.5 4B IT on dental X-ray analysis — a **novel task** not present in MedGemma's original training data.
+A multimodal Visual Question Answering dataset for fine-tuning MedGemma 1.5 4B IT on dental image analysis (radiographs and clinical photos) — a **novel task** not present in MedGemma's original training data.
 
 ## Dataset Details
 
 - **Total samples**: ~1,650 image-text pairs
 - **Format**: Chat-format messages (system/user/assistant) with embedded images
 - **Splits**: 90% train / 10% validation
-- **Image types**: Intraoral X-rays, panoramic (OPG) X-rays, dental radiographs
+- **Image types**: Clinical dental photos, Intraoral X-rays (bitewings/periapicals), panoramic (OPG) X-rays
 - **Tasks**: Cavity detection, pathology classification, tooth identification, radiographic assessment
 
 ## Sources
 
 | Source | Samples | Task | Image Type |
 |--------|---------|------|------------|
-| Dental Cavity Detection | ~418 | Cavity/normal detection with counts | Intraoral X-rays |
+| Dental Cavity Detection | ~418 | Cavity/normal detection with counts | Clinical Photographs |
 | Dental OPG Classification | ~517 | 6-class pathology classification | Panoramic OPG |
 | Dental Radiography | ~655 | General radiographic assessment | Intraoral X-rays |
 | Panoramic Dental Xray | ~64 | Tooth counting & type identification | Panoramic X-rays |
@@ -84,7 +84,7 @@ Each row has a `messages` field (JSON string) compatible with HuggingFace's chat
 
 ```python
 from datasets import load_dataset
-dataset = load_dataset("YOUR_ORG/dentalgemma-vqa")
+dataset = load_dataset("naazimsnh02/dentalgemma-vqa")
 ```
 
 ## Built For

@@ -18,64 +18,70 @@ interface SampleXRaysProps {
   className?: string;
 }
 
-// Sample X-ray images for testing
-// In production, these would be actual dental X-ray images
 const SAMPLE_XRAYS: SampleXRay[] = [
   {
-    id: 'sample-1',
-    name: 'Cavity Detection Sample',
-    description: 'Bitewing X-ray showing potential cavities',
+    id: 'cavity-1',
+    name: 'Cavity Detection - Clinical Photo',
+    description: 'Clinical photograph for cavity and normal region detection',
     imageUrl: '/samples/cavity-sample.jpg',
     analysisType: 'cavity',
-    thumbnail: '/samples/cavity-sample-thumb.jpg',
+    thumbnail: '/samples/cavity-sample.jpg',
   },
   {
-    id: 'sample-2',
-    name: 'OPG Panoramic Sample',
-    description: 'Full panoramic radiograph for pathology classification',
-    imageUrl: '/samples/opg-sample.jpg',
+    id: 'cavity-2',
+    name: 'Cavity Detection - Intraoral Photo',
+    description: 'Intraoral photograph for cavity assessment',
+    imageUrl: '/samples/cavity-sample-2.jpg',
+    analysisType: 'cavity',
+    thumbnail: '/samples/cavity-sample-2.jpg',
+  },
+  {
+    id: 'cavity-3',
+    name: 'Cavity Detection - Dental Photo',
+    description: 'Clinical dental photograph showing tooth decay patterns',
+    imageUrl: '/samples/cavity-sample-3.jpg',
+    analysisType: 'cavity',
+    thumbnail: '/samples/cavity-sample-3.jpg',
+  },
+  {
+    id: 'opg-caries',
+    name: 'OPG - Caries',
+    description: 'Panoramic X-ray revealing dental caries (tooth decay)',
+    imageUrl: '/samples/opg-caries.jpg',
     analysisType: 'opg',
-    thumbnail: '/samples/opg-sample-thumb.jpg',
+    thumbnail: '/samples/opg-caries.jpg',
   },
   {
-    id: 'sample-4',
-    name: 'General Assessment Sample',
-    description: 'Standard dental X-ray for comprehensive evaluation',
+    id: 'opg-impacted',
+    name: 'OPG - Impacted Teeth',
+    description: 'Panoramic X-ray showing impacted wisdom teeth',
+    imageUrl: '/samples/opg-impacted.jpg',
+    analysisType: 'opg',
+    thumbnail: '/samples/opg-impacted.jpg',
+  },
+  {
+    id: 'opg-infection',
+    name: 'OPG - Infection',
+    description: 'Panoramic X-ray showing signs of dental infection',
+    imageUrl: '/samples/opg-infection.jpg',
+    analysisType: 'opg',
+    thumbnail: '/samples/opg-infection.jpg',
+  },
+  {
+    id: 'general-1',
+    name: 'General Assessment - Intraoral',
+    description: 'Intraoral radiograph for systematic dental assessment',
     imageUrl: '/samples/general-sample.jpg',
     analysisType: 'general',
-    thumbnail: '/samples/general-sample-thumb.jpg',
+    thumbnail: '/samples/general-sample.jpg',
   },
   {
-    id: 'sample-5',
-    name: 'Multiple Cavities',
-    description: 'X-ray showing multiple cavity formations',
-    imageUrl: '/samples/multiple-cavities.jpg',
-    analysisType: 'cavity',
-    thumbnail: '/samples/multiple-cavities-thumb.jpg',
-  },
-  {
-    id: 'sample-6',
-    name: 'Impacted Tooth',
-    description: 'OPG showing impacted wisdom tooth',
-    imageUrl: '/samples/impacted-tooth.jpg',
-    analysisType: 'opg',
-    thumbnail: '/samples/impacted-tooth-thumb.jpg',
-  },
-  {
-    id: 'sample-7',
-    name: 'Healthy Teeth',
-    description: 'Normal dental X-ray with no pathology',
-    imageUrl: '/samples/healthy-teeth.jpg',
+    id: 'general-2',
+    name: 'General Assessment - Bitewing',
+    description: 'Intraoral bitewing radiograph for clinical evaluation',
+    imageUrl: '/samples/general-sample-2.jpg',
     analysisType: 'general',
-    thumbnail: '/samples/healthy-teeth-thumb.jpg',
-  },
-  {
-    id: 'sample-8',
-    name: 'Root Canal Case',
-    description: 'X-ray showing root canal treatment indication',
-    imageUrl: '/samples/root-canal.jpg',
-    analysisType: 'general',
-    thumbnail: '/samples/root-canal-thumb.jpg',
+    thumbnail: '/samples/general-sample-2.jpg',
   },
 ];
 
@@ -110,7 +116,7 @@ export function SampleXRays({ onSelectSample, className = '' }: SampleXRaysProps
         <div className="flex items-center space-x-2">
           <Sparkles className="w-5 h-5 text-blue-500" />
           <h3 className="text-lg font-semibold text-foreground">
-            Sample X-Rays
+            Sample Images
           </h3>
         </div>
 
@@ -144,8 +150,7 @@ export function SampleXRays({ onSelectSample, className = '' }: SampleXRaysProps
 
       {/* Description */}
       <p className="text-sm text-gray-600 dark:text-gray-400">
-        Click on any sample X-ray below to analyze it with DentalGemma AI. These are demo images
-        for testing purposes.
+        Click on any sample image below to analyze it with DentalGemma AI.
       </p>
 
       {/* Gallery grid */}
@@ -158,10 +163,14 @@ export function SampleXRays({ onSelectSample, className = '' }: SampleXRaysProps
           >
             {/* Image placeholder */}
             <div className="aspect-video bg-muted flex items-center justify-center relative overflow-hidden">
-              <ImageIcon className="w-12 h-12 text-gray-400" />
+              <img 
+                src={sample.imageUrl} 
+                alt={sample.name} 
+                className="absolute inset-0 w-full h-full object-cover"
+              />
               
               {/* Hover overlay */}
-              <div className="absolute inset-0 bg-blue-600/90 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+              <div className="absolute inset-0 bg-blue-600/90 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center z-10">
                 <div className="text-center text-white">
                   <Sparkles className="w-8 h-8 mx-auto mb-2" />
                   <p className="text-sm font-medium">Click to Analyze</p>
@@ -205,13 +214,7 @@ export function SampleXRays({ onSelectSample, className = '' }: SampleXRaysProps
         </div>
       )}
 
-      {/* Note */}
-      <div className="mt-6 p-4 bg-blue-500 dark:bg-blue-600 border border-black rounded-lg">
-        <p className="text-sm text-white">
-          <strong>Note:</strong> These are placeholder sample images. In production, actual dental
-          X-ray images would be provided here for demonstration purposes.
-        </p>
-      </div>
+
     </div>
   );
 }

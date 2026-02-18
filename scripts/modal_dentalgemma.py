@@ -149,17 +149,133 @@ class DentalGemmaModel:
             question = request.question
             max_tokens = request.max_tokens
             
+            # Determine analysis type from question
+            analysis_type = "general"
+            if "cavity" in question.lower() or "cavities" in question.lower():
+                analysis_type = "cavity"
+            elif "opg" in question.lower() or "panoramic" in question.lower():
+                analysis_type = "opg"
+            
+            # Build structured JSON prompt based on analysis type
+            structured_prompts = {
+                "cavity": """Analyze this dental X-ray for cavities. You MUST respond with ONLY a valid JSON object. Do not include any text before or after the JSON. Do not add explanations or markdown fences. Just the JSON object.
+
+Use this exact schema:
+
+{
+  "cavityCount": "0 or 1 or 2 or 3+",
+  "classification": "normal or cavity",
+  "confidence": 0.85,
+  "urgency": "emergency or urgent or routine or home-care",
+  "findings": [
+    "Finding 1: Location and extent of any cavities detected",
+    "Finding 2: Severity assessment (early, moderate, advanced)",
+    "Finding 3: Affected tooth surfaces or regions",
+    "Finding 4: Any secondary findings"
+  ],
+  "clinicalSignificance": "Brief paragraph explaining the clinical implications of the findings",
+  "recommendations": [
+    "Recommendation 1: Immediate treatment needs",
+    "Recommendation 2: Follow-up timing",
+    "Recommendation 3: Preventive measures",
+    "Recommendation 4: Specialist referral if needed"
+  ]
+}
+
+CRITICAL RULES:
+- Output ONLY the JSON object, nothing else
+- No explanatory text before or after
+- No markdown code fences
+- The "cavityCount" must be exactly one of: "0", "1", "2", "3+"
+- The "classification" must be exactly one of: "normal", "cavity"
+- The "confidence" must be a number between 0 and 1 (e.g., 0.85 for 85%)
+- The "urgency" must be exactly one of: "emergency", "urgent", "routine", "home-care"
+- Provide 2-4 findings and 2-4 recommendations as strings in the arrays""",
+
+                "opg": """Classify this OPG (panoramic) X-ray. You MUST respond with ONLY a valid JSON object. Do not include any text before or after the JSON. Do not add explanations or markdown fences. Just the JSON object.
+
+Use this exact schema:
+
+{
+  "pathologyClass": "Healthy or Caries or Impacted or BDC-BDR or Infection or Fractured",
+  "confidence": 0.90,
+  "urgency": "emergency or urgent or routine or home-care",
+  "findings": [
+    "Dentition Status: Describe overall tooth count, missing teeth, and general dental health",
+    "Pathological Findings: List any abnormalities, lesions, or pathology detected with specific locations",
+    "Bone Assessment: Evaluate alveolar bone levels, trabecular pattern, and any bone pathology",
+    "TMJ and Sinuses: Comment on temporomandibular joints and maxillary sinuses if visible",
+    "Additional Observations: Any other clinically relevant findings"
+  ],
+  "recommendations": [
+    "Treatment priority 1",
+    "Specialist referral if needed",
+    "Follow-up imaging requirements",
+    "Preventive care measures"
+  ]
+}
+
+CRITICAL RULES:
+- Output ONLY the JSON object, nothing else
+- No explanatory text before or after
+- No markdown code fences
+- The "pathologyClass" must be exactly one of: "Healthy", "Caries", "Impacted", "BDC-BDR", "Infection", "Fractured"
+- The "confidence" must be a number between 0 and 1
+- The "urgency" must be exactly one of: "emergency", "urgent", "routine", "home-care"
+- Provide 3-5 findings and 3-5 recommendations""",
+
+                "general": """Provide a comprehensive systematic evaluation of this dental X-ray. You MUST respond with ONLY a valid JSON object. Do not include any text before or after the JSON. Do not add explanations, critiques, or markdown fences. Just the JSON object.
+
+Use this exact schema:
+
+{
+  "qualityAssessment": "Technical Quality: [Excellent/Good/Adequate/Poor]. Diagnostic Value: [Comment on clarity, positioning, and diagnostic utility]. Limitations: [Note any technical issues]",
+  "confidence": 0.85,
+  "urgency": "emergency or urgent or routine or home-care",
+  "findings": [
+    "Hard Tissue Evaluation: Examine teeth, restorations, and bone structures",
+    "Periapical Status: Assess root apices and periapical regions for pathology",
+    "Periodontal Assessment: Evaluate bone levels, lamina dura, and periodontal space",
+    "Restorations and Prosthetics: Document existing dental work and assess integrity",
+    "Pathological Findings: Identify any caries, infections, cysts, or other abnormalities"
+  ],
+  "reportSections": [
+    "Clinical Interpretation: Synthesize findings and their clinical significance in 2-3 sentences",
+    "Diagnostic Confidence: Overall confidence level and any factors limiting certainty"
+  ],
+  "recommendations": [
+    "Immediate/urgent needs if any",
+    "Routine treatment requirements",
+    "Preventive measures",
+    "Follow-up and monitoring plan"
+  ]
+}
+
+CRITICAL RULES:
+- Output ONLY the JSON object, nothing else
+- No explanatory text before or after
+- No critiques or comments
+- No markdown code fences
+- The "confidence" must be a number between 0 and 1
+- The "urgency" must be exactly one of: "emergency", "urgent", "routine", "home-care"
+- Provide 4-6 findings, 2-3 report sections, and 4-6 recommendations
+- Be thorough, systematic, and use appropriate dental terminology"""
+            }
+            
+            # Get the appropriate structured prompt
+            structured_question = structured_prompts.get(analysis_type, structured_prompts["general"])
+            
             # Prepare messages in chat format
             messages = [
                 {
                     "role": "system",
-                    "content": [{"type": "text", "text": "You are an expert dental clinician and radiologist AI assistant."}]
+                    "content": [{"type": "text", "text": "You are an expert dental clinician and radiologist AI assistant. When asked to provide JSON output, respond with ONLY the JSON object - no explanations, no critiques, no markdown fences, no additional text before or after. Provide detailed, structured analyses using proper dental terminology."}]
                 },
                 {
                     "role": "user",
                     "content": [
                         {"type": "image", "image": image},
-                        {"type": "text", "text": question}
+                        {"type": "text", "text": structured_question}
                     ]
                 }
             ]
@@ -187,15 +303,56 @@ class DentalGemmaModel:
             # Decode response
             analysis = self.processor.decode(generation, skip_special_tokens=True)
             
+            # Try to parse JSON from model output
+            import json
+            
+            xray_result = None
+            try:
+                # Strip any markdown fences if present
+                clean = analysis.strip()
+                
+                # Remove any text before the JSON (like "Here is the analysis:")
+                json_start = clean.find('{')
+                if json_start > 0:
+                    clean = clean[json_start:]
+                
+                # Remove any text after the JSON (like critiques or explanations)
+                # Find the last closing brace
+                json_end = clean.rfind('}')
+                if json_end > 0:
+                    clean = clean[:json_end + 1]
+                
+                # Handle markdown fences
+                if clean.startswith("```"):
+                    clean = clean.split("\n", 1)[1] if "\n" in clean else clean[3:]
+                if clean.endswith("```"):
+                    clean = clean[:-3]
+                clean = clean.strip()
+                if clean.startswith("json"):
+                    clean = clean[4:].strip()
+                
+                xray_result = json.loads(clean)
+                print(f"✅ Successfully parsed JSON response for {analysis_type} analysis")
+            except (json.JSONDecodeError, Exception) as parse_err:
+                print(f"⚠️ JSON parse failed for {analysis_type}, returning raw text: {parse_err}")
+                print(f"Raw response preview: {analysis[:200]}...")
+            
             processing_time = time.time() - start_time
             
-            return {
+            result = {
                 "success": True,
                 "analysis": analysis,
                 "processing_time": round(processing_time, 3),
                 "model": "dentalgemma-1.5-4b-it",
-                "type": "xray_analysis"
+                "type": "xray_analysis",
+                "analysis_type": analysis_type
             }
+            
+            # Add parsed JSON if available
+            if xray_result is not None:
+                result["xray_analysis"] = xray_result
+            
+            return result
             
         except Exception as e:
             return {

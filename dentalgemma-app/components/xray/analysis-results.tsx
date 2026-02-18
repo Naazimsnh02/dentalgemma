@@ -93,37 +93,7 @@ export function AnalysisResults({
           </div>
         );
 
-      case 'tooth-id':
-        return (
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <span className="text-sm font-medium text-muted-foreground">
-                Total Teeth:
-              </span>
-              <span className="text-lg font-bold text-foreground">
-                {analysis.toothCount}
-              </span>
-            </div>
-            {analysis.toothTypes.length > 0 && (
-              <div className="mt-4">
-                <p className="text-sm font-medium text-muted-foreground mb-2">
-                  Tooth Types:
-                </p>
-                <div className="space-y-1 max-h-40 overflow-y-auto">
-                  {analysis.toothTypes.map((tooth, index) => (
-                    <div
-                      key={index}
-                      className="flex items-center justify-between text-sm py-1 px-2 bg-muted rounded"
-                    >
-                      <span className="text-muted-foreground">{tooth.tooth}</span>
-                      <span className="text-foreground">{tooth.type}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-        );
+      /* tooth-id support removed as it is not supported by the backend model */
 
       case 'general':
         return (
@@ -132,25 +102,11 @@ export function AnalysisResults({
               <p className="text-sm font-medium text-muted-foreground mb-2">
                 Quality Assessment:
               </p>
-              <MarkdownRenderer content={analysis.qualityAssessment} className="text-sm" />
-            </div>
-            {analysis.reportSections.length > 0 && (
-              <div className="mt-4">
-                <p className="text-sm font-medium text-muted-foreground mb-2">
-                  Report Sections:
-                </p>
-                <div className="space-y-4">
-                  {analysis.reportSections.map((section, index) => (
-                    <div
-                      key={index}
-                      className="p-3 bg-muted/50 rounded-lg border border-border/50"
-                    >
-                      <MarkdownRenderer content={section} className="text-sm" />
-                    </div>
-                  ))}
-                </div>
+              <div className="p-3 bg-muted/50 rounded-lg border border-border/50">
+                <MarkdownRenderer content={analysis.qualityAssessment} className="text-sm prose prose-sm dark:prose-invert max-w-none" />
               </div>
-            )}
+            </div>
+            {/* Detailed Report removed as per user request */}
           </div>
         );
     }
@@ -196,11 +152,12 @@ export function AnalysisResults({
           <div className="space-y-3">
             {analysis.findings.map((finding, index) => (
               <div key={index} className="flex items-start space-x-2">
-                {!finding.includes('#') && (
+                {/* Only show bullet if finding doesn't start with markdown header */}
+                {!finding.trim().startsWith('#') && (
                   <span className="text-blue-500 mt-1.5 flex-shrink-0">•</span>
                 )}
                 <div className="flex-1 min-w-0">
-                  <MarkdownRenderer content={finding} className="text-sm" />
+                  <MarkdownRenderer content={finding} className="text-sm prose prose-sm dark:prose-invert max-w-none" />
                 </div>
               </div>
             ))}
@@ -217,9 +174,12 @@ export function AnalysisResults({
           <div className="space-y-3">
             {analysis.recommendations.map((recommendation, index) => (
               <div key={index} className="flex items-start space-x-2">
-                <CheckCircle className="w-4 h-4 text-green-500 mt-1 flex-shrink-0" />
+                {/* Only show checkmark if recommendation doesn't start with markdown header */}
+                {!recommendation.trim().startsWith('#') && (
+                  <CheckCircle className="w-4 h-4 text-green-500 mt-1 flex-shrink-0" />
+                )}
                 <div className="flex-1 min-w-0">
-                  <MarkdownRenderer content={recommendation} className="text-sm" />
+                  <MarkdownRenderer content={recommendation} className="text-sm prose prose-sm dark:prose-invert max-w-none" />
                 </div>
               </div>
             ))}

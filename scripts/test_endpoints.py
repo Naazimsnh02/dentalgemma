@@ -79,17 +79,25 @@ def test_xray(image_path):
         
         payload = {
             "image": encoded_string,
-            "question": "Describe the condition of the teeth and identify any pathologies.",
+            "question": 'Analyze this dental X-ray for cavities. Respond ONLY in JSON format: { "findings": ["..."], "confidence": 0.0-1.0, "cavityCount": "0"|"1"|"2"|"3+", "classification": "normal"|"cavity", "recommendations": ["..."] }.',
             "max_tokens": 512
         }
         
         response = requests.post(ENDPOINTS["xray"], json=payload)
+        # Uncomment to see raw response text for debugging
+        # print("Raw Response Text:")
+        # print(response.text[:2000] + "..." if len(response.text) > 2000 else response.text)
         print_result("X-Ray Analysis", response)
     except Exception as e:
         print(f"X-Ray Test Failed: {e}")
 
 if __name__ == "__main__":
-    print("🚀 Starting DentalGemma Endpoint Tests...")
+    # Force UTF-8 encoding for stdout to handle potential unicode in AI responses
+    import sys
+    import io
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
+    
+    print("Starting DentalGemma Endpoint Tests...")
     
     # 1. Test Health
     test_health()
@@ -108,4 +116,4 @@ if __name__ == "__main__":
     
     test_xray(image_path)
     
-    print("\n✅ Testing Complete.")
+    print("\nTesting Complete.")

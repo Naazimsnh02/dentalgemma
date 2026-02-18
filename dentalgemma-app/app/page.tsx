@@ -13,7 +13,6 @@ export default function Home() {
     <>
       <LandingNavbar />
       <Hero />
-      <StatsBar />
       <Features />
       <HowItWorks />
       <AIShowcase />

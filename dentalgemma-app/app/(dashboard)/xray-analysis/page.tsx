@@ -39,7 +39,7 @@ export default function XRayAnalysisPage() {
 
   const handleAnalyze = useCallback(async () => {
     if (!imageUrl) {
-      setError('Please upload or select an X-ray image');
+      setError('Please upload or select a dental image');
       return;
     }
 
@@ -162,10 +162,10 @@ export default function XRayAnalysisPage() {
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-foreground mb-2">
-          X-Ray Analysis
+          Dental Image Analysis
         </h1>
         <p className="text-gray-600 dark:text-gray-400">
-          Upload dental X-ray images for AI-powered analysis and diagnosis
+          Upload dental images (clinical photos or radiographs) for AI-powered analysis
         </p>
       </div>
 
@@ -175,7 +175,7 @@ export default function XRayAnalysisPage() {
           {/* Upload section */}
           <div className="bg-card text-card-foreground rounded-lg border shadow-sm p-6">
             <h2 className="text-xl font-semibold mb-4">
-              Upload X-Ray
+              Upload Dental Image
             </h2>
             <XRayUploader onUpload={handleFileUpload} onError={setError} />
           </div>
@@ -188,9 +188,9 @@ export default function XRayAnalysisPage() {
               </h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {[
-                  { value: 'cavity', label: 'Cavity Detection', desc: 'Detect and count cavities' },
-                  { value: 'opg', label: 'OPG Classification', desc: 'Classify panoramic X-rays' },
-                  { value: 'general', label: 'General Assessment', desc: 'Comprehensive evaluation' },
+                  { value: 'cavity', label: 'Cavity Detection', desc: 'Analyze clinical photos for cavities' },
+                  { value: 'opg', label: 'OPG Classification', desc: 'Classify panoramic radiographs' },
+                  { value: 'general', label: 'General Assessment', desc: 'Evaluate intraoral X-rays (bitewings/periapicals)' },
                 ].map((type) => (
                   <button
                     key={type.value}
@@ -214,9 +214,20 @@ export default function XRayAnalysisPage() {
                   onClick={handleAnalyze}
                   className="px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors"
                 >
-                  Analyze X-Ray
+                  Analyze Image
                 </button>
               </div>
+            </div>
+          )}
+
+          {/* Model training note */}
+          {imageUrl && (
+            <div className="bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-lg p-4">
+              <p className="text-sm text-amber-800 dark:text-amber-300">
+                <strong>Note:</strong> The cavity detection model was trained on clinical photographs, 
+                OPG classification on panoramic radiographs, and general assessment on intraoral radiographs. 
+                For best results, match your image type to the appropriate analysis mode.
+              </p>
             </div>
           )}
 
@@ -241,7 +252,7 @@ export default function XRayAnalysisPage() {
             
             <div>
               <h2 className="text-2xl font-semibold mb-2">
-                Analyzing X-Ray...
+                Analyzing Image...
               </h2>
               <p className="text-gray-600 dark:text-gray-400">{progressMessage}</p>
             </div>
@@ -269,7 +280,7 @@ export default function XRayAnalysisPage() {
             className="flex items-center space-x-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
-            <span>Analyze Another X-Ray</span>
+            <span>Analyze Another Image</span>
           </button>
 
           {/* Results layout */}
@@ -277,12 +288,12 @@ export default function XRayAnalysisPage() {
             {/* Left: Image viewer */}
             <div className="bg-card text-card-foreground rounded-lg border shadow-sm p-6">
               <h2 className="text-xl font-semibold mb-4">
-                X-Ray Image
+                Dental Image
               </h2>
               <XRayViewer
                 imageUrl={imageUrl}
                 annotations={analysis.visualData}
-                alt="Analyzed X-ray"
+                alt="Analyzed dental image"
               />
             </div>
 

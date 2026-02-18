@@ -28,8 +28,8 @@ interface QuickAction {
 
 const quickActions: QuickAction[] = [
   {
-    title: 'X-Ray Analysis',
-    description: 'Analyze dental X-rays with AI',
+    title: 'Image Analysis',
+    description: 'Analyze dental images with AI',
     href: '/xray-analysis',
     icon: Activity,
     color: 'bg-blue-500/10 text-blue-600 dark:text-blue-400',
