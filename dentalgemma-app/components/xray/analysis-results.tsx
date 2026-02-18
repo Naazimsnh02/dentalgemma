@@ -51,62 +51,65 @@ export function AnalysisResults({
 
   const renderTypeSpecificInfo = () => {
     switch (analysis.type) {
-      case 'cavity':
+      case 'photo':
         return (
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <span className="text-sm font-medium text-muted-foreground">
-                Cavity Count:
+                Condition:
               </span>
-              <span className="text-lg font-bold text-foreground">
-                {analysis.cavityCount}
-              </span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-sm font-medium text-muted-foreground">
-                Classification:
-              </span>
-              <span
-                className={`px-3 py-1 rounded-full text-sm font-medium border ${
-                  analysis.classification === 'cavity'
-                    ? 'bg-destructive text-destructive-foreground border-destructive'
-                    : 'bg-success text-success-foreground border-success'
-                }`}
-              >
-                {analysis.classification === 'cavity' ? 'Cavity Detected' : 'Normal'}
+              <span className={`px-3 py-1 rounded-full text-sm font-medium border ${
+                analysis.condition === 'decay'
+                  ? 'bg-destructive text-destructive-foreground border-destructive'
+                  : analysis.condition === 'other'
+                  ? 'bg-orange-100 text-orange-800 border-orange-300'
+                  : 'bg-success text-success-foreground border-success'
+              }`}>
+                {analysis.condition === 'decay' ? 'Decay Detected' 
+                  : analysis.condition === 'other' ? 'Other Finding' 
+                  : 'Healthy'}
               </span>
             </div>
-          </div>
-        );
-
-      case 'opg':
-        return (
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <span className="text-sm font-medium text-muted-foreground">
-                Pathology Class:
-              </span>
-              <span className="px-3 py-1 rounded-full text-sm font-medium bg-primary text-primary-foreground border border-primary">
-                {analysis.pathologyClass}
-              </span>
-            </div>
-          </div>
-        );
-
-      /* tooth-id support removed as it is not supported by the backend model */
-
-      case 'general':
-        return (
-          <div className="space-y-2">
-            <div>
-              <p className="text-sm font-medium text-muted-foreground mb-2">
-                Quality Assessment:
-              </p>
-              <div className="p-3 bg-muted/50 rounded-lg border border-border/50">
-                <MarkdownRenderer content={analysis.qualityAssessment} className="text-sm prose prose-sm dark:prose-invert max-w-none" />
+            {analysis.severity && (
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium text-muted-foreground">
+                  Severity:
+                </span>
+                <span className="text-sm font-medium text-foreground capitalize">
+                  {analysis.severity}
+                </span>
               </div>
-            </div>
-            {/* Detailed Report removed as per user request */}
+            )}
+          </div>
+        );
+
+      case 'xray':
+        return (
+          <div className="space-y-2">
+            {analysis.pathologyClass && (
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium text-muted-foreground">
+                  Primary Pathology:
+                </span>
+                <span className="px-3 py-1 rounded-full text-sm font-medium bg-primary text-primary-foreground border border-primary">
+                  {analysis.pathologyClass}
+                </span>
+              </div>
+            )}
+            {analysis.differentialDiagnosis && analysis.differentialDiagnosis.length > 0 && (
+              <div>
+                <span className="text-sm font-medium text-muted-foreground">
+                  Differential Diagnosis:
+                </span>
+                <ul className="mt-1 space-y-1">
+                  {analysis.differentialDiagnosis.map((dx, i) => (
+                    <li key={i} className="text-sm text-foreground flex items-center gap-2">
+                      <span className="text-muted-foreground">•</span> {dx}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </div>
         );
     }
@@ -123,7 +126,7 @@ export function AnalysisResults({
               {urgency.label} Priority
             </h3>
             <p className="text-sm text-muted-foreground mt-1">
-              Analysis Type: {analysis.type.toUpperCase()}
+              Analysis Type: {analysis.type === 'photo' ? 'Clinical Photo' : 'X-Ray Analysis'}
             </p>
           </div>
           <div className="text-right">

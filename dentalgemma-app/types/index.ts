@@ -7,7 +7,7 @@
 // ----------------------------------------------------------------------------
 
 export type UrgencyLevel = 'emergency' | 'urgent' | 'routine' | 'home-care';
-export type AnalysisType = 'cavity' | 'opg' | 'tooth-id' | 'general';
+export type AnalysisType = 'photo' | 'xray';
 export type ImageFormat = 'jpeg' | 'png' | 'dicom';
 export type VoiceMode = 'standard' | 'enhanced';
 export type Theme = 'light' | 'dark' | 'system';
@@ -58,31 +58,19 @@ export interface XRayAnalysisBase {
   timestamp: Date;
 }
 
-export interface CavityAnalysis extends XRayAnalysisBase {
-  type: 'cavity';
-  cavityCount: '0' | '1' | '2' | '3+';
-  classification: 'normal' | 'cavity';
-  perToothConfidence?: Record<string, number>;
+export interface PhotoAnalysis extends XRayAnalysisBase {
+  type: 'photo';
+  condition: 'healthy' | 'decay' | 'other';
+  severity?: 'mild' | 'moderate' | 'severe';
 }
 
-export interface OPGAnalysis extends XRayAnalysisBase {
-  type: 'opg';
-  pathologyClass: 'Healthy' | 'Caries' | 'Impacted' | 'BDC-BDR' | 'Infection' | 'Fractured';
+export interface XRayImageAnalysis extends XRayAnalysisBase {
+  type: 'xray';
+  pathologyClass?: 'Healthy' | 'Caries' | 'Impacted' | 'BDC-BDR' | 'Infection' | 'Fractured';
+  differentialDiagnosis?: string[];
 }
 
-export interface ToothIDAnalysis extends XRayAnalysisBase {
-  type: 'tooth-id';
-  toothCount: number;
-  toothTypes: Array<{ tooth: string; type: string }>;
-}
-
-export interface GeneralAnalysis extends XRayAnalysisBase {
-  type: 'general';
-  reportSections: string[];
-  qualityAssessment: string;
-}
-
-export type XRayAnalysis = CavityAnalysis | OPGAnalysis | ToothIDAnalysis | GeneralAnalysis;
+export type XRayAnalysis = PhotoAnalysis | XRayImageAnalysis;
 
 // ----------------------------------------------------------------------------
 // Clinical Case Types

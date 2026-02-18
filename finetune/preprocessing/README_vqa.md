@@ -28,13 +28,13 @@ dataset_info:
     dtype: string
   splits:
   - name: train
-    num_bytes: 527704509
-    num_examples: 1488
+    num_bytes: 852704509
+    num_examples: 2276
   - name: validation
-    num_bytes: 58870261
-    num_examples: 166
-  download_size: 585143981
-  dataset_size: 586574770
+    num_bytes: 94870261
+    num_examples: 253
+  download_size: 945143981
+  dataset_size: 947574770
 configs:
 - config_name: default
   data_files:
@@ -50,7 +50,7 @@ A multimodal Visual Question Answering dataset for fine-tuning MedGemma 1.5 4B I
 
 ## Dataset Details
 
-- **Total samples**: ~1,650 image-text pairs
+- **Total samples**: ~2,529 image-text pairs
 - **Format**: Chat-format messages (system/user/assistant) with embedded images
 - **Splits**: 90% train / 10% validation
 - **Image types**: Clinical dental photos, Intraoral X-rays (bitewings/periapicals), panoramic (OPG) X-rays
@@ -60,10 +60,10 @@ A multimodal Visual Question Answering dataset for fine-tuning MedGemma 1.5 4B I
 
 | Source | Samples | Task | Image Type |
 |--------|---------|------|------------|
-| Dental Cavity Detection | ~418 | Cavity/normal detection with counts | Clinical Photographs |
-| Dental OPG Classification | ~517 | 6-class pathology classification | Panoramic OPG |
-| Dental Radiography | ~655 | General radiographic assessment | Intraoral X-rays |
-| Panoramic Dental Xray | ~64 | Tooth counting & type identification | Panoramic X-rays |
+| Dental Cavity Detection | 642 | Cavity/normal detection with counts | Clinical Photographs |
+| Dental OPG Classification | 1,214 | 6-class pathology classification | Panoramic OPG |
+| Panoramic Dental Xray | 128 | Tooth counting & type identification | Panoramic X-rays |
+| OPG Object Detection | 545 | 6-class localized pathology detection | Panoramic OPG |
 
 ## Message Format
 

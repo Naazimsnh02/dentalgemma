@@ -56,37 +56,39 @@ DentalGemma is a multimodal vision-language model that combines:
 
 The model was fine-tuned using LoRA (Low-Rank Adaptation) in a two-stage training pipeline. Unlike typical QLoRA approaches, this model was trained in **full bfloat16 precision** on an NVIDIA A100 GPU to maximize diagnostic accuracy and avoid quantization artifacts.
 
-1. **Stage 1 (VQA):** Multimodal training on 1,654 dental X-ray image-text pairs
+1. **Stage 1 (VQA):** Multimodal training on 2,529 dental X-ray image-text pairs
 2. **Stage 2 (Instruct):** Text-only training on 2,494 clinical case assessments
 
 ### Key Capabilities
 
 | Capability | Description |
 |:-----------|:------------|
-| 🔍 **Cavity Detection** | Identify and count cavities in clinical dental photographs |
-| 🏥 **Pathology Classification** | Classify 6 dental conditions from panoramic X-rays (Healthy, Caries, Impacted Teeth, BDC-BDR, Infection, Fractured Teeth) |
-| 🦷 **Tooth Identification** | Count and classify tooth types from panoramic radiographs |
-| 📋 **Radiographic Assessment** | Systematic evaluation of dental radiographs |
-| 💊 **Clinical Case Analysis** | Structured diagnosis, treatment planning, antibiotic considerations, follow-up scheduling |
+| 📸 **Clinical Photo Analysis** | Analyze clinical dental photographs for cavity detection, oral health assessment, and severity evaluation with compositionally-varied clinical descriptions |
+| 🏥 **Pathology Classification** | Classify 6 dental conditions from panoramic X-rays (Healthy, Caries, Impacted Teeth, BDC-BDR, Infection, Fractured Teeth) with differential diagnosis and urgency assessment |
+| 📍 **Location-Aware Diagnosis** | Identify and localize pathological findings in panoramic radiographs using dental region mapping (e.g., "right mandibular region", "anterior maxillary region") |
+| 🦷 **Dentition Assessment** | Evaluate dentition completeness, tooth type identification, and anatomical overview from panoramic radiographs with clinical context |
+| 📋 **Structured Radiographic Reports** | Generate systematic dental reports with region-specific findings, differential diagnoses, and clinical recommendations |
+| 💊 **Clinical Case Analysis** | Comprehensive diagnosis, treatment planning, antibiotic considerations, and follow-up scheduling for 98 dental conditions |
 
 ## 📊 Training Data
 
 ### DentalGemma VQA (Multimodal)
 - **Dataset:** [naazimsnh02/dentalgemma-vqa](https://huggingface.co/datasets/naazimsnh02/dentalgemma-vqa)
-- **Samples:** 1,654 (1,488 train / 166 validation)
-- **Format:** Dental X-ray images paired with clinical questions and expert answers
+- **Samples:** ~2,529 VQA pairs from 4 source datasets (90/10 train/validation split)
+- **Format:** Dental images (clinical photographs and radiographs) paired with diverse clinical questions and compositionally-generated expert answers
 - **Sources:** 
-  - Dental Cavity Detection Dataset (418 samples, clinical photographs)
-  - Dental OPG Classification (517 samples, 6 classes, panoramic radiographs)
-  - Dental Radiography (655 samples, intraoral radiographs)
-  - Panoramic Dental X-ray Dataset (64 samples, panoramic radiographs)
+  - **Clinical Photo Analysis** (~642 pairs from 418 images): Clinical dental photographs with YOLO-OBB annotations for cavity/normal regions. Generates 1-2 questions per image across 5 question types (binary classification, clinical description, severity assessment, image type identification, treatment recommendations).
+  - **OPG Classification** (~1,214 pairs from 517 images): Panoramic radiographs in 6 pathology classes (Healthy Teeth, Caries, Impacted teeth, BDC-BDR, Infection, Fractured Teeth). Generates 2-3 questions per image across 5 question types (open-ended diagnosis, yes/no pathology screening, differential diagnosis, clinical urgency, healthy vs abnormal).
+  - **Panoramic Dental X-ray** (~128 pairs from 64 images): Panoramic radiographs with VIA polygon annotations (tooth segmentation) and COCO annotations (8 tooth type classes). Generates 2 questions per image focusing on dentition completeness, anatomical overview, and tooth type identification.
+  - **OPG Object Detection** (~545 pairs from 232 images): Panoramic radiographs with YOLO bounding box annotations for 6 pathology classes. Generates 2-3 location-aware questions per image by converting normalized bounding box coordinates to dental region descriptions (e.g., "right mandibular region", "anterior maxillary region"). Question types include localized findings, condition presence screening, structured radiographic reports, and region-specific queries.
 
 ### DentalGemma Instruct (Text-only)
 - **Dataset:** [naazimsnh02/dentalgemma-instruct](https://huggingface.co/datasets/naazimsnh02/dentalgemma-instruct)
-- **Samples:** 2,494 (2,244 train / 250 validation)
-- **Format:** Clinical case presentations with structured assessments
-- **Coverage:** 98 unique dental conditions
-- **Source:** Wildstash dental-2.5k-instruct dataset
+- **Samples:** 2,494 clinical cases (2,246 train / 248 validation)
+- **Format:** Synthetic clinical case presentations with structured expert assessments
+- **Coverage:** 98 unique dental conditions across diverse patient demographics and clinical scenarios
+- **Source:** [Wildstash/dental-2.5k-instruct](https://huggingface.co/datasets/Wildstash/dental-2.5k-instruct)
+- **Case Structure:** Each case includes patient demographics, chief complaint, clinical findings, radiographic findings, medical history, and a comprehensive structured assessment with diagnosis, management plan, antibiotic considerations, follow-up recommendations, and patient counseling
 
 All data follows a consistent chat template format (system/user/assistant) with a standardized system prompt emphasizing evidence-based assessment and clinical correlation.
 
@@ -285,17 +287,32 @@ The LoRA fine-tuning adds trainable adapters (rank 64) to all linear layers. The
 ### Qualitative Assessment
 
 The model demonstrates strong performance on:
-- **Cavity detection accuracy** in intraoral X-rays
-- **Pathology classification** from panoramic radiographs
-- **Structured clinical reasoning** following dental protocols
-- **Treatment planning** with appropriate antibiotic considerations
+- **Clinical photo analysis** with accurate cavity detection and severity assessment
+- **Pathology classification** from panoramic radiographs across 6 condition classes
+- **Location-aware diagnosis** with anatomical region identification (e.g., "right mandibular region")
+- **Structured clinical reasoning** following dental protocols with differential diagnoses
+- **Treatment planning** with appropriate antibiotic considerations and urgency assessment
+- **Compositional answer generation** producing varied, natural-sounding clinical descriptions
+
+### Quantitative Metrics
+
+**VQA Training (Stage 1):**
+- Best Validation Loss: 0.0281 (at step 1200)
+- Training converged after ~6 epochs
+- Significant improvement from initial loss of ~0.20
+
+**Instruct Training (Stage 2):**
+- Best Validation Loss: 0.0209 (at step 700)
+- ~50% reduction in error compared to previous QLoRA runs (old best: 0.0435)
+- Training converged after ~3 epochs
 
 ### Limitations
 
 - **Not a diagnostic tool:** This model is for research and educational purposes only. All AI-generated assessments must be validated by licensed dental professionals.
-- **Training data bias:** Performance may vary on X-ray types or clinical scenarios not well-represented in training data.
+- **Training data bias:** Performance may vary on X-ray types or clinical scenarios not well-represented in training data (e.g., bitewing radiographs, periapical films).
 - **Hallucination risk:** Like all LLMs, the model may occasionally generate plausible-sounding but incorrect information.
 - **No real-time validation:** The model cannot verify its outputs against current clinical guidelines or patient-specific contraindications.
+- **Location accuracy:** Dental region mapping from bounding boxes is approximate and should not be used for surgical planning without clinical verification.
 
 ## ⚠️ Ethical Considerations & Disclaimer
 

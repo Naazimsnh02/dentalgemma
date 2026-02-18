@@ -25,11 +25,11 @@ dataset_info:
     dtype: string
   splits:
   - name: train
-    num_bytes: 5161847
-    num_examples: 2244
+    num_bytes: 5197475
+    num_examples: 2246
   - name: validation
     num_bytes: 575072
-    num_examples: 250
+    num_examples: 248
   download_size: 968173
   dataset_size: 5736919
 configs:
@@ -49,7 +49,7 @@ A text-only instruction-tuning dataset of 2,494 synthetic dental clinical cases 
 
 - **Total samples**: 2,494 clinical cases
 - **Format**: Chat-format messages (system/user/assistant)
-- **Splits**: 90% train / 10% validation
+- **Splits**: 2,246 Train / 248 Validation
 - **Conditions covered**: 98 unique dental conditions
 - **Source**: [Wildstash/dental-2.5k-instruct](https://huggingface.co/datasets/Wildstash/dental-2.5k-instruct)
 

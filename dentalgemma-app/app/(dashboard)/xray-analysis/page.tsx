@@ -15,7 +15,7 @@ export default function XRayAnalysisPage() {
   const [step, setStep] = useState<AnalysisStep>('upload');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
-  const [analysisType, setAnalysisType] = useState<AnalysisType>('general');
+  const [analysisType, setAnalysisType] = useState<AnalysisType>('xray');
   const [analysis, setAnalysis] = useState<XRayAnalysis | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [progress, setProgress] = useState(0);
@@ -108,7 +108,7 @@ export default function XRayAnalysisPage() {
       const historyItem = {
         id: crypto.randomUUID(),
         type: 'xray' as const,
-        summary: `${analysis.type.toUpperCase()} Analysis - ${analysis.urgency} priority`,
+        summary: `${analysis.type === 'photo' ? 'Clinical Photo' : 'X-Ray'} Analysis - ${analysis.urgency} priority`,
         urgency: analysis.urgency,
         data: analysis,
         timestamp: new Date(),
@@ -186,11 +186,10 @@ export default function XRayAnalysisPage() {
               <h2 className="text-xl font-semibold mb-4">
                 Select Analysis Type
               </h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {[
-                  { value: 'cavity', label: 'Cavity Detection', desc: 'Analyze clinical photos for cavities' },
-                  { value: 'opg', label: 'OPG Classification', desc: 'Classify panoramic radiographs' },
-                  { value: 'general', label: 'General Assessment', desc: 'Evaluate intraoral X-rays (bitewings/periapicals)' },
+                  { value: 'photo', label: 'Clinical Photo Analysis', desc: 'Analyze clinical photographs of teeth and gums' },
+                  { value: 'xray', label: 'X-Ray Analysis', desc: 'Analyze dental radiographs (OPG, bitewing, periapical)' },
                 ].map((type) => (
                   <button
                     key={type.value}
@@ -224,8 +223,8 @@ export default function XRayAnalysisPage() {
           {imageUrl && (
             <div className="bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-lg p-4">
               <p className="text-sm text-amber-800 dark:text-amber-300">
-                <strong>Note:</strong> The cavity detection model was trained on clinical photographs, 
-                OPG classification on panoramic radiographs, and general assessment on intraoral radiographs. 
+                <strong>Note:</strong> Clinical Photo Analysis is designed for photographs of teeth and gums.
+                X-Ray Analysis is designed for dental radiographs (panoramic, bitewing, periapical).
                 For best results, match your image type to the appropriate analysis mode.
               </p>
             </div>

@@ -43,11 +43,12 @@ Dental diagnostics remains an underserved domain in medical AI. While MedGemma e
 
 | Capability | Description |
 |:-----------|:------------|
-| 🔍 **Cavity Detection** | Identify and count cavities in clinical dental photographs |
-| 🏥 **Pathology Classification** | Classify 6 dental conditions from panoramic X-rays |
-| 🦷 **Tooth Identification** | Count and classify tooth types from panoramic radiographs |
-| 📋 **Radiographic Assessment** | Systematic evaluation of dental radiographs |
-| 💊 **Clinical Case Analysis** | Structured diagnosis and treatment planning from patient histories |
+| 📸 **Clinical Photo Analysis** | Analyze clinical dental photographs for cavity detection, oral health assessment, and severity evaluation with compositionally-varied clinical descriptions |
+| 🏥 **Pathology Classification** | Classify 6 dental conditions from panoramic X-rays (Healthy, Caries, Impacted Teeth, BDC-BDR, Infection, Fractured Teeth) with differential diagnosis and urgency assessment |
+| 📍 **Location-Aware Diagnosis** | Identify and localize pathological findings in panoramic radiographs using dental region mapping (e.g., "right mandibular region", "anterior maxillary region") |
+| 🦷 **Dentition Assessment** | Evaluate dentition completeness, tooth type identification, and anatomical overview from panoramic radiographs with clinical context |
+| 📋 **Structured Radiographic Reports** | Generate systematic dental reports with region-specific findings, differential diagnoses, and clinical recommendations |
+| 💊 **Clinical Case Analysis** | Comprehensive diagnosis, treatment planning, antibiotic considerations, and follow-up scheduling for 98 dental conditions |
 
 ---
 
@@ -56,11 +57,12 @@ Dental diagnostics remains an underserved domain in medical AI. While MedGemma e
 finetune/
 ├── preprocessing/                    # Data processing pipeline
 │   ├── build_dataset.py              # Main orchestrator — builds & pushes both HF datasets
-│   ├── process_cavity_detection.py   # YOLOv5-OBB label parsing → VQA pairs
-│   ├── process_opg_classification.py # 6-class OPG pathology → VQA pairs
-│   ├── process_dental_radiography.py # Deduplication + radiograph assessment VQA
-│   ├── process_panoramic.py          # VIA/COCO annotation parsing → VQA pairs
+│   ├── process_cavity_detection.py   # Clinical photo analysis with compositional answers
+│   ├── process_opg_classification.py # 6-class OPG pathology with differential diagnosis
+│   ├── process_panoramic.py          # Dentition assessment with clinical context
+│   ├── process_opg_detection.py      # Location-aware diagnosis with region mapping (NEW)
 │   ├── process_text_cases.py         # JSONL clinical cases → chat-format instruct data
+│   ├── answer_builder.py             # Compositional answer generation utility (NEW)
 │   ├── inspect_dataset.py            # Dataset inspection utility
 │   ├── README_vqa.md                 # HuggingFace dataset card (VQA)
 │   ├── README_instruct.md            # HuggingFace dataset card (Instruct)
@@ -74,15 +76,12 @@ finetune/
 │   │   ├── README.dataset.txt
 │   │   └── README.roboflow.txt
 │   ├── Dental OPG Xray Dataset/
-│   │   └── Dental OPG (Classification)/  # Dataset 2 (v1)
+│   │   ├── Dental OPG (Classification)/  # Dataset 2 (v1)
+│   │   └── Dental OPG (Object Detection)/  # Dataset 4 (NEW)
 │   ├── Dental OPG XRAY Dataset (Version 4)/
 │   │   └── Dental OPG XRAY Dataset/
 │   │       └── Dental OPG XRAY Dataset/
 │   │           └── Dental OPG (Classification)/  # Dataset 3 (v4)
-│   ├── Dental Radiography/
-│   │   ├── train/
-│   │   ├── test/
-│   │   └── valid/
 │   ├── Panoramic Dental Xray Dataset/
 │   │   └── Panoramic Dental Xray Dataset/
 │   │       ├── firstpart/
@@ -107,15 +106,17 @@ Two curated HuggingFace datasets power the fine-tuning:
 
 | Split | Samples |
 |:------|--------:|
-| Train | 1,488 |
-| Validation | 166 |
-| **Total** | **1,654** |
+| Train | ~2,276 |
+| Validation | ~253 |
+| **Total** | **~2,529** |
 
 **Features:**
-- `image` — Dental image (Clinical photo or Radiograph)
+- `image` — Dental image (Clinical photograph or Radiograph)
 - `messages` — JSON string of chat-format conversation (system / user[image + text] / assistant)
 - `source` — Dataset origin tag
 - `condition` — Dental condition label
+
+**Key Innovation:** Compositional answer generation ensures high answer diversity — same-condition images receive different-sounding clinical descriptions by randomly combining intro sentences, findings, clinical context, and recommendations (560+ unique combinations per condition).
 
 **Message Format:**
 ```json
@@ -125,7 +126,7 @@ Two curated HuggingFace datasets power the fine-tuning:
     {"type": "image"},
     {"type": "text", "text": "Analyze this dental image..."}
   ]},
-  {"role": "assistant", "content": "This dental X-ray shows 2 cavity region(s) detected..."}
+  {"role": "assistant", "content": "This clinical photograph shows visible signs of dental caries. The extent of decay suggests the need for restorative intervention..."}
 ]
 ```
 
@@ -152,27 +153,33 @@ Each case includes structured clinical information: patient demographics, chief 
 
 ### Source Datasets
 
-| # | Dataset | Raw Size | Output Samples | Image Type | Task | License |
-|:-:|:--------|:---------|:--------------:|:-----------|:-----|:--------|
-| 1 | **[Dental Cavity Detection](https://www.kaggle.com/datasets/maazmakhdoom/dental-cavity-detection-dataset)** | 418 images + YOLOv5-OBB labels | ~418 | Clinical Photographs | Cavity/normal detection with region counts | CC BY-SA 4.0 |
-| 2 | **[Dental OPG Classification](https://www.kaggle.com/datasets/imtkaggleteam/dental-opg-xray-dataset)** (v1 + v4, merged & deduped) | 517 images, 6 classes | ~517 | Panoramic OPG | Pathology classification | CC BY-NC-SA 4.0 |
-| 3 | **[Dental Radiography](https://www.kaggle.com/datasets/imtkaggleteam/dental-radiography)** (deduped by numeric prefix) | 1,272 → 655 unique | ~655 | Intraoral X-rays | General radiographic assessment | CC BY-NC-SA 4.0 |
-| 4 | **[Panoramic Dental Xray](https://www.kaggle.com/datasets/orvile/panoramic-dental-xray-dataset)** (firstpart + secondpart) | 64 images + polygon/COCO annotations | ~64 | Panoramic X-rays | Tooth counting & type identification | CC BY-SA 4.0 |
-| 5 | **[dental-2.5k-instruct](https://huggingface.co/datasets/Wildstash/dental-2.5k-instruct)** | 2,494 JSONL cases | 2,494 | Text-only | Clinical case assessment (98 conditions) | Apache 2.0 |
+| # | Dataset | Raw Images | Output VQA Pairs | Image Type | Task | License |
+|:-:|:--------|:-----------|:----------------:|:-----------|:-----|:--------|
+| 1 | **[Dental Cavity Detection](https://www.kaggle.com/datasets/maazmakhdoom/dental-cavity-detection-dataset)** | 418 | ~642 | Clinical Photographs | Cavity/normal detection with clinical reasoning | CC BY-SA 4.0 |
+| 2 | **[Dental OPG Classification](https://www.kaggle.com/datasets/imtkaggleteam/dental-opg-xray-dataset)** (v1 + v4, merged & deduped) | 517 | ~1,214 | Panoramic OPG | 6-class pathology classification with differential diagnosis | CC BY-NC-SA 4.0 |
+| 3 | **[Panoramic Dental Xray](https://www.kaggle.com/datasets/orvile/panoramic-dental-xray-dataset)** (firstpart + secondpart) | 64 | ~128 | Panoramic X-rays | Dentition completeness & tooth type identification | CC BY-SA 4.0 |
+| 4 | **[Dental OPG Object Detection](https://www.kaggle.com/datasets/imtkaggleteam/dental-opg-xray-dataset)** (same source as #2) | 232 | ~545 | Panoramic OPG | Location-aware pathology detection with region mapping | CC BY-NC-SA 4.0 |
+| 5 | **[dental-2.5k-instruct](https://huggingface.co/datasets/Wildstash/dental-2.5k-instruct)** | N/A (text-only) | 2,494 | Text-only | Clinical case assessment (98 conditions) | Apache 2.0 |
+
+**Note:** Each image generates 1-3 VQA pairs using diverse question types, resulting in ~2,529 total VQA pairs from ~1,231 unique images.
 
 **OPG Classification Classes:** Healthy Teeth, Caries, Impacted Teeth, BDC-BDR (Broken Down Crown/Root), Infection, Fractured Teeth — sourced from 3 dental clinics in Bangladesh.
 
 ### Preprocessing Details
 
-Each processor applies domain-specific logic:
+Each processor applies domain-specific logic with compositional answer generation:
 
-- **Cavity Detection** — Parses YOLOv5-OBB (DOTA format) label files to count cavity vs. normal regions per image, generates clinically descriptive answers based on region counts
-- **OPG Classification** — Merges v1 and v4 datasets with deduplication (v1 priority), maps folder names to condition-specific clinical descriptions
-- **Dental Radiography** — Deduplicates augmented images by numeric filename prefix (keeps first alphabetically), applies systematic radiographic assessment template
-- **Panoramic Xray** — Processes VIA polygon annotations (firstpart: tooth counting) and COCO annotations (secondpart: 8 tooth type classes with counts)
-- **Text Cases** — Extracts structured fields (patient, demographics, complaints, findings) from JSONL chat data, maps to standardized chat format
+- **Clinical Photo Analysis** (was Cavity Detection) — Parses YOLOv5-OBB (DOTA format) label files to count cavity vs. normal regions. Generates 1-2 questions per image across 5 question types: binary classification, clinical description, severity assessment, image type identification, and treatment recommendations.
 
-All processors use **5–6 varied question templates** per dataset to avoid monotonic training patterns. A consistent **system prompt** is applied across all data:
+- **OPG Classification** — Merges v1 and v4 datasets with deduplication (v1 priority). Generates 2-3 questions per image across 5 question types: open-ended diagnosis, yes/no pathology screening, differential diagnosis, clinical urgency, and healthy vs abnormal classification. **Compositional answers replace static one-answer-per-class templates**, ensuring same-class images get different-sounding descriptions.
+
+- **Panoramic Xray** — Processes VIA polygon annotations (firstpart: tooth segmentation) and COCO annotations (secondpart: 8 tooth type classes). Generates 2 questions per image focusing on dentition completeness, anatomical overview, and tooth type identification.
+
+- **OPG Object Detection** — Parses YOLO bounding box annotations for 6 pathology classes. **Converts normalized bounding box coordinates to dental region descriptions** (e.g., "right mandibular region", "anterior maxillary region") using anatomical mapping. Generates 2-3 location-aware questions per image: localized findings, condition presence screening, structured radiographic reports, and region-specific queries.
+
+- **Text Cases** — Extracts structured fields (patient, demographics, complaints, findings) from JSONL chat data, maps to standardized chat format with comprehensive clinical assessments.
+
+All processors use **4–6 varied question templates** per dataset to avoid monotonic training patterns. A consistent **system prompt** is applied across all data:
 
 > *"You are an expert dental clinician and radiologist AI assistant. Analyze dental images and clinical information to provide accurate, evidence-based assessments. Always recommend clinical correlation and professional evaluation for definitive diagnosis."*
 

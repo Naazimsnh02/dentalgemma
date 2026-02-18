@@ -30,7 +30,7 @@ sys.path.insert(0, str(SCRIPT_DIR))
 
 from process_cavity_detection import process_cavity_detection
 from process_opg_classification import process_opg_classification
-from process_dental_radiography import process_dental_radiography
+from process_opg_detection import process_opg_detection
 from process_panoramic import process_panoramic
 from process_text_cases import process_text_cases_chat, process_text_cases_vqa
 
@@ -49,16 +49,16 @@ def _collect_vqa_samples() -> list[dict]:
     """Run all image-based processors and return a unified sample list."""
     all_samples = []
 
-    # 1. Dental Cavity Detection
+    # 1. Clinical Photo Analysis (was Dental Cavity Detection)
     print("\n" + "=" * 60)
-    print("1/5 — Dental Cavity Detection Dataset")
+    print("1/4 — Clinical Photo Analysis (Dental Cavity Detection)")
     print("=" * 60)
     cavity_path = str(DATASETS_DIR / "Dental Cavity Detection Dataset")
     all_samples.extend(process_cavity_detection(cavity_path))
 
-    # 2+3. OPG Classification (v1 + v4)
+    # 2. OPG Classification (v1 + v4)
     print("\n" + "=" * 60)
-    print("2/5 — Dental OPG Classification (v1 + v4)")
+    print("2/4 — OPG Classification (v1 + v4)")
     print("=" * 60)
     opg_v1 = str(DATASETS_DIR / "Dental OPG Xray Dataset" / "Dental OPG (Classification)")
     opg_v4 = str(
@@ -70,21 +70,23 @@ def _collect_vqa_samples() -> list[dict]:
     )
     all_samples.extend(process_opg_classification(opg_v1, opg_v4))
 
-    # 4. Dental Radiography
+    # 3. Panoramic Dental Xray
     print("\n" + "=" * 60)
-    print("3/5 — Dental Radiography Dataset")
-    print("=" * 60)
-    radio_path = str(DATASETS_DIR / "Dental Radiography")
-    all_samples.extend(process_dental_radiography(radio_path))
-
-    # 5. Panoramic Dental Xray
-    print("\n" + "=" * 60)
-    print("4/5 — Panoramic Dental Xray Dataset")
+    print("3/4 — Panoramic Dental Xray Dataset")
     print("=" * 60)
     pano_path = str(
         DATASETS_DIR / "Panoramic Dental Xray Dataset" / "Panoramic Dental Xray Dataset"
     )
     all_samples.extend(process_panoramic(pano_path))
+
+    # 4. OPG Object Detection (NEW - Location-aware diagnosis)
+    print("\n" + "=" * 60)
+    print("4/4 — OPG Object Detection (Localized Diagnosis)")
+    print("=" * 60)
+    opg_det_path = str(DATASETS_DIR / "Dental OPG Xray Dataset" / "Dental OPG (Object Detection)")
+    all_samples.extend(process_opg_detection(opg_det_path))
+
+    # NOTE: Dental Radiography dataset REMOVED (no labels = no learning signal)
 
     return all_samples
 
@@ -147,7 +149,7 @@ def _build_instruct_dataset() -> DatasetDict:
       - condition: extracted dental condition
     """
     print("\n" + "=" * 60)
-    print("5/5 — Wildstash Dental 2.5k Instruct (text-only)")
+    print("Text-Only Instruct — Wildstash Dental 2.5k")
     print("=" * 60)
 
     chat_data = process_text_cases_chat(str(SCRIPT_DIR))
