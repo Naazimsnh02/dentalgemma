@@ -289,7 +289,7 @@ export class ModalClient {
           body: JSON.stringify({
             image: base64Image,
             question,
-            max_tokens: 512,
+            max_tokens: 1024,
           }),
         }
       );
@@ -419,7 +419,7 @@ export class ModalClient {
             clinical_findings: `Intraoral: ${caseData.clinicalFindings.intraoral}\nExtraoral: ${caseData.clinicalFindings.extraoral}\nSoft Tissue: ${caseData.clinicalFindings.softTissue}\nPeriodontal: ${caseData.clinicalFindings.periodontal}`,
             radiographic_findings: caseData.radiographicFindings.description,
             medical_history: `Medications: ${caseData.medicalHistory.medications.join(', ')}\nAllergies: ${caseData.medicalHistory.allergies.join(', ')}\nConditions: ${caseData.medicalHistory.systemicConditions.join(', ')}`,
-            max_tokens: 1024,
+            max_tokens: 2048,
           }),
         }
       );
@@ -613,47 +613,11 @@ export class ModalClient {
   }
 
   private extractFindings(text: string): string[] {
-    // 1. Try to isolate the "Findings" section
-    // Regex matches "## Findings" or "**Findings**" until the next header or end of string
-    const sectionMatch = text.match(/(?:##|\*\*)\s*Findings?(?:Details)?(?:\*\*)?[:\s]*\n([\s\S]*?)(?=\n(?:##|\*\*)|$)/i);
+    const prefixKeywords = "Findings|Recommendations|Analysis|Diagnosis|Conclusion|Clinical|Key|Priority";
+    // Stop keywords: Exclude "Findings" to avoid self-stop on repeated headers. Include "Differential".
+    const stopKeywords = "Recommendations|Analysis|Diagnosis|Differential|Conclusion|Clinical|Key|Priority";
     
-    let targetText = text;
-    if (sectionMatch) {
-      targetText = sectionMatch[1].trim();
-    } else {
-      // If no specific subsection, try to avoid the Recommendations section if it exists
-      const recStart = text.search(/(?:##|\*\*)\s*Recommendations?/i);
-      if (recStart > 0) {
-        targetText = text.substring(0, recStart);
-      }
-    }
-
-    // 2. Extract bullet points
-    const findings: string[] = [];
-    const lines = targetText.split('\n');
-    
-    for (const line of lines) {
-      const trimmed = line.trim();
-      // Match bullet points, numbered lists, or lines starting with - or *
-      if (trimmed.match(/^[-*•]\s+/) || trimmed.match(/^\d+\.\s+/)) {
-        const cleaned = trimmed.replace(/^[-*•]\s+/, '').replace(/^\d+\.\s+/, '');
-        // Filtering out empty or very short lines, and header-like lines
-        if (cleaned.length > 5 && !cleaned.startsWith('**') && !cleaned.endsWith(':')) {
-          findings.push(cleaned);
-        }
-      }
-    }
-    
-    // If we found specific section bullets, return them
-    if (findings.length > 0) return findings;
-
-    // Fallback: If no bullets found in section, return the whole section text as one item (if not too long)
-    if (sectionMatch && targetText.length > 0) {
-      return [targetText];
-    }
-
-    // Final Fallback: If original text structure was used and failed to parse
-    return [text.substring(0, 500) + '...']; 
+    return this.extractSectionList(text, `(?:(?:${prefixKeywords})\\s+)?Findings?(?:Details)?`, stopKeywords);
   }
 
   private extractConfidence(text: string): number {
@@ -741,7 +705,8 @@ export class ModalClient {
 
   private extractRecommendations(text: string): string[] {
     // 1. Try to isolate the "Recommendations" section
-    const sectionMatch = text.match(/(?:##|\*\*)\s*(?:Clinical\s+)?(?:Priority\s+)?Recommendations?\s*(?:Details)?(?:\*\*)?[:\s]*\n([\s\S]*?)(?=\n(?:##|\*\*)|$)/i);
+    // Matches "## Recommendations" or "**Recommendations**", optionally with "Clinical" or "Priority" prefix
+    const sectionMatch = text.match(/(?:##|\*\*)\s*(?:(?:Clinical|Priority)\s+)?Recommendations?\s*(?:Details)?(?:\*\*)?[:\s]*\n([\s\S]*?)(?=\n(?:##|\*\*)|$)/i);
     
     let targetText = '';
     if (sectionMatch) {
@@ -823,9 +788,18 @@ export class ModalClient {
   }
 
   private extractDifferentialDiagnosis(text: string): string[] | undefined {
+    // Use robust list extraction for Differential Diagnosis
+    const results = this.extractSectionList(text, 'Differential\\s+Diagnosis', "Findings|Recommendations|Analysis|Conclusion|Clinical|Key|Priority|Plan");
+    if (results.length > 0) return results;
+    
+    // Fallback to single line extraction if no list found
     const match = text.match(/differential\s+diagnos(?:is|es)[:\s]+([^\n]+)/i);
     if (match) {
-      return match[1].split(/[,;]/).map(d => d.trim()).filter(d => d.length > 0);
+      // Check if it captured just metadata characters
+      const candidate = match[1].trim();
+      if (candidate.length > 3 && !candidate.match(/^[*_#]+$/)) {
+        return candidate.split(/[,;]/).map(d => d.trim()).filter(d => d.length > 0);
+      }
     }
     return undefined;
   }
@@ -861,6 +835,71 @@ export class ModalClient {
     if (lowerText.includes('healthy') || lowerText.includes('normal') || lowerText.includes('no significant')) return 'Healthy';
     
     return undefined;
+  }
+
+  /**
+   * Helper to extract a list of items from a named section
+   */
+  private extractSectionList(text: string, sectionNameRegex: string, stopKeywords: string): string[] {
+    // Regex matches "## Section" or "**Section**" followed by anything on the line (to handle : inside/outside bold)
+    const regex = new RegExp(`(?:##|\\*\\*)\\s*${sectionNameRegex}.*?\\n([\\s\\S]*?)(?=\\n(?:##|\\*\\*\\s*(?:${stopKeywords}))|$)`, 'i');
+    
+    const sectionMatch = text.match(regex);
+    let targetText = '';
+    
+    if (sectionMatch) {
+      targetText = sectionMatch[1].trim();
+      
+      // Secondary stop check: search for likely next headers within the captured block
+      const stopRegex = new RegExp(`(?:##|\\*\\*)\\s*(?:${stopKeywords})`, 'i');
+      const stopIndex = targetText.search(stopRegex);
+      if (stopIndex > 0) {
+        targetText = targetText.substring(0, stopIndex);
+      }
+    } else {
+        // Fallback: Try to find the section without fancy headers
+        const looseRegex = new RegExp(`${sectionNameRegex}[:\\s]*\\n([\\s\\S]*?)(?=\\n(?:##|\\*\\*)|$)`, 'i');
+        const looseMatch = text.match(looseRegex);
+        if (looseMatch) {
+            targetText = looseMatch[1].trim();
+        }
+    }
+    
+    if (!targetText) return [];
+
+    const items: string[] = [];
+    const seen = new Set<string>(); // For deduplication
+    const lines = targetText.split('\n');
+    
+    for (const line of lines) {
+      const trimmed = line.trim();
+      
+      // Match bullet points, numbered lists, or lines starting with ** (key-value pairs)
+      if (trimmed.match(/^[-*•]\s+/) || trimmed.match(/^\d+\.\s+/) || trimmed.startsWith('**')) {
+        let cleaned = trimmed;
+        // Remove bullet point chars
+        if (trimmed.match(/^[-*•]\s+/) || trimmed.match(/^\d+\.\s+/)) {
+          cleaned = trimmed.replace(/^[-*•]\s+/, '').replace(/^\d+\.\s+/, '');
+        }
+        
+        // Remove leading/trailing markdown bold if present on the whole line
+        // e.g. **Findings:** should be ignored if it matches section name or similar
+        const plainText = cleaned.replace(/^\*\*/, '').replace(/\*\*[:\s]*$/, '').replace(/:$/, '').trim();
+        
+        // Validation:
+        // 1. Must be long enough
+        // 2. Must not be a sub-header (e.g. "Findings:", "Severity:") unless it has a value
+        // 3. Must not be a duplicate
+        const isHeaderLike = plainText.length < 20 && (plainText.match(/findings|diagnosis|analysis|recommendations/i)); // Avoid capturing "Findings:" as a finding
+        
+        if (cleaned.length > 3 && !seen.has(cleaned) && !isHeaderLike && !cleaned.endsWith(':')) {
+             items.push(cleaned);
+             seen.add(cleaned);
+        }
+      }
+    }
+    
+    return items;
   }
 
   private parseAssessment(text: string, processingTime: number): CaseAssessment {

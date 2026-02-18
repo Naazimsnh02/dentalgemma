@@ -196,7 +196,7 @@ export default function XRayAnalysisPage() {
                     onClick={() => setAnalysisType(type.value as AnalysisType)}
                     className={`p-4 rounded-lg border-2 text-left transition-all ${
                       analysisType === type.value
-                        ? 'border-blue-500 bg-blue-50 dark:bg-blue-950/20'
+                        ? 'border-blue-500 bg-background dark:bg-blue-950/20'
                         : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
                     }`}
                   >
@@ -219,16 +219,7 @@ export default function XRayAnalysisPage() {
             </div>
           )}
 
-          {/* Model training note */}
-          {imageUrl && (
-            <div className="bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-lg p-4">
-              <p className="text-sm text-amber-800 dark:text-amber-300">
-                <strong>Note:</strong> Clinical Photo Analysis is designed for photographs of teeth and gums.
-                X-Ray Analysis is designed for dental radiographs (panoramic, bitewing, periapical).
-                For best results, match your image type to the appropriate analysis mode.
-              </p>
-            </div>
-          )}
+
 
           {/* Sample X-rays */}
           <div className="bg-card text-card-foreground rounded-lg border shadow-sm p-6">

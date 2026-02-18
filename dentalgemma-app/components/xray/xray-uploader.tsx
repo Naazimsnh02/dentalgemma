@@ -208,7 +208,7 @@ export function XRayUploader({
 
             <div className="space-y-2">
               <p className="text-lg font-medium text-foreground">
-                {isDragging ? 'Drop your X-ray here' : 'Upload X-ray Image'}
+                {isDragging ? 'Drop your image here' : 'Upload Dental Image'}
               </p>
               <p className="text-sm text-gray-500 dark:text-gray-400">
                 Drag and drop or click to browse
@@ -236,7 +236,7 @@ export function XRayUploader({
             {preview ? (
               <img
                 src={preview}
-                alt="X-ray preview"
+                alt="Image preview"
                 className="w-32 h-32 object-cover rounded-lg"
               />
             ) : (

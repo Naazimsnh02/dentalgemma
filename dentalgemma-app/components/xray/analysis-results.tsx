@@ -17,19 +17,19 @@ const urgencyConfig: Record<
 > = {
   emergency: {
     color: 'text-red-700 dark:text-red-400',
-    bgColor: 'bg-red-50 dark:bg-red-950/20 border-red-200 dark:border-red-800',
+    bgColor: 'bg-card border-border',
     icon: <AlertTriangle className="w-5 h-5" />,
     label: 'Emergency',
   },
   urgent: {
     color: 'text-orange-700 dark:text-orange-400',
-    bgColor: 'bg-orange-50 dark:bg-orange-950/20 border-orange-200 dark:border-orange-800',
+    bgColor: 'bg-card border-border',
     icon: <AlertTriangle className="w-5 h-5" />,
     label: 'Urgent',
   },
   routine: {
     color: 'text-blue-700 dark:text-blue-400',
-    bgColor: 'bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-800',
+    bgColor: 'bg-card border-border',
     icon: <Info className="w-5 h-5" />,
     label: 'Routine',
   },
@@ -127,12 +127,6 @@ export function AnalysisResults({
             </h3>
             <p className="text-sm text-muted-foreground mt-1">
               Analysis Type: {analysis.type === 'photo' ? 'Clinical Photo' : 'X-Ray Analysis'}
-            </p>
-          </div>
-          <div className="text-right">
-            <p className="text-sm font-medium text-muted-foreground">Confidence</p>
-            <p className="text-2xl font-bold text-foreground">
-              {Math.round(analysis.confidence * 100)}%
             </p>
           </div>
         </div>
