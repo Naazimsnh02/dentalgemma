@@ -1,5 +1,6 @@
 import Link from 'next/link';
-import { Sparkles, ArrowRight } from 'lucide-react';
+import Image from 'next/image';
+import { ArrowRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export function CtaSection() {
@@ -12,14 +13,22 @@ export function CtaSection() {
       <div className="absolute -bottom-32 -right-32 h-96 w-96 rounded-full bg-white/5 blur-3xl" />
 
       <div className="relative mx-auto max-w-4xl px-6 text-center">
-        <Sparkles className="mx-auto mb-6 h-12 w-12 text-white" />
+        <div className="mx-auto mb-6 h-16 w-16 relative flex items-center justify-center">
+           <Image
+            src="/icon.png"
+            alt="DentalGemma"
+            width={48}
+            height={48}
+            className="object-contain drop-shadow-md"
+          />
+        </div>
 
         <h2 className="text-3xl font-bold text-white lg:text-4xl">
           Ready to Experience AI Dental Diagnostics?
         </h2>
 
         <p className="mx-auto mt-4 max-w-2xl text-lg text-blue-100">
-          Upload your first X-ray or enter a clinical case — completely free, no sign-up required.
+          Upload your first clinical photo or radiograph.
         </p>
 
         <Link

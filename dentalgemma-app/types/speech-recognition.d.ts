@@ -1,6 +1,5 @@
 // Type definitions for Web Speech API
 // Project: DentalGemma
-// Definitions by: Antigravity
 
 interface SpeechRecognitionErrorEvent extends Event {
   error: string;

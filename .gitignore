@@ -54,3 +54,6 @@ finetune/output/
 *.zip
 *.tar.gz
 *.rar
+
+# Custom
+.kiro/

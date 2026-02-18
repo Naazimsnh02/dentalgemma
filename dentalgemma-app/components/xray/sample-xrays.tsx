@@ -88,11 +88,19 @@ const SAMPLE_XRAYS: SampleXRay[] = [
 const analysisTypeLabels: Record<AnalysisType, string> = {
   photo: 'Clinical Photo',
   xray: 'X-Ray Analysis',
+  cavity: 'Cavity Detection',
+  opg: 'OPG Classification',
+  'tooth-id': 'Tooth Identification',
+  general: 'General Assessment',
 };
 
 const analysisTypeColors: Record<AnalysisType, string> = {
   photo: 'bg-green-500 dark:bg-green-600 text-white border border-black',
   xray: 'bg-blue-500 dark:bg-blue-600 text-white border border-black',
+  cavity: 'bg-amber-500 dark:bg-amber-600 text-white border border-black',
+  opg: 'bg-purple-500 dark:bg-purple-600 text-white border border-black',
+  'tooth-id': 'bg-indigo-500 dark:bg-indigo-600 text-white border border-black',
+  general: 'bg-slate-500 dark:bg-slate-600 text-white border border-black',
 };
 
 export function SampleXRays({ onSelectSample, className = '' }: SampleXRaysProps) {

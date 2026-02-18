@@ -10,7 +10,7 @@ const navLinks = [
   { label: 'Features', href: '#features' },
   { label: 'How It Works', href: '#how-it-works' },
   { label: 'About', href: '#ai-showcase' },
-  { label: 'Research', href: '#tech-stack' },
+  { label: 'Technology', href: '#tech-stack' },
 ];
 
 export function LandingNavbar() {
@@ -18,7 +18,7 @@ export function LandingNavbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 10);
+    const handleScroll = () => setScrolled(window.scrollY > 20);
     handleScroll();
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
@@ -52,26 +52,27 @@ export function LandingNavbar() {
     <>
       <header
         className={cn(
-          'fixed top-0 left-0 right-0 z-50 transition-all duration-300',
+          'fixed top-0 left-0 right-0 z-50 transition-all duration-300 border-b',
           scrolled
-            ? 'bg-white/95 shadow-sm backdrop-blur-md'
-            : 'bg-transparent'
+            ? 'bg-white/80 backdrop-blur-md border-slate-200/50 shadow-sm'
+            : 'bg-transparent border-transparent py-2'
         )}
       >
-        <nav className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+        <nav className="mx-auto flex h-16 max-w-[95%] xl:max-w-screen-2xl items-center justify-between px-4 md:px-8">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2.5">
-            <Image
-              src="/icon.png"
-              alt="DentalGemma"
-              width={36}
-              height={36}
-              className="rounded-lg"
-            />
+          <Link href="/" className="flex items-center gap-2.5 group">
+            <div className="relative overflow-hidden rounded-lg">
+                <Image
+                src="/icon.png"
+                alt="DentalGemma"
+                width={36}
+                height={36}
+                className="transition-transform duration-300 group-hover:scale-110"
+                />
+            </div>
             <span
               className={cn(
-                'text-lg font-bold tracking-tight transition-colors',
-                scrolled ? 'text-slate-900' : 'text-white'
+                'text-lg font-bold tracking-tight transition-colors text-slate-900'
               )}
             >
               DentalGemma
@@ -79,17 +80,22 @@ export function LandingNavbar() {
           </Link>
 
           {/* Desktop nav links */}
-          <ul className="hidden items-center gap-1 md:flex">
+          <ul className={cn(
+            "hidden items-center gap-1 md:flex px-2 py-1.5 rounded-full transition-all duration-300",
+            scrolled 
+              ? "bg-transparent" 
+              : "bg-slate-900/60 backdrop-blur-md border border-white/10 shadow-lg supports-[backdrop-filter]:bg-slate-900/40"
+          )}>
             {navLinks.map((link) => (
               <li key={link.href}>
                 <a
                   href={link.href}
                   onClick={(e) => handleAnchorClick(e, link.href)}
                   className={cn(
-                    'rounded-lg px-4 py-2 text-sm font-medium transition-colors',
-                    scrolled
-                      ? 'text-slate-700 hover:bg-slate-100 hover:text-blue-600'
-                      : 'text-slate-300 hover:bg-white/10 hover:text-white'
+                    'rounded-full px-4 py-2 text-sm font-medium transition-all duration-200',
+                    scrolled 
+                      ? 'text-slate-700 hover:bg-slate-100 hover:text-blue-600' 
+                      : 'text-white/90 hover:bg-white/10 hover:text-white'
                   )}
                 >
                   {link.label}
@@ -103,10 +109,8 @@ export function LandingNavbar() {
             <Link
               href="/dashboard"
               className={cn(
-                'inline-flex items-center gap-2 rounded-full px-6 py-2.5 text-sm font-semibold transition-all duration-200 active:scale-[0.97]',
-                scrolled
-                  ? 'bg-[#0F1B2D] text-white hover:bg-[#1a2d47] hover:shadow-lg'
-                  : 'bg-white text-[#0F1B2D] hover:bg-blue-50 hover:shadow-lg'
+                'inline-flex items-center gap-2 rounded-full px-5 py-2 text-sm font-semibold transition-all duration-300',
+                'bg-blue-600 text-white hover:bg-blue-700 hover:shadow-lg hover:shadow-blue-500/25'
               )}
             >
               Launch App
@@ -119,16 +123,16 @@ export function LandingNavbar() {
             type="button"
             onClick={() => setMobileOpen(!mobileOpen)}
             className={cn(
-              'inline-flex items-center justify-center rounded-lg p-2 transition-colors md:hidden',
-              scrolled ? 'text-slate-700 hover:bg-slate-100' : 'text-white hover:bg-white/10'
+              "inline-flex items-center justify-center rounded-lg p-2 transition-colors md:hidden",
+              scrolled ? "text-slate-700 hover:bg-slate-100" : "text-white hover:bg-white/10"
             )}
             aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
             aria-expanded={mobileOpen}
           >
             {mobileOpen ? (
-              <X className="h-5 w-5" />
+              <X className="h-6 w-6" />
             ) : (
-              <Menu className="h-5 w-5" />
+              <Menu className="h-6 w-6" />
             )}
           </button>
         </nav>
@@ -137,7 +141,7 @@ export function LandingNavbar() {
       {/* Mobile drawer overlay */}
       <div
         className={cn(
-          'fixed inset-0 z-40 bg-black/40 backdrop-blur-sm transition-opacity duration-300 md:hidden',
+          'fixed inset-0 z-40 bg-black/20 backdrop-blur-sm transition-opacity duration-300 md:hidden',
           mobileOpen ? 'opacity-100' : 'pointer-events-none opacity-0'
         )}
         onClick={() => setMobileOpen(false)}
@@ -147,46 +151,43 @@ export function LandingNavbar() {
       {/* Mobile drawer */}
       <div
         className={cn(
-          'fixed top-0 right-0 z-50 flex h-full w-72 flex-col bg-white shadow-2xl transition-transform duration-300 ease-in-out md:hidden',
+          'fixed top-0 right-0 z-50 flex h-full w-80 flex-col bg-white border-l border-slate-100 shadow-2xl transition-transform duration-300 ease-in-out md:hidden',
           mobileOpen ? 'translate-x-0' : 'translate-x-full'
         )}
       >
-        <div className="flex h-16 items-center justify-between px-4">
+        <div className="flex h-16 items-center justify-between px-4 border-b border-slate-100">
           <span className="text-lg font-bold text-slate-900">Menu</span>
           <button
             type="button"
             onClick={() => setMobileOpen(false)}
-            className="rounded-lg p-2 text-slate-700 transition-colors hover:bg-slate-100"
+            className="rounded-lg p-2 text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900"
             aria-label="Close menu"
           >
             <X className="h-5 w-5" />
           </button>
         </div>
 
-        <div className="flex flex-1 flex-col gap-1 px-3">
+        <div className="flex flex-1 flex-col gap-2 p-4">
           {navLinks.map((link) => (
             <a
               key={link.href}
               href={link.href}
               onClick={(e) => handleAnchorClick(e, link.href)}
-              className={cn(
-                'rounded-lg px-4 py-3 text-base font-medium transition-colors',
-                'text-slate-700 hover:bg-slate-50 hover:text-blue-600'
-              )}
+              className="rounded-lg px-4 py-3 text-base font-medium text-slate-600 hover:bg-slate-50 hover:text-blue-600 transition-colors"
             >
               {link.label}
             </a>
           ))}
         </div>
 
-        <div className="border-t p-4">
+        <div className="p-4 border-t border-slate-100">
           <Link
             href="/dashboard"
             onClick={() => setMobileOpen(false)}
             className={cn(
               'flex w-full items-center justify-center gap-2 rounded-full px-6 py-3 text-sm font-semibold',
-              'bg-[#0F1B2D] text-white transition-all duration-200',
-              'hover:bg-[#1a2d47] active:scale-[0.97]'
+              'bg-blue-600 text-white transition-all duration-200',
+              'hover:bg-blue-500 hover:shadow-lg hover:shadow-blue-500/25 active:scale-[0.97]'
             )}
           >
             Launch App

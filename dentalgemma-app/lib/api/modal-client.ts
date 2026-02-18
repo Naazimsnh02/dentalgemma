@@ -276,6 +276,10 @@ export class ModalClient {
       const questions: Record<AnalysisType, string> = {
         photo: 'Analyze this clinical dental photograph. Describe the condition of the teeth and gums visible. Note any signs of decay, discoloration, or other abnormalities. Assess the severity and recommend follow-up actions.',
         xray: 'Analyze this dental radiograph. Describe any pathological findings and their locations. Provide your assessment of the condition, possible differential diagnoses, and clinical recommendations.',
+        cavity: 'Analyze this dental X-ray specifically for cavities and caries. Identify any radiolucent areas indicating decay. Classify the severity of any lesions found.',
+        opg: 'Analyze this OPG (Orthopantomogram). Assess the overall dental status, including wisdom teeth impaction, bone levels, and any cysts or anomalies.',
+        'tooth-id': 'Identify the teeth visible in this image using standard numbering systems (FDI/Universal). Describe the status of each identified tooth.',
+        general: 'Perform a comprehensive general assessment of this dental image. Overview oral health status, identify any obvious pathology, and suggest if further specialized imaging is needed.',
       };
 
       const question = questions[analysisType];

@@ -10,19 +10,11 @@ const productLinks = [
   { label: "Dentist Finder", href: "/dashboard" },
 ];
 
-const resourceLinks = [
-  { label: "Documentation", href: "#" },
-  { label: "Research Papers", href: "#" },
-  { label: "PubMed Integration", href: "#" },
-  { label: "Model Information", href: "#" },
-  { label: "API Reference", href: "#" },
-];
-
-const legalLinks = [
-  { label: "Medical Disclaimer", href: "#" },
-  { label: "Privacy Policy", href: "#" },
-  { label: "Terms of Service", href: "#" },
-  { label: "Cookie Policy", href: "#" },
+const projectLinks = [
+  { label: "HuggingFace Model", href: "https://huggingface.co/naazimsnh02/dentalgemma-1.5-4b-it" },
+  { label: "Dataset (VQA)", href: "https://huggingface.co/datasets/naazimsnh02/dentalgemma-vqa" },
+  { label: "Dataset (Instruct)", href: "https://huggingface.co/datasets/naazimsnh02/dentalgemma-instruct" },
+  { label: "MedGemma Challenge", href: "https://kaggle.com/competitions/med-gemma-impact-challenge" },
 ];
 
 function FooterLinkColumn({
@@ -54,14 +46,14 @@ export default function Footer() {
   return (
     <footer className={cn("bg-[#0A1120]", "pt-16 pb-8")}>
       <div className="max-w-7xl mx-auto px-6">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-12">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-12">
           {/* Brand */}
           <div>
             <div className="flex items-center gap-2">
               <Image src="/icon.png" alt="DentalGemma" width={32} height={32} />
               <span className="text-white font-bold text-lg">DentalGemma</span>
             </div>
-            <p className="text-slate-400 text-sm mt-3 leading-relaxed">
+            <p className="text-slate-400 text-sm mt-3 leading-relaxed max-w-sm">
               AI-powered dental diagnostic platform built on Google&apos;s
               MedGemma foundation model.
             </p>
@@ -77,10 +69,7 @@ export default function Footer() {
           <FooterLinkColumn title="Product" links={productLinks} />
 
           {/* Resources */}
-          <FooterLinkColumn title="Resources" links={resourceLinks} />
-
-          {/* Legal */}
-          <FooterLinkColumn title="Legal" links={legalLinks} />
+          <FooterLinkColumn title="Project Resources" links={projectLinks} />
         </div>
 
         {/* Divider */}
@@ -91,16 +80,6 @@ export default function Footer() {
             </p>
             <p className="text-slate-500 text-xs">
               Made with ❤️ for better dental care
-            </p>
-          </div>
-
-          {/* Disclaimer */}
-          <div className="mt-6 p-4 bg-slate-800/50 rounded-xl">
-            <p className="text-slate-500 text-xs leading-relaxed">
-              ⚠️ DISCLAIMER: This application is for educational and research
-              purposes only. It is NOT intended for clinical diagnosis or patient
-              care. AI-generated assessments must be validated by licensed dental
-              professionals.
             </p>
           </div>
         </div>

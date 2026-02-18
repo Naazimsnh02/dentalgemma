@@ -20,7 +20,7 @@ const features: Feature[] = [
     icon: ScanLine,
     title: 'Dental Image Analysis',
     description:
-      'Upload dental images (clinical photos or radiographs) for instant AI-powered cavity detection, OPG classification, and comprehensive assessment.',
+      'Upload dental images (clinical photos or radiographs) for instant AI-powered Clinical Photo Analysis, X-Ray Analysis, and localized pathology detection.',
   },
   {
     icon: ClipboardList,
@@ -100,14 +100,7 @@ export function Features() {
               <p className="text-slate-600 text-sm leading-relaxed">
                 {feature.description}
               </p>
-              <span
-                className={cn(
-                  'text-blue-600 text-sm font-medium mt-4 inline-flex items-center gap-1',
-                  'opacity-0 group-hover:opacity-100 transition-opacity'
-                )}
-              >
-                Learn more →
-              </span>
+
             </div>
           ))}
         </div>

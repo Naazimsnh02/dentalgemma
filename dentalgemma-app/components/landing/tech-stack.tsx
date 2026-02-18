@@ -28,22 +28,22 @@ export function TechStack() {
           </p>
         </div>
 
-        <div className={cn("flex flex-wrap justify-center gap-4 mt-12")}>
+        <div className={cn("flex flex-wrap justify-center gap-3 mt-12")}>
           {techItems.map((item) => (
             <span
               key={item.label}
               className={cn(
-                "bg-slate-50 border border-slate-200 rounded-full px-6 py-3 text-sm font-medium text-slate-700",
-                "hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700 transition-all duration-200 cursor-default"
+                "bg-white/50 backdrop-blur-sm border border-slate-200/60 rounded-full px-6 py-3 text-sm font-semibold text-slate-800",
+                "hover:border-blue-400/50 hover:bg-white hover:text-blue-700 transition-all duration-300 cursor-default shadow-sm hover:shadow-md"
               )}
             >
-              {item.emoji} {item.label}
+              <span className="mr-2 opacity-80">{item.emoji}</span> {item.label}
             </span>
           ))}
         </div>
 
         <p className={cn("text-sm text-slate-400 mt-8 text-center")}>
-          Deployed on Vercel · GPU Inference on Modal.com · 100% Open Source
+          Deployed on Vercel · GPU Inference on Modal.com
         </p>
       </div>
     </section>
