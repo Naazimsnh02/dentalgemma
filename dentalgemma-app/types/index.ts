@@ -7,7 +7,7 @@
 // ----------------------------------------------------------------------------
 
 export type UrgencyLevel = 'emergency' | 'urgent' | 'routine' | 'home-care';
-export type AnalysisType = 'cavity' | 'opg' | 'general';
+export type AnalysisType = 'cavity' | 'opg' | 'tooth-id' | 'general';
 export type ImageFormat = 'jpeg' | 'png' | 'dicom';
 export type VoiceMode = 'standard' | 'enhanced';
 export type Theme = 'light' | 'dark' | 'system';
@@ -82,7 +82,7 @@ export interface GeneralAnalysis extends XRayAnalysisBase {
   qualityAssessment: string;
 }
 
-export type XRayAnalysis = CavityAnalysis | OPGAnalysis | GeneralAnalysis;
+export type XRayAnalysis = CavityAnalysis | OPGAnalysis | ToothIDAnalysis | GeneralAnalysis;
 
 // ----------------------------------------------------------------------------
 // Clinical Case Types
@@ -146,40 +146,24 @@ export interface Diagnosis {
 
 export interface Etiology {
   rootCause: string;
-  contributingFactors: string[];
-  riskFactors: string[];
 }
 
 export interface ManagementPlan {
-  immediate: string[];
   protocol: string[];
-  alternatives: string[];
-  expectedOutcomes: string;
-  duration: string;
 }
 
 export interface AntibioticRecommendation {
-  indication: string;
-  drug: string;
-  dosage: string;
-  duration: string;
-  alternatives: string[];
-  rationale: string;
+  indicated: boolean;
+  reason: string;
 }
 
 export interface FollowUp {
-  initialTiming: string;
+  timing: string;
   monitoring: string[];
-  longTerm: string;
-  redFlags: string[];
 }
 
 export interface PatientCounseling {
   explanation: string;
-  homeCare: string[];
-  dietary: string[];
-  painManagement: string;
-  emergencyTriggers: string[];
 }
 
 export interface ClinicalGuidelines {
@@ -190,14 +174,16 @@ export interface ClinicalGuidelines {
 
 export interface CaseAssessment {
   success: boolean;
-  diagnosis: Diagnosis;
+  diagnosis: {
+    primary: string;
+    differential: string[];
+  };
   etiology: Etiology;
   urgency: UrgencyLevel;
   managementPlan: ManagementPlan;
   antibiotics?: AntibioticRecommendation;
   followUp: FollowUp;
   patientCounseling: PatientCounseling;
-  guidelines: ClinicalGuidelines;
   processingTime: number;
 }
 

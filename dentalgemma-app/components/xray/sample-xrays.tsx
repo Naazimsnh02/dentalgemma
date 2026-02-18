@@ -88,12 +88,14 @@ const SAMPLE_XRAYS: SampleXRay[] = [
 const analysisTypeLabels: Record<AnalysisType, string> = {
   cavity: 'Cavity Detection',
   opg: 'OPG Classification',
+  'tooth-id': 'Tooth Identification',
   general: 'General Assessment',
 };
 
 const analysisTypeColors: Record<AnalysisType, string> = {
   cavity: 'bg-red-500 dark:bg-red-600 text-white border border-black',
   opg: 'bg-blue-500 dark:bg-blue-600 text-white border border-black',
+  'tooth-id': 'bg-green-500 dark:bg-green-600 text-white border border-black',
   general: 'bg-purple-500 dark:bg-purple-600 text-white border border-black',
 };
 

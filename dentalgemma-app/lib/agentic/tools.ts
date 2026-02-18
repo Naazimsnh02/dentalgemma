@@ -153,7 +153,7 @@ export async function assessCase(input: AssessCaseInput) {
     return {
       success: true,
       assessment,
-      summary: `Clinical assessment complete. Diagnosis: ${assessment.diagnosis.primary}. Urgency: ${assessment.urgency}. Confidence: ${Math.round(assessment.diagnosis.confidence * 100)}%.`,
+      summary: `Clinical assessment complete. Diagnosis: ${assessment.diagnosis.primary}. Urgency: ${assessment.urgency}.`,
     };
   } catch (error) {
     return {
@@ -287,8 +287,6 @@ export async function generateReport(input: GenerateReportInput) {
     if (input.caseAssessment) {
       report += '## Clinical Assessment\n\n';
       report += `**Primary Diagnosis:** ${input.caseAssessment.diagnosis.primary}\n`;
-      report += `**ICD-10 Code:** ${input.caseAssessment.diagnosis.icd10}\n`;
-      report += `**Confidence:** ${Math.round(input.caseAssessment.diagnosis.confidence * 100)}%\n`;
       report += `**Urgency:** ${input.caseAssessment.urgency}\n\n`;
       
       if (input.caseAssessment.diagnosis.differential.length > 0) {

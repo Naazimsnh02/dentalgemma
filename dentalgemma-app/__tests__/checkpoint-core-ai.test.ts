@@ -270,7 +270,7 @@ describe('Checkpoint 12: Core AI Features Complete', () => {
       expect(toolNames).toContain('findSpecialist');
       expect(toolNames).toContain('generateReport');
       expect(toolNames).toContain('checkGuidelines');
-      expect(toolNames).length === 6;
+      expect(toolNames).toHaveLength(6);
     });
 
     test('each tool has schema and execute function', () => {
@@ -479,13 +479,13 @@ describe('Checkpoint 12: Core AI Features Complete', () => {
     test('CaseAssessment shape is correct', () => {
       const assessment: CaseAssessment = {
         success: true,
-        diagnosis: { primary: 'Caries', icd10: 'K02', confidence: 0.9, differential: [] },
-        etiology: { rootCause: 'Bacteria', contributingFactors: [], riskFactors: [] },
+        diagnosis: { primary: 'Caries', differential: [] },
+        etiology: { rootCause: 'Bacteria' },
         urgency: 'routine',
-        managementPlan: { immediate: [], protocol: ['Filling'], alternatives: [], expectedOutcomes: 'Good', duration: '1 visit' },
-        followUp: { initialTiming: '2 weeks', monitoring: [], longTerm: 'Regular checkups', redFlags: [] },
-        patientCounseling: { explanation: 'Cavity found', homeCare: [], dietary: [], painManagement: 'OTC', emergencyTriggers: [] },
-        guidelines: { relevant: [], references: [], evidenceLevel: 'B' },
+        managementPlan: { protocol: ['Filling'] },
+        antibiotics: { indicated: false, reason: 'none' },
+        followUp: { timing: '2 weeks', monitoring: [] },
+        patientCounseling: { explanation: 'Cavity found' },
         processingTime: 2.0,
       };
 

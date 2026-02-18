@@ -417,45 +417,29 @@ You MUST respond with ONLY a valid JSON object (no markdown fences, no extra tex
 {{
   "diagnosis": {{
     "primary": "primary diagnosis text",
-    "icd10": "ICD-10 code like K04.0",
-    "confidence": 0.85,
     "differential": ["differential diagnosis 1", "differential diagnosis 2"]
   }},
   "etiology": {{
-    "rootCause": "root cause description",
-    "contributingFactors": ["factor 1", "factor 2"],
-    "riskFactors": ["risk 1", "risk 2"]
+    "rootCause": "root cause description"
   }},
   "urgency": "routine",
   "managementPlan": {{
-    "immediate": ["immediate step 1"],
-    "protocol": ["treatment step 1", "treatment step 2"],
-    "alternatives": ["alternative treatment 1"],
-    "expectedOutcomes": "expected outcomes description",
-    "duration": "treatment duration"
+    "protocol": ["treatment step 1", "treatment step 2"]
+  }},
+  "antibiotics": {{
+    "indicated": false,
+    "reason": "none"
   }},
   "followUp": {{
-    "initialTiming": "1-2 weeks",
-    "monitoring": ["what to monitor"],
-    "longTerm": "long term care plan",
-    "redFlags": ["warning sign 1"]
+    "timing": "1-2 weeks",
+    "monitoring": ["what to monitor"]
   }},
   "patientCounseling": {{
-    "explanation": "patient-friendly explanation",
-    "homeCare": ["home care instruction 1"],
-    "dietary": ["dietary recommendation 1"],
-    "painManagement": "pain management advice",
-    "emergencyTriggers": ["when to seek emergency care"]
-  }},
-  "guidelines": {{
-    "relevant": ["relevant guideline 1"],
-    "references": [],
-    "evidenceLevel": "B"
+    "explanation": "patient-friendly explanation"
   }}
 }}
 
 The "urgency" field must be one of: "emergency", "urgent", "routine", or "home-care".
-The "confidence" field must be a number between 0 and 1.
 Fill all fields with clinically appropriate values based on the case details above.
 """
             

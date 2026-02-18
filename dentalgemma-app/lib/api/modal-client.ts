@@ -278,6 +278,7 @@ export class ModalClient {
       const questions: Record<AnalysisType, string> = {
         cavity: 'Analyze this dental X-ray for cavities. Respond ONLY in JSON format: { "findings": ["..."], "confidence": 0.0-1.0, "cavityCount": "0"|"1"|"2"|"3+", "classification": "normal"|"cavity", "recommendations": ["..."] }.',
         opg: 'Classify this OPG (panoramic) X-ray. Respond ONLY in JSON format: { "findings": ["..."], "confidence": 0.0-1.0, "pathologyClass": "Healthy"|"Caries"|"Impacted"|"BDC-BDR"|"Infection"|"Fractured", "recommendations": ["..."] }.',
+        'tooth-id': 'Identify all teeth in this X-ray and classify each. Respond ONLY in JSON format: { "findings": ["..."], "confidence": 0.0-1.0, "toothCount": number, "toothTypes": [{"tooth": "number", "type": "string"}], "recommendations": ["..."] }.',
         general: 'Provide a comprehensive systematic evaluation of this dental X-ray. Respond ONLY in JSON format: { "findings": ["..."], "confidence": 0.0-1.0, "urgency": "emergency"|"urgent"|"routine"|"home-care", "qualityAssessment": "string", "reportSections": ["..."], "recommendations": ["..."] }.',
       };
 
@@ -436,40 +437,25 @@ export class ModalClient {
           success: true,
           diagnosis: {
             primary: ca.diagnosis?.primary || 'Diagnosis pending',
-            icd10: ca.diagnosis?.icd10 || 'K00-K14',
-            confidence: ca.diagnosis?.confidence || 0.8,
             differential: ca.diagnosis?.differential || [],
           },
           etiology: {
             rootCause: ca.etiology?.rootCause || 'To be determined',
-            contributingFactors: ca.etiology?.contributingFactors || [],
-            riskFactors: ca.etiology?.riskFactors || [],
           },
           urgency: ca.urgency || 'routine',
           managementPlan: {
-            immediate: ca.managementPlan?.immediate || [],
             protocol: ca.managementPlan?.protocol || [],
-            alternatives: ca.managementPlan?.alternatives || [],
-            expectedOutcomes: ca.managementPlan?.expectedOutcomes || 'Favorable with proper treatment',
-            duration: ca.managementPlan?.duration || 'Variable',
           },
+          antibiotics: ca.antibiotics ? {
+            indicated: !!ca.antibiotics.indicated,
+            reason: ca.antibiotics.reason || 'Not specified',
+          } : undefined,
           followUp: {
-            initialTiming: ca.followUp?.initialTiming || '1-2 weeks',
+            timing: ca.followUp?.timing || 'To be determined',
             monitoring: ca.followUp?.monitoring || [],
-            longTerm: ca.followUp?.longTerm || 'Regular dental checkups',
-            redFlags: ca.followUp?.redFlags || [],
           },
           patientCounseling: {
             explanation: ca.patientCounseling?.explanation || '',
-            homeCare: ca.patientCounseling?.homeCare || [],
-            dietary: ca.patientCounseling?.dietary || [],
-            painManagement: ca.patientCounseling?.painManagement || 'As directed by dentist',
-            emergencyTriggers: ca.patientCounseling?.emergencyTriggers || [],
-          },
-          guidelines: {
-            relevant: ca.guidelines?.relevant || [],
-            references: ca.guidelines?.references || [],
-            evidenceLevel: ca.guidelines?.evidenceLevel || 'B',
           },
           processingTime,
         };
@@ -602,14 +588,21 @@ export class ModalClient {
           pathologyClass: this.validateOPGClass(jsonData.pathologyClass) || 'Healthy',
         };
 
-      case 'general':
+      case 'tooth-id':
+        return {
+          ...base,
+          type: 'tooth-id',
+          toothCount: typeof jsonData.toothCount === 'number' ? jsonData.toothCount : 0,
+          toothTypes: Array.isArray(jsonData.toothTypes) ? jsonData.toothTypes : [],
+        };
+
+      default:
+        // Fallback for general or unexpected types
         return {
           ...base,
           type: 'general',
           reportSections: Array.isArray(jsonData.reportSections) ? jsonData.reportSections : [],
-          qualityAssessment: typeof jsonData.qualityAssessment === 'string' 
-            ? jsonData.qualityAssessment 
-            : 'Good quality image suitable for diagnostic purposes',
+          qualityAssessment: jsonData.qualityAssessment || 'Analysis completed',
         };
     }
   }
@@ -1072,40 +1065,25 @@ export class ModalClient {
       success: true,
       diagnosis: {
         primary: primaryDiagnosis,
-        icd10: this.extractICD10(text),
-        confidence: this.extractConfidence(text),
         differential: this.extractDifferential(text),
       },
       etiology: {
         rootCause: rootCause,
-        contributingFactors: this.extractListItems(text, 'contributing factors?|risk factors?'),
-        riskFactors: this.extractListItems(text, 'risk factors?'),
       },
       urgency: this.extractUrgencyLevel(text),
       managementPlan: {
-        immediate: this.extractListItems(text, 'immediate|urgent|emergency'),
         protocol: protocolLines.length > 0 ? protocolLines : [text.substring(0, 200)],
-        alternatives: this.extractListItems(text, 'alternative|option'),
-        expectedOutcomes: this.extractSection(text, 'outcome|prognosis') || 'Favorable with proper treatment',
-        duration: this.extractSection(text, 'duration|timeline') || 'Variable',
       },
+      antibiotics: text.toLowerCase().includes('antibiotic') ? {
+        indicated: !text.toLowerCase().includes('not indicated'),
+        reason: this.extractSection(text, 'antibiotic') || 'Refer to assessment',
+      } : undefined,
       followUp: {
-        initialTiming: this.extractSection(text, 'follow.?up') || '1-2 weeks',
+        timing: this.extractSection(text, 'follow.?up') || '1-2 weeks',
         monitoring: this.extractListItems(text, 'monitor|watch for'),
-        longTerm: this.extractSection(text, 'long.?term') || 'Regular dental checkups',
-        redFlags: this.extractListItems(text, 'red flag|warning sign|seek (?:immediate|emergency)'),
       },
       patientCounseling: {
         explanation: patientExplanation,
-        homeCare: this.extractListItems(text, 'home care|self.?care|at home'),
-        dietary: this.extractListItems(text, 'diet|food|avoid eating'),
-        painManagement: this.extractSection(text, 'pain (?:management|relief|control)') || 'As directed by dentist',
-        emergencyTriggers: this.extractListItems(text, 'emergency|seek (?:immediate|urgent) care'),
-      },
-      guidelines: {
-        relevant: this.extractListItems(text, 'guideline|standard|protocol'),
-        references: [],
-        evidenceLevel: 'B',
       },
       processingTime,
     };

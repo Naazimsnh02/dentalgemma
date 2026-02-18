@@ -169,15 +169,12 @@ describe('Modal Client Property-Based Tests', () => {
   describe('Property 3: Clinical Assessment Output Completeness', () => {
     /**
      * For any valid clinical case submission, the DentalGemma model output SHALL contain
-     * all 8 required sections:
-     * 1. Primary diagnosis (with ICD-10 code, confidence, differential diagnoses)
-     * 2. Etiology analysis
-     * 3. Urgency classification
-     * 4. Management plan
-     * 5. Antibiotic recommendations (when indicated)
-     * 6. Follow-up schedule
-     * 7. Patient counseling
-     * 8. Clinical guidelines with evidence level
+     * all 5 core sections:
+     * 1. Patient Assessment (Diagnosis & Etiology)
+     * 2. Management Plan
+     * 3. Antibiotic Considerations
+     * 4. Follow-up Schedule
+     * 5. Patient Counseling
      */
 
     // Arbitrary for clinical case data
@@ -235,7 +232,7 @@ describe('Modal Client Property-Based Tests', () => {
       type: fc.constant('clinical_assessment'),
     });
 
-    test('**Validates: Requirements 2.6, 2.7, 2.8, 2.9, 2.10, 2.11, 2.12, 2.13** - All 8 sections are present', async () => {
+    test('**Validates: Simplified clinical structure** - All 5 sections are present', async () => {
       await fc.assert(
         fc.asyncProperty(
           clinicalCaseArb,
@@ -250,68 +247,41 @@ describe('Modal Client Property-Based Tests', () => {
             // Execute
             const result = await client.assessCase(caseData);
 
-            // Verify all 8 required sections are present
+            // Verify all 5 core sections are present
             expect(result).toBeDefined();
             expect(result.success).toBe(true);
 
-            // Section 1: Primary Diagnosis
+            // Section 1: Patient Assessment (Diagnosis & Etiology)
             expect(result.diagnosis).toBeDefined();
             expect(typeof result.diagnosis.primary).toBe('string');
             expect(result.diagnosis.primary.length).toBeGreaterThan(0);
-            expect(typeof result.diagnosis.icd10).toBe('string');
-            expect(typeof result.diagnosis.confidence).toBe('number');
-            expect(result.diagnosis.confidence).toBeGreaterThanOrEqual(0);
-            expect(result.diagnosis.confidence).toBeLessThanOrEqual(1);
             expect(Array.isArray(result.diagnosis.differential)).toBe(true);
-
-            // Section 2: Etiology
+            
             expect(result.etiology).toBeDefined();
             expect(typeof result.etiology.rootCause).toBe('string');
-            expect(Array.isArray(result.etiology.contributingFactors)).toBe(true);
-            expect(Array.isArray(result.etiology.riskFactors)).toBe(true);
 
-            // Section 3: Urgency Classification
+            // Urgency Classification
             expect(['emergency', 'urgent', 'routine', 'home-care']).toContain(result.urgency);
 
-            // Section 4: Management Plan
+            // Section 2: Management Plan
             expect(result.managementPlan).toBeDefined();
-            expect(Array.isArray(result.managementPlan.immediate)).toBe(true);
             expect(Array.isArray(result.managementPlan.protocol)).toBe(true);
-            expect(Array.isArray(result.managementPlan.alternatives)).toBe(true);
-            expect(typeof result.managementPlan.expectedOutcomes).toBe('string');
-            expect(typeof result.managementPlan.duration).toBe('string');
 
-            // Section 5: Antibiotics (optional but structure must be valid if present)
+            // Section 3: Antibiotics
             if (result.antibiotics) {
-              expect(typeof result.antibiotics.indication).toBe('string');
-              expect(typeof result.antibiotics.drug).toBe('string');
-              expect(typeof result.antibiotics.dosage).toBe('string');
-              expect(typeof result.antibiotics.duration).toBe('string');
-              expect(Array.isArray(result.antibiotics.alternatives)).toBe(true);
-              expect(typeof result.antibiotics.rationale).toBe('string');
+              expect(typeof result.antibiotics.indicated).toBe('boolean');
+              expect(typeof result.antibiotics.reason).toBe('string');
             }
 
-            // Section 6: Follow-up Schedule
+            // Section 4: Follow-up Schedule
             expect(result.followUp).toBeDefined();
-            expect(typeof result.followUp.initialTiming).toBe('string');
+            expect(typeof result.followUp.timing).toBe('string');
             expect(Array.isArray(result.followUp.monitoring)).toBe(true);
-            expect(typeof result.followUp.longTerm).toBe('string');
-            expect(Array.isArray(result.followUp.redFlags)).toBe(true);
 
-            // Section 7: Patient Counseling
+            // Section 5: Patient Counseling
             expect(result.patientCounseling).toBeDefined();
             expect(typeof result.patientCounseling.explanation).toBe('string');
             expect(result.patientCounseling.explanation.length).toBeGreaterThan(0);
-            expect(Array.isArray(result.patientCounseling.homeCare)).toBe(true);
-            expect(Array.isArray(result.patientCounseling.dietary)).toBe(true);
-            expect(typeof result.patientCounseling.painManagement).toBe('string');
-            expect(Array.isArray(result.patientCounseling.emergencyTriggers)).toBe(true);
-
-            // Section 8: Clinical Guidelines
-            expect(result.guidelines).toBeDefined();
-            expect(Array.isArray(result.guidelines.relevant)).toBe(true);
-            expect(Array.isArray(result.guidelines.references)).toBe(true);
-            expect(['A', 'B', 'C']).toContain(result.guidelines.evidenceLevel);
 
             // Processing time
             expect(typeof result.processingTime).toBe('number');
@@ -336,47 +306,6 @@ describe('Modal Client Property-Based Tests', () => {
             const result = await client.assessCase(caseData);
 
             expect(['emergency', 'urgent', 'routine', 'home-care']).toContain(result.urgency);
-          }
-        ),
-        { numRuns: 20 }
-      );
-    });
-
-    test('Evidence level is always A, B, or C', async () => {
-      await fc.assert(
-        fc.asyncProperty(
-          clinicalCaseArb,
-          mockAssessmentResponseArb,
-          async (caseData, mockResponse) => {
-            (global.fetch as jest.Mock).mockResolvedValueOnce({
-              ok: true,
-              json: async () => mockResponse,
-            });
-
-            const result = await client.assessCase(caseData);
-
-            expect(['A', 'B', 'C']).toContain(result.guidelines.evidenceLevel);
-          }
-        ),
-        { numRuns: 20 }
-      );
-    });
-
-    test('Diagnosis confidence is always between 0 and 1', async () => {
-      await fc.assert(
-        fc.asyncProperty(
-          clinicalCaseArb,
-          mockAssessmentResponseArb,
-          async (caseData, mockResponse) => {
-            (global.fetch as jest.Mock).mockResolvedValueOnce({
-              ok: true,
-              json: async () => mockResponse,
-            });
-
-            const result = await client.assessCase(caseData);
-
-            expect(result.diagnosis.confidence).toBeGreaterThanOrEqual(0);
-            expect(result.diagnosis.confidence).toBeLessThanOrEqual(1);
           }
         ),
         { numRuns: 20 }
