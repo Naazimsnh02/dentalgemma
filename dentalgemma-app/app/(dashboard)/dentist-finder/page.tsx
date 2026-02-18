@@ -127,9 +127,8 @@ export default function DentistFinderPage() {
 
           {/* Map and List Container */}
           <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">
-            {/* Map View - 60% on desktop, top on mobile */}
-            <div className="lg:w-[60%] h-64 lg:h-full border-b lg:border-b-0 lg:border-r">
-              {!hasSearched ? (
+            {/* Map View - 50% on desktop, fixed height on mobile */}
+            <div className="lg:w-1/2 h-96 lg:h-full border-b lg:border-b-0 lg:border-r">{!hasSearched ? (
                 <div className="h-full flex items-center justify-center bg-gray-100">
                   <div className="text-center text-gray-500 px-4">
                     <Search size={48} className="mx-auto mb-4 opacity-50" />
@@ -167,14 +166,15 @@ export default function DentistFinderPage() {
               )}
             </div>
 
-            {/* List View - 40% on desktop, bottom on mobile */}
-            <div className="lg:w-[40%] flex-1 lg:flex-none lg:h-full bg-white">
-              <DentistList
-                dentists={dentists}
-                selectedDentist={selectedDentist}
-                onDentistClick={handleDentistClick}
-                isLoading={isLoading}
-              />
+            {/* List View - 50% on desktop, scrollable on mobile */}
+            <div className="lg:w-1/2 flex-1 lg:flex-none lg:h-full bg-white overflow-y-auto">{dentists.length > 0 || isLoading ? (
+                <DentistList
+                  dentists={dentists}
+                  selectedDentist={selectedDentist}
+                  onDentistClick={handleDentistClick}
+                  isLoading={isLoading}
+                />
+              ) : null}
             </div>
           </div>
         </div>

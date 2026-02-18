@@ -7,7 +7,7 @@
  * Requirements: 5.6, 5.8, 5.9
  */
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import type { DentistInfo } from '@/types';
 import { DentistCard } from './dentist-card';
 import { Search } from 'lucide-react';
@@ -25,20 +25,23 @@ export function DentistList({
   onDentistClick,
   isLoading = false,
 }: DentistListProps) {
-  const [favoriteDentists, setFavoriteDentists] = useState<Set<string>>(() => {
-    // Initialize from localStorage
-    try {
-      const stored = localStorage.getItem('dentalgemma:favorites-dentists');
-      if (stored) {
-        const favorites: DentistInfo[] = JSON.parse(stored);
-        return new Set(favorites.map((d) => d.placeId));
-      }
-    } catch (error) {
-      console.error('Failed to load favorites:', error);
-    }
-    return new Set();
-  });
+  const [favoriteDentists, setFavoriteDentists] = useState<Set<string>>(new Set());
   const [searchQuery, setSearchQuery] = useState('');
+
+  // Load favorites from localStorage on client side only
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const stored = localStorage.getItem('dentalgemma:favorites-dentists');
+        if (stored) {
+          const favorites: DentistInfo[] = JSON.parse(stored);
+          setFavoriteDentists(new Set(favorites.map((d) => d.placeId)));
+        }
+      } catch (error) {
+        console.error('Failed to load favorites:', error);
+      }
+    }
+  }, []);
 
   // Save favorites to localStorage
   const saveFavorites = (placeIds: Set<string>) => {

@@ -104,6 +104,11 @@ export function DentistMap({
 
       mapInstanceRef.current = map;
       markerClusterGroupRef.current = clusterGroup;
+
+      // Fix map size after initialization
+      setTimeout(() => {
+        map.invalidateSize();
+      }, 100);
     } catch (err) {
       console.error('Failed to initialize map:', err);
       setError('Failed to initialize map');
@@ -116,7 +121,28 @@ export function DentistMap({
         mapInstanceRef.current = null;
       }
     };
-  }, [L, center]);
+  }, [L]); // Remove center dependency - we'll update it separately
+
+  // Fix map size when container resizes
+  useEffect(() => {
+    if (!mapInstanceRef.current) return;
+    
+    const handleResize = () => {
+      if (mapInstanceRef.current) {
+        mapInstanceRef.current.invalidateSize();
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    
+    // Also invalidate size after a short delay to handle initial render
+    const timer = setTimeout(handleResize, 250);
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      clearTimeout(timer);
+    };
+  }, []);
 
   // Update markers when dentists change
   useEffect(() => {
@@ -130,6 +156,12 @@ export function DentistMap({
     // Clear existing markers
     clusterGroup.clearLayers();
     markersRef.current.clear();
+
+    // If no dentists, just update center
+    if (dentists.length === 0) {
+      map.setView([center.lat, center.lng], 13, { animate: true });
+      return;
+    }
 
     // Add markers for each dentist
     dentists.forEach((dentist) => {
@@ -182,13 +214,11 @@ export function DentistMap({
     });
 
     // Fit bounds to show all markers
-    if (dentists.length > 0) {
-      const bounds = L.latLngBounds(
-        dentists.map((d) => [d.location.lat, d.location.lng])
-      );
-      map.fitBounds(bounds, { padding: [50, 50] });
-    }
-  }, [L, dentists, onMarkerClick]);
+    const bounds = L.latLngBounds(
+      dentists.map((d) => [d.location.lat, d.location.lng])
+    );
+    map.fitBounds(bounds, { padding: [50, 50], maxZoom: 15 });
+  }, [L, dentists, center, onMarkerClick]);
 
   // Highlight selected dentist
   useEffect(() => {
@@ -284,7 +314,7 @@ export function DentistMap({
       {/* Current location button */}
       <button
         onClick={handleGetCurrentLocation}
-        className="absolute top-4 right-4 z-[1000] bg-white p-2 rounded-lg shadow-lg hover:bg-gray-50 transition-colors"
+        className="absolute top-4 left-4 z-[1000] bg-white p-2 rounded-lg shadow-lg hover:bg-gray-50 transition-colors"
         title="Get current location"
       >
         <svg

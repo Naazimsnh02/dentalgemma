@@ -38,8 +38,25 @@ async function geocodeAddress(address: string): Promise<Location> {
   
   const data = await response.json();
   
+  // Log the actual response for debugging
+  console.log('Geocoding API response:', {
+    status: data.status,
+    error_message: data.error_message,
+    results_count: data.results?.length || 0,
+  });
+  
   if (data.status !== 'OK' || !data.results || data.results.length === 0) {
-    throw new Error('Unable to geocode address');
+    // Provide more specific error messages based on status
+    const errorMessages: Record<string, string> = {
+      'ZERO_RESULTS': 'No results found for this address. Please try a different location.',
+      'OVER_QUERY_LIMIT': 'API quota exceeded. Please try again later.',
+      'REQUEST_DENIED': 'API request denied. Please check your API key configuration.',
+      'INVALID_REQUEST': 'Invalid address format. Please check your input.',
+      'UNKNOWN_ERROR': 'Geocoding service error. Please try again.',
+    };
+    
+    const errorMsg = errorMessages[data.status] || `Unable to geocode address (${data.status})`;
+    throw new Error(errorMsg + (data.error_message ? `: ${data.error_message}` : ''));
   }
   
   const location = data.results[0].geometry.location;

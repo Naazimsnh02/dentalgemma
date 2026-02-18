@@ -7,8 +7,8 @@
  * Requirements: 5.1, 5.3, 5.4
  */
 
-import { useState } from 'react';
-import { MapPin, Sliders } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { MapPin, Sliders, Search } from 'lucide-react';
 
 export interface FilterValues {
   location: string;
@@ -50,31 +50,38 @@ const PRICE_LEVELS = [
 ];
 
 export function FilterPanel({ onFilterChange, isLoading = false }: FilterPanelProps) {
-  const [filters, setFilters] = useState<FilterValues>(() => {
-    // Initialize from localStorage
-    try {
-      const saved = localStorage.getItem('dentalgemma:dentist-filters');
-      if (saved) {
-        return JSON.parse(saved);
-      }
-    } catch (error) {
-      console.error('Failed to load saved filters:', error);
-    }
-    return {
-      location: '',
-      radius: 10,
-      specialty: 'General',
-      rating: null,
-      priceLevel: null,
-      openNow: false,
-    };
+  const [filters, setFilters] = useState<FilterValues>({
+    location: '',
+    radius: 5,
+    specialty: 'General',
+    rating: null,
+    priceLevel: null,
+    openNow: false,
   });
+  const [isClient, setIsClient] = useState(false);
+
+  // Load saved filters only on client side
+  useEffect(() => {
+    setIsClient(true);
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem('dentalgemma:dentist-filters');
+        if (saved) {
+          setFilters(JSON.parse(saved));
+        }
+      } catch (error) {
+        console.error('Failed to load saved filters:', error);
+      }
+    }
+  }, []);
 
   const [locationSuggestions, setLocationSuggestions] = useState<string[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Save filters to localStorage
   const saveFilters = (newFilters: FilterValues) => {
+    if (typeof window === 'undefined') return;
     try {
       localStorage.setItem('dentalgemma:dentist-filters', JSON.stringify(newFilters));
     } catch (error) {
@@ -82,7 +89,22 @@ export function FilterPanel({ onFilterChange, isLoading = false }: FilterPanelPr
     }
   };
 
-  // Update filter and notify parent
+  // Update filter (without triggering search)
+  const updateFilterLocal = <K extends keyof FilterValues>(
+    key: K,
+    value: FilterValues[K]
+  ) => {
+    const newFilters = { ...filters, [key]: value };
+    setFilters(newFilters);
+    saveFilters(newFilters);
+  };
+
+  // Trigger search manually
+  const handleSearch = () => {
+    onFilterChange(filters);
+  };
+
+  // Auto-search for non-location filter changes
   const updateFilter = <K extends keyof FilterValues>(
     key: K,
     value: FilterValues[K]
@@ -90,7 +112,11 @@ export function FilterPanel({ onFilterChange, isLoading = false }: FilterPanelPr
     const newFilters = { ...filters, [key]: value };
     setFilters(newFilters);
     saveFilters(newFilters);
-    onFilterChange(newFilters);
+    
+    // Only auto-search if location is already set and we're changing other filters
+    if (key !== 'location' && filters.location.trim() !== '') {
+      onFilterChange(newFilters);
+    }
   };
 
   // Get current location
@@ -115,7 +141,7 @@ export function FilterPanel({ onFilterChange, isLoading = false }: FilterPanelPr
   // Simple location autocomplete (mock implementation)
   // In production, you would use Google Places Autocomplete API
   const handleLocationChange = (value: string) => {
-    updateFilter('location', value);
+    updateFilterLocal('location', value);
     
     // Mock suggestions
     if (value.length > 2) {
@@ -132,8 +158,17 @@ export function FilterPanel({ onFilterChange, isLoading = false }: FilterPanelPr
   };
 
   const handleSuggestionClick = (suggestion: string) => {
-    updateFilter('location', suggestion);
+    updateFilterLocal('location', suggestion);
     setShowSuggestions(false);
+  };
+
+  // Handle Enter key in location input
+  const handleLocationKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      setShowSuggestions(false);
+      handleSearch();
+    }
   };
 
   return (
@@ -159,6 +194,7 @@ export function FilterPanel({ onFilterChange, isLoading = false }: FilterPanelPr
             placeholder="Enter city, address, or ZIP code"
             value={filters.location}
             onChange={(e) => handleLocationChange(e.target.value)}
+            onKeyDown={handleLocationKeyDown}
             onFocus={() => filters.location.length > 2 && setShowSuggestions(true)}
             onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
             disabled={isLoading}
@@ -189,6 +225,16 @@ export function FilterPanel({ onFilterChange, isLoading = false }: FilterPanelPr
           Use my current location
         </button>
       </div>
+
+      {/* Search Button */}
+      <button
+        onClick={handleSearch}
+        disabled={isLoading || !filters.location.trim()}
+        className="w-full px-4 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+      >
+        <Search size={20} />
+        {isLoading ? 'Searching...' : 'Search Dentists'}
+      </button>
 
       {/* Radius Slider */}
       <div>
@@ -299,7 +345,7 @@ export function FilterPanel({ onFilterChange, isLoading = false }: FilterPanelPr
         onClick={() => {
           const defaultFilters: FilterValues = {
             location: '',
-            radius: 10,
+            radius: 5,
             specialty: 'General',
             rating: null,
             priceLevel: null,
