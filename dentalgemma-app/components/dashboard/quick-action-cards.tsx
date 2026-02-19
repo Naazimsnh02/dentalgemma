@@ -9,11 +9,7 @@ import {
   MapPin,
   TrendingUp,
   BookOpen,
-  GraduationCap,
   Stethoscope,
-  Info,
-  LayoutDashboard,
-  Settings,
 } from 'lucide-react';
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
@@ -76,41 +72,15 @@ const quickActions: QuickAction[] = [
     icon: BookOpen,
     color: 'bg-indigo-500/10 text-indigo-600 dark:text-indigo-400',
   },
-  {
-    title: 'Patient Education',
-    description: 'Learn about dental conditions',
-    href: '/education',
-    icon: GraduationCap,
-    color: 'bg-pink-500/10 text-pink-600 dark:text-pink-400',
-  },
+
   {
     title: 'Symptom Checker',
     description: 'Check dental symptoms',
     href: '/symptom-checker',
     icon: Stethoscope,
-    color: 'bg-yellow-500/10 text-yellow-600 dark:text-yellow-400',
+    color: 'bg-amber-500/10 text-amber-600 dark:text-amber-400',
   },
-  {
-    title: 'Model Information',
-    description: 'Learn about DentalGemma AI',
-    href: '/model-info',
-    icon: Info,
-    color: 'bg-teal-500/10 text-teal-600 dark:text-teal-400',
-  },
-  {
-    title: 'Dashboard',
-    description: 'View your activity overview',
-    href: '/dashboard',
-    icon: LayoutDashboard,
-    color: 'bg-slate-500/10 text-slate-600 dark:text-slate-400',
-  },
-  {
-    title: 'Settings',
-    description: 'Manage app preferences',
-    href: '/settings',
-    icon: Settings,
-    color: 'bg-zinc-500/10 text-zinc-600 dark:text-zinc-400',
-  },
+
 ];
 
 export function QuickActionCards() {

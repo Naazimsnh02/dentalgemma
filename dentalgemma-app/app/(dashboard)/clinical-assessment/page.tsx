@@ -201,10 +201,7 @@ export default function ClinicalAssessmentPage() {
             any questions regarding medical conditions. Never disregard professional medical advice or delay seeking 
             it because of information provided by this tool.
           </p>
-          <p className="text-sm text-gray-700 mt-2">
-            <strong>Not HIPAA Compliant:</strong> Do not upload real patient data or personally identifiable 
-            information. Use only de-identified or simulated case data for demonstration purposes.
-          </p>
+
         </div>
       </div>
     </div>

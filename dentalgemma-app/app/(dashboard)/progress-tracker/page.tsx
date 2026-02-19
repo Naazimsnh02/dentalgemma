@@ -304,8 +304,8 @@ export default function ProgressTrackerPage() {
       )}
 
       {/* Disclaimer */}
-      <div className="mt-12 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-        <p className="text-sm text-yellow-800">
+      <div className="mt-12 p-4 bg-amber-50 border border-amber-200 rounded-lg">
+        <p className="text-sm text-amber-950">
           <strong>Note:</strong> This treatment tracker is for personal record-keeping only. Always
           consult with your dental professional for medical advice and treatment decisions. Data is
           stored locally in your browser.

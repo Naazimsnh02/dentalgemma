@@ -7,7 +7,7 @@ import type { AnalysisType } from '@/types';
 interface SampleXRay {
   id: string;
   name: string;
-  description: string;
+  // description removed
   imageUrl: string;
   analysisType: AnalysisType;
   thumbnail: string;
@@ -21,67 +21,59 @@ interface SampleXRaysProps {
 const SAMPLE_XRAYS: SampleXRay[] = [
   {
     id: 'photo-1',
-    name: 'Clinical Photo - Dental Assessment',
-    description: 'Clinical photograph for cavity and decay detection',
-    imageUrl: '/samples/cavity-sample.jpg',
+    name: 'Clinical Photo - Healthy Gums',
+    imageUrl: '/analysis/clinical_healthy.jpg',
     analysisType: 'photo',
-    thumbnail: '/samples/cavity-sample.jpg',
+    thumbnail: '/analysis/clinical_healthy.jpg',
   },
   {
     id: 'photo-2',
-    name: 'Clinical Photo - Intraoral View',
-    description: 'Intraoral photograph for oral health assessment',
-    imageUrl: '/samples/cavity-sample-2.jpg',
+    name: 'Clinical Photo - Gum Inflammation',
+    imageUrl: '/analysis/clinical_unhealthy1.jpg',
     analysisType: 'photo',
-    thumbnail: '/samples/cavity-sample-2.jpg',
+    thumbnail: '/analysis/clinical_unhealthy1.jpg',
   },
   {
     id: 'photo-3',
-    name: 'Clinical Photo - Decay Patterns',
-    description: 'Clinical photograph showing dental condition',
-    imageUrl: '/samples/cavity-sample-3.jpg',
+    name: 'Clinical Photo - Severe Inflammation',
+    imageUrl: '/analysis/clinical_unhealthy2.jpg',
     analysisType: 'photo',
-    thumbnail: '/samples/cavity-sample-3.jpg',
+    thumbnail: '/analysis/clinical_unhealthy2.jpg',
   },
   {
     id: 'xray-1',
-    name: 'Panoramic X-Ray - Caries',
-    description: 'Panoramic radiograph showing dental caries',
-    imageUrl: '/samples/opg-caries.jpg',
+    name: 'X-Ray - Healthy Dentition',
+    imageUrl: '/analysis/x-ray-healthy.jpg',
     analysisType: 'xray',
-    thumbnail: '/samples/opg-caries.jpg',
+    thumbnail: '/analysis/x-ray-healthy.jpg',
   },
   {
     id: 'xray-2',
-    name: 'Panoramic X-Ray - Impacted Teeth',
-    description: 'Panoramic radiograph showing impacted wisdom teeth',
-    imageUrl: '/samples/opg-impacted.jpg',
+    name: 'X-Ray - Dental Caries',
+    imageUrl: '/analysis/xray-caries.jpg',
     analysisType: 'xray',
-    thumbnail: '/samples/opg-impacted.jpg',
+    thumbnail: '/analysis/xray-caries.jpg',
   },
   {
     id: 'xray-3',
-    name: 'Panoramic X-Ray - Infection',
-    description: 'Panoramic radiograph showing dental infection',
-    imageUrl: '/samples/opg-infection.jpg',
+    name: 'X-Ray - Impacted Wisdom Tooth',
+    imageUrl: '/analysis/xray-impacted.jpg',
     analysisType: 'xray',
-    thumbnail: '/samples/opg-infection.jpg',
+    thumbnail: '/analysis/xray-impacted.jpg',
   },
   {
     id: 'xray-4',
-    name: 'Dental Radiograph - Intraoral',
-    description: 'Intraoral radiograph for dental assessment',
-    imageUrl: '/samples/general-sample.jpg',
+    name: 'X-Ray - Periapical Infection',
+    imageUrl: '/analysis/xray-infection.jpg',
     analysisType: 'xray',
-    thumbnail: '/samples/general-sample.jpg',
+    thumbnail: '/analysis/xray-infection.jpg',
   },
   {
     id: 'xray-5',
-    name: 'Dental Radiograph - Bitewing',
-    description: 'Bitewing radiograph for clinical evaluation',
-    imageUrl: '/samples/general-sample-2.jpg',
+    name: 'X-Ray - Panoramic View',
+    imageUrl: '/analysis/xray-panaromic.jpg',
     analysisType: 'xray',
-    thumbnail: '/samples/general-sample-2.jpg',
+    thumbnail: '/analysis/xray-panaromic.jpg',
   },
 ];
 
@@ -184,9 +176,7 @@ export function SampleXRays({ onSelectSample, className = '' }: SampleXRaysProps
                 </h4>
               </div>
               
-              <p className="text-xs text-muted-foreground line-clamp-2">
-                {sample.description}
-              </p>
+              {/* Description removed */}
 
               <div>
                 <span

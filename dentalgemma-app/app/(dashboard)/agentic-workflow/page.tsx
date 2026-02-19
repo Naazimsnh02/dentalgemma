@@ -13,8 +13,9 @@ import { AgentGrid } from '@/components/agentic/agent-card';
 import { ToolCallLog, ToolCallSummary } from '@/components/agentic/tool-call-log';
 import { WorkflowControls } from '@/components/agentic/workflow-controls';
 import { createWorkflowEngine } from '@/lib/agentic/workflow-engine';
+import { useAppStore } from '@/store/app-store';
 import type { WorkflowInput, WorkflowStep, WorkflowResult } from '@/types';
-import { Upload, FileText, MapPin, Sparkles, Download, FileDown } from 'lucide-react';
+import { Upload, FileText, MapPin, Sparkles, Download, FileDown, Save } from 'lucide-react';
 
 export default function AgenticWorkflowPage() {
   const [input, setInput] = useState<WorkflowInput>({
@@ -28,6 +29,10 @@ export default function AgenticWorkflowPage() {
   const [status, setStatus] = useState<'idle' | 'running' | 'paused' | 'completed' | 'cancelled' | 'error'>('idle');
   const [error, setError] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<'timeline' | 'grid' | 'logs'>('timeline');
+
+  const addToHistory = useAppStore((state) => state.addToHistory);
+  const updateDashboardStats = useAppStore((state) => state.updateDashboardStats);
+  const dashboardStats = useAppStore((state) => state.dashboardStats);
 
   const engineRef = useRef<any>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -150,6 +155,37 @@ export default function AgenticWorkflowPage() {
     } catch (err) {
       console.error('PDF generation error:', err);
       alert('Failed to generate PDF. Please try downloading as Markdown instead.');
+    }
+  };
+
+  const handleSaveToHistory = () => {
+    if (!result?.finalReport) return;
+
+    try {
+      const historyItem = {
+        id: crypto.randomUUID(),
+        type: 'agentic' as const,
+        summary: `Agentic Workflow: ${input.text.substring(0, 60)}${input.text.length > 60 ? '...' : ''}`,
+        urgency: 'medium' as const,
+        data: {
+          input,
+          steps,
+          result,
+        },
+        timestamp: new Date(),
+      };
+
+      addToHistory(historyItem);
+
+      // Update dashboard stats
+      updateDashboardStats({
+        totalAnalyses: dashboardStats.totalAnalyses + 1,
+      });
+
+      alert('Workflow saved to history!');
+    } catch (err) {
+      console.error('Failed to save to history:', err);
+      alert('Failed to save to history');
     }
   };
 
@@ -323,6 +359,13 @@ export default function AgenticWorkflowPage() {
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-semibold text-gray-900">Comprehensive Report</h2>
               <div className="flex gap-2">
+                <button
+                  onClick={handleSaveToHistory}
+                  className="flex items-center gap-2 px-4 py-2 bg-purple-500 hover:bg-purple-600 text-white rounded-lg transition-colors text-sm font-medium"
+                >
+                  <Save className="h-4 w-4" />
+                  Save to History
+                </button>
                 <button
                   onClick={handleDownloadReport}
                   className="flex items-center gap-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors text-sm font-medium"

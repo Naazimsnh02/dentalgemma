@@ -50,11 +50,7 @@ export function Disclaimer() {
                 Always seek the advice of your dentist or other qualified healthcare provider with any 
                 questions you may have regarding a dental condition.
               </p>
-              <p>
-                <strong>Important:</strong> This application is NOT HIPAA compliant. Do not upload real 
-                patient data or personally identifiable information. Use only anonymized or sample data 
-                for testing and demonstration purposes.
-              </p>
+
               <p>
                 Never disregard professional medical advice or delay in seeking it because of something 
                 you have read or seen in this application. If you think you may have a dental emergency, 

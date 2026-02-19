@@ -185,11 +185,6 @@ export function AnalysisResults({
       )}
 
 
-      {/* Processing time */}
-      <div className="text-xs text-gray-500 dark:text-gray-400 text-center">
-        Processing time: {analysis.processingTime}ms
-      </div>
-
       {/* Export buttons */}
       <div className="flex items-center justify-center space-x-4 pt-4 border-t border-gray-200 dark:border-gray-700">
         <button

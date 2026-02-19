@@ -111,7 +111,7 @@ export function generateAssessmentPDF(options: PDFExportOptions): void {
   doc.setFontSize(10);
   doc.setFont('helvetica', 'normal');
   doc.text(`Generated: ${new Date().toLocaleString()}`, margin, 30);
-  doc.text(`Processing Time: ${assessment.processingTime.toFixed(2)}s`, margin, 35);
+
   
   doc.setTextColor(0, 0, 0);
   yPosition = 50;

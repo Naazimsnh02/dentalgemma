@@ -46,7 +46,7 @@ export function AboutTab() {
             </div>
             <div className="flex justify-between">
               <span className="text-muted-foreground">Training Data:</span>
-              <span className="font-medium">4,148 samples</span>
+              <span className="font-medium">5k+ samples</span>
             </div>
             <div className="flex justify-between">
               <span className="text-muted-foreground">Conditions Covered:</span>
@@ -105,11 +105,11 @@ export function AboutTab() {
             <Shield className="h-4 w-4" />
             Legal & Privacy
           </h3>
-          <div className="rounded-lg bg-amber-50 dark:bg-amber-950 border border-amber-200 dark:border-amber-800 p-4 space-y-2">
-            <p className="text-sm font-medium text-amber-900 dark:text-amber-100">
+          <div className="rounded-lg bg-amber-50 dark:bg-amber-950/50 border border-amber-200 dark:border-amber-800 p-4 space-y-2">
+            <p className="text-sm font-bold text-amber-900 dark:text-amber-100">
               Medical Disclaimer
             </p>
-            <p className="text-xs text-amber-800 dark:text-amber-200">
+            <p className="text-xs text-amber-950 dark:text-amber-200 leading-relaxed">
               This application is for educational and informational purposes only. It is not intended to be a substitute 
               for professional medical advice, diagnosis, or treatment. Always seek the advice of qualified health providers 
               with any questions you may have regarding a medical condition.

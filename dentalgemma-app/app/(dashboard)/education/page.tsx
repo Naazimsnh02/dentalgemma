@@ -119,11 +119,11 @@ export default function EducationPage() {
         )}
 
         {/* Medical Disclaimer Footer */}
-        <div className="mt-12 bg-yellow-50 border border-yellow-200 rounded-lg p-6">
-          <h3 className="text-lg font-bold text-yellow-900 mb-3">
+        <div className="mt-12 bg-amber-50 border border-amber-200 rounded-lg p-6">
+          <h3 className="text-lg font-bold text-amber-900 mb-3">
             ⚠️ Important Medical Disclaimer
           </h3>
-          <div className="text-sm text-yellow-800 space-y-2">
+          <div className="text-sm text-amber-950 space-y-2">
             <p>
               <strong>Educational Purpose Only:</strong> The information provided in this portal is for 
               educational purposes only and should not be used as a substitute for professional medical advice, 
@@ -137,10 +137,7 @@ export default function EducationPage() {
               <strong>Emergency Situations:</strong> If you are experiencing a dental emergency, contact your 
               dentist immediately or visit the nearest emergency room.
             </p>
-            <p>
-              <strong>Not HIPAA Compliant:</strong> This application is not HIPAA compliant. Do not upload 
-              real patient data or personally identifiable information.
-            </p>
+
           </div>
         </div>
 

@@ -1,12 +1,13 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import { Loader2, Save, ArrowLeft } from 'lucide-react';
+import { Loader2, Save, ArrowLeft, X } from 'lucide-react';
 import { XRayUploader } from '@/components/xray/xray-uploader';
 import { XRayViewer } from '@/components/xray/xray-viewer';
 import { AnalysisResults } from '@/components/xray/analysis-results';
 import { SampleXRays } from '@/components/xray/sample-xrays';
 import { modalClient } from '@/lib/api/modal-client';
+import { useAppStore } from '@/store/app-store';
 import type { AnalysisType, XRayAnalysis } from '@/types';
 
 type AnalysisStep = 'upload' | 'analyzing' | 'results';
@@ -20,6 +21,10 @@ export default function XRayAnalysisPage() {
   const [error, setError] = useState<string | null>(null);
   const [progress, setProgress] = useState(0);
   const [progressMessage, setProgressMessage] = useState('');
+
+  const addToHistory = useAppStore((state) => state.addToHistory);
+  const updateDashboardStats = useAppStore((state) => state.updateDashboardStats);
+  const dashboardStats = useAppStore((state) => state.dashboardStats);
 
   const handleFileUpload = useCallback((file: File) => {
     setSelectedFile(file);
@@ -103,7 +108,6 @@ export default function XRayAnalysisPage() {
   const handleSaveToHistory = useCallback(() => {
     if (!analysis) return;
 
-    // Save to localStorage history
     try {
       const historyItem = {
         id: crypto.randomUUID(),
@@ -114,35 +118,130 @@ export default function XRayAnalysisPage() {
         timestamp: new Date(),
       };
 
-      const existingHistory = JSON.parse(
-        localStorage.getItem('dentalgemma:history') || '[]'
-      );
-      existingHistory.unshift(historyItem);
-      localStorage.setItem('dentalgemma:history', JSON.stringify(existingHistory));
+      addToHistory(historyItem);
+
+      // Update dashboard stats
+      updateDashboardStats({
+        totalAnalyses: dashboardStats.totalAnalyses + 1,
+      });
 
       alert('Analysis saved to history!');
     } catch (err) {
       console.error('Failed to save to history:', err);
       alert('Failed to save to history');
     }
-  }, [analysis]);
+  }, [analysis, addToHistory, updateDashboardStats, dashboardStats]);
 
-  const handleExportPDF = useCallback(() => {
-    if (!analysis) return;
+  const handleExportPDF = useCallback(async () => {
+    if (!analysis || !imageUrl) return;
 
-    // In production, this would use jsPDF to generate a proper PDF
-    alert('PDF export functionality will be implemented with jsPDF library');
-    
-    // Placeholder: Download JSON as fallback
-    const dataStr = JSON.stringify(analysis, null, 2);
-    const dataBlob = new Blob([dataStr], { type: 'application/json' });
-    const url = URL.createObjectURL(dataBlob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `xray-analysis-${Date.now()}.json`;
-    link.click();
-    URL.revokeObjectURL(url);
-  }, [analysis]);
+    try {
+      const { jsPDF } = await import('jspdf');
+      const doc = new jsPDF();
+      const pageWidth = doc.internal.pageSize.getWidth();
+      const margin = 20;
+      let y = 20;
+
+      // Header
+      doc.setFontSize(22);
+      doc.setTextColor(33, 150, 243); // Material Blue
+      doc.text('DentalGemma Analysis Report', margin, y);
+      y += 10;
+
+      doc.setFontSize(10);
+      doc.setTextColor(100);
+      doc.text(`Generated on ${new Date().toLocaleString()}`, margin, y);
+      y += 15;
+
+      // Divider
+      doc.setDrawColor(200);
+      doc.line(margin, y, pageWidth - margin, y);
+      y += 15;
+
+      // Analysis Summary
+      doc.setFontSize(16);
+      doc.setTextColor(0);
+      doc.text('Analysis Summary', margin, y);
+      y += 10;
+
+      doc.setFontSize(11);
+      doc.text(`Type: ${analysis.type === 'photo' ? 'Clinical Photo' : 'X-Ray Analysis'}`, margin, y);
+      y += 7;
+      doc.text(`Urgency: ${analysis.urgency.toUpperCase()}`, margin, y);
+      y += 15;
+
+      if (analysis.type === 'photo') {
+        doc.text(`Condition: ${analysis.condition.toUpperCase()}`, margin, y);
+        y += 7;
+        if (analysis.severity) {
+          doc.text(`Severity: ${analysis.severity.toUpperCase()}`, margin, y);
+          y += 7;
+        }
+      } else if (analysis.type === 'xray') {
+        if (analysis.pathologyClass) {
+          doc.text(`Primary Pathology: ${analysis.pathologyClass}`, margin, y);
+          y += 7;
+        }
+      }
+      y += 10;
+
+      // Findings
+      const filteredFindings = analysis.findings.filter(f => !f.toLowerCase().includes('recommendation:'));
+      if (filteredFindings.length > 0) {
+        doc.setFontSize(14);
+        doc.text('Findings', margin, y);
+        y += 8;
+        doc.setFontSize(10);
+        filteredFindings.forEach((finding) => {
+          const lines = doc.splitTextToSize(`• ${finding.replace(/[#*]/g, '')}`, pageWidth - (margin * 2));
+          doc.text(lines, margin, y);
+          y += (lines.length * 5) + 2;
+          
+          if (y > 270) {
+            doc.addPage();
+            y = 20;
+          }
+        });
+        y += 5;
+      }
+
+      // Recommendations
+      if (analysis.recommendations.length > 0) {
+        doc.setFontSize(14);
+        doc.text('Recommendations', margin, y);
+        y += 8;
+        doc.setFontSize(10);
+        analysis.recommendations.forEach((rec) => {
+          const lines = doc.splitTextToSize(`• ${rec.replace(/[#*]/g, '')}`, pageWidth - (margin * 2));
+          doc.text(lines, margin, y);
+          y += (lines.length * 5) + 2;
+
+          if (y > 270) {
+            doc.addPage();
+            y = 20;
+          }
+        });
+      }
+
+      // Disclaimer
+      if (y > 250) {
+        doc.addPage();
+        y = 20;
+      } else {
+        y += 15;
+      }
+      doc.setFontSize(8);
+      doc.setTextColor(150);
+      const disclaimer = 'Disclaimer: DentalGemma is for educational and research purposes only. It is not intended for clinical diagnosis. AI-generated assessments must be validated by licensed dental professionals.';
+      const discLines = doc.splitTextToSize(disclaimer, pageWidth - (margin * 2));
+      doc.text(discLines, margin, y);
+
+      doc.save(`dentalgemma-analysis-${Date.now()}.pdf`);
+    } catch (err) {
+      console.error('Failed to generate PDF:', err);
+      alert('Failed to generate PDF report');
+    }
+  }, [analysis, imageUrl]);
 
   const handleExportJSON = useCallback(() => {
     if (!analysis) return;
@@ -175,9 +274,29 @@ export default function XRayAnalysisPage() {
           {/* Upload section */}
           <div className="bg-card text-card-foreground rounded-lg border shadow-sm p-6">
             <h2 className="text-xl font-semibold mb-4">
-              Upload Dental Image
+              {imageUrl ? 'Selected Image' : 'Upload Dental Image'}
             </h2>
-            <XRayUploader onUpload={handleFileUpload} onError={setError} />
+            
+            {imageUrl ? (
+              <div className="relative border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-white dark:bg-gray-900/40">
+                <button
+                  onClick={handleReset}
+                  className="absolute top-4 right-4 p-2 rounded-full bg-red-500 hover:bg-red-600 text-white transition-colors shadow-sm z-10"
+                  title="Remove image"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+                <div className="flex justify-center items-center min-h-[200px] bg-gray-50 dark:bg-black/20 rounded-lg overflow-hidden border border-gray-100 dark:border-gray-800">
+                  <img 
+                    src={imageUrl} 
+                    alt="Selected dental" 
+                    className="max-h-[400px] w-auto object-contain rounded-lg shadow-sm"
+                  />
+                </div>
+              </div>
+            ) : (
+              <XRayUploader onUpload={handleFileUpload} onError={setError} />
+            )}
           </div>
 
           {/* Analysis type selector */}
@@ -194,13 +313,26 @@ export default function XRayAnalysisPage() {
                   <button
                     key={type.value}
                     onClick={() => setAnalysisType(type.value as AnalysisType)}
-                    className={`p-4 rounded-lg border-2 text-left transition-all ${
+                    className={`group relative p-5 rounded-lg border-2 text-left transition-all hover:shadow-md ${
                       analysisType === type.value
-                        ? 'border-blue-500 bg-background dark:bg-blue-950/20'
+                        ? 'border-blue-500 shadow-sm'
                         : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
                     }`}
                   >
-                    <h3 className="font-semibold mb-1">
+                    <div className={`absolute top-3 right-3 w-5 h-5 rounded-full border-2 transition-all ${
+                      analysisType === type.value
+                        ? 'border-blue-500 bg-blue-500'
+                        : 'border-gray-300 dark:border-gray-600'
+                    }`}>
+                      {analysisType === type.value && (
+                        <svg className="w-full h-full text-white" viewBox="0 0 20 20" fill="currentColor">
+                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                        </svg>
+                      )}
+                    </div>
+                    <h3 className={`font-semibold mb-1 pr-8 transition-colors ${
+                      analysisType === type.value ? 'text-blue-600 dark:text-blue-400' : ''
+                    }`}>
                       {type.label}
                     </h3>
                     <p className="text-sm text-gray-600 dark:text-gray-400">{type.desc}</p>
@@ -211,7 +343,7 @@ export default function XRayAnalysisPage() {
               <div className="mt-6 flex justify-center">
                 <button
                   onClick={handleAnalyze}
-                  className="px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors"
+                  className="px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors shadow-sm hover:shadow-md"
                 >
                   Analyze Image
                 </button>

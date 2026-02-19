@@ -73,15 +73,42 @@ const getRetryDelay = (attempt: number): number => {
 };
 
 /**
- * Convert File or base64 string to base64
+ * Convert File or image path/URL to base64
  */
 const toBase64 = async (input: File | string): Promise<string> => {
   if (typeof input === 'string') {
-    // Already base64 or data URL
+    // 1. Check if it's already a data URL or base64
     if (input.startsWith('data:')) {
       return input.split(',')[1];
     }
-    return input;
+
+    // 2. Check if it's a regular string that looks like base64 (no spaces, starts with alphabetic)
+    // but avoid matching paths like "/analysis/image.jpg"
+    if (!input.includes('/') && !input.includes('.') && input.length > 100) {
+      return input;
+    }
+
+    // 3. Assume it's a URL or path and fetch it
+    try {
+      const response = await fetch(input);
+      if (!response.ok) {
+        throw new Error(`Failed to fetch image from ${input}: ${response.statusText}`);
+      }
+      const blob = await response.blob();
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+          const result = reader.result as string;
+          const base64 = result.split(',')[1];
+          resolve(base64);
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+      });
+    } catch (error) {
+      console.error('Error fetching/converting URL to base64:', error);
+      throw new ModalClientError(`Failed to process image source: ${(error as Error).message}`, 'IMAGE_PROCESS_ERROR');
+    }
   }
 
   // Convert File to base64
@@ -613,9 +640,9 @@ export class ModalClient {
   }
 
   private extractFindings(text: string): string[] {
-    const prefixKeywords = "Findings|Recommendations|Analysis|Diagnosis|Conclusion|Clinical|Key|Priority";
+    const prefixKeywords = "Findings|Recommendations|Analysis|Diagnosis|Conclusion|Clinical|Key|Priority|Assessment";
     // Stop keywords: Exclude "Findings" to avoid self-stop on repeated headers. Include "Differential".
-    const stopKeywords = "Recommendations|Analysis|Diagnosis|Differential|Conclusion|Clinical|Key|Priority";
+    const stopKeywords = "Recommendations|Analysis|Diagnosis|Differential|Conclusion|Clinical|Key|Priority|Assessment|Plan";
     
     return this.extractSectionList(text, `(?:(?:${prefixKeywords})\\s+)?Findings?(?:Details)?`, stopKeywords);
   }
@@ -890,9 +917,13 @@ export class ModalClient {
         // 1. Must be long enough
         // 2. Must not be a sub-header (e.g. "Findings:", "Severity:") unless it has a value
         // 3. Must not be a duplicate
-        const isHeaderLike = plainText.length < 20 && (plainText.match(/findings|diagnosis|analysis|recommendations/i)); // Avoid capturing "Findings:" as a finding
+        const isHeaderLike = plainText.length < 25 && (plainText.match(/findings|diagnosis|analysis|recommendations?|assessment/i)); 
         
-        if (cleaned.length > 3 && !seen.has(cleaned) && !isHeaderLike && !cleaned.endsWith(':')) {
+        // 4. Special check: if we are in Findings, ignore lines that explicitly start with "Recommendation" or "Assessment"
+        // since those belong in their own sections/fields.
+        const isCrossSection = (sectionNameRegex.includes('Findings') && (plainText.match(/^(?:Recommendation|Assessment|Diagnosis):/i)));
+
+        if (cleaned.length > 3 && !seen.has(cleaned) && !isHeaderLike && !isCrossSection && !cleaned.endsWith(':')) {
              items.push(cleaned);
              seen.add(cleaned);
         }
