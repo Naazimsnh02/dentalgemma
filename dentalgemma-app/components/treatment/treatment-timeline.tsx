@@ -45,7 +45,7 @@ function getStatusTextColor(status: Treatment['status']): string {
     case 'in-progress':
       return 'text-yellow-600';
     case 'not-started':
-      return 'text-gray-600';
+      return 'text-muted-foreground';
     default:
       return 'text-gray-600';
   }
@@ -68,7 +68,7 @@ export function TreatmentTimeline({ treatments, onTreatmentClick }: TreatmentTim
 
   if (sortedTreatments.length === 0) {
     return (
-      <div className="text-center py-12 text-gray-500">
+      <div className="text-center py-12 text-muted-foreground">
         <p>No treatments to display</p>
         <p className="text-sm mt-2">Add your first treatment to see the timeline</p>
       </div>
@@ -80,7 +80,7 @@ export function TreatmentTimeline({ treatments, onTreatmentClick }: TreatmentTim
       {/* Timeline Container */}
       <div className="relative">
         {/* Horizontal Line */}
-        <div className="absolute top-6 left-0 right-0 h-1 bg-gray-300" />
+        <div className="absolute top-6 left-0 right-0 h-1 bg-border" />
 
         {/* Treatment Milestones */}
         <div className="relative flex justify-between items-start">
@@ -102,7 +102,7 @@ export function TreatmentTimeline({ treatments, onTreatmentClick }: TreatmentTim
                     relative z-10 w-12 h-12 rounded-full flex items-center justify-center
                     ${statusColor} text-white font-bold text-sm
                     hover:scale-110 transition-transform cursor-pointer
-                    ${overdue ? 'ring-4 ring-red-500 ring-offset-2' : ''}
+                    ${overdue ? 'ring-4 ring-red-500 ring-offset-2 ring-offset-card' : ''}
                     shadow-lg
                   `}
                   title={treatment.name}
@@ -112,17 +112,17 @@ export function TreatmentTimeline({ treatments, onTreatmentClick }: TreatmentTim
 
                 {/* Treatment Info */}
                 <div className="mt-4 text-center max-w-[150px]">
-                  <p className="font-semibold text-sm truncate" title={treatment.name}>
+                  <p className="font-semibold text-sm truncate text-foreground" title={treatment.name}>
                     {treatment.name}
                   </p>
-                  <p className="text-xs text-gray-500 mt-1">{treatment.phase}</p>
+                  <p className="text-xs text-muted-foreground mt-1">{treatment.phase}</p>
                   <p className={`text-xs font-medium mt-1 ${statusTextColor}`}>
                     {treatment.status === 'not-started' && 'Not Started'}
                     {treatment.status === 'in-progress' && 'In Progress'}
                     {treatment.status === 'completed' && 'Completed'}
                   </p>
                   {treatment.nextAppointment && (
-                    <p className={`text-xs mt-1 ${overdue ? 'text-red-600 font-semibold' : 'text-gray-600'}`}>
+                    <p className={`text-xs mt-1 ${overdue ? 'text-red-600 dark:text-red-400 font-semibold' : 'text-gray-600 dark:text-gray-400'}`}>
                       {overdue ? 'Overdue: ' : 'Next: '}
                       {new Date(treatment.nextAppointment).toLocaleDateString()}
                     </p>
@@ -131,7 +131,7 @@ export function TreatmentTimeline({ treatments, onTreatmentClick }: TreatmentTim
 
                 {/* Connecting Line (except for last item) */}
                 {index < sortedTreatments.length - 1 && (
-                  <div className="absolute top-6 left-1/2 w-full h-1 bg-gray-300" />
+                  <div className="absolute top-6 left-1/2 w-full h-1 bg-border" />
                 )}
               </div>
             );
@@ -140,7 +140,7 @@ export function TreatmentTimeline({ treatments, onTreatmentClick }: TreatmentTim
       </div>
 
       {/* Legend */}
-      <div className="mt-12 flex justify-center gap-6 text-sm">
+      <div className="mt-12 flex justify-center gap-6 text-sm text-muted-foreground">
         <div className="flex items-center gap-2">
           <div className="w-4 h-4 rounded-full bg-gray-400" />
           <span>Not Started</span>
@@ -154,7 +154,7 @@ export function TreatmentTimeline({ treatments, onTreatmentClick }: TreatmentTim
           <span>Completed</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="w-4 h-4 rounded-full bg-red-500 ring-4 ring-red-500 ring-offset-2" />
+          <div className="w-4 h-4 rounded-full bg-red-500 ring-4 ring-red-500 ring-offset-2 ring-offset-card" />
           <span>Overdue</span>
         </div>
       </div>

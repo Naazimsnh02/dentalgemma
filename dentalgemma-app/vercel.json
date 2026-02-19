@@ -8,7 +8,7 @@
     "MODAL_API_URL": "@modal-api-url",
     "MODAL_API_KEY": "@modal-api-key",
     "GOOGLE_PLACES_API_KEY": "@google-places-api-key",
-    "GOOGLE_GEMINI_API_KEY": "@google-gemini-api-key"
+    "NEXT_PUBLIC_GEMINI_API_KEY": "@google-gemini-api-key"
   },
   "headers": [
     {

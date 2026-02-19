@@ -63,6 +63,9 @@ export class GeminiLiveClient {
     }
     
     this.config = {
+      // Note: Native audio model requires WebSocket Live API (bidiGenerateContent)
+      // For now, using gemini-2.5-flash for text-based chat
+      // TODO: Implement WebSocket Live API for true native audio support
       model: config.model || 'gemini-2.5-flash',
       systemPrompt: config.systemPrompt || DENTAL_EXPERTISE_PROMPT,
       ...config,

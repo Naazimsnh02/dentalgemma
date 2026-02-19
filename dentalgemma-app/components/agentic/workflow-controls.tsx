@@ -101,7 +101,7 @@ export function WorkflowControls({
           {(isRunning || isPaused) && onOverride && (
             <button
               onClick={() => setShowOverride(!showOverride)}
-              className="flex items-center gap-2 px-4 py-2 bg-purple-500 hover:bg-purple-600 text-white rounded-lg transition-colors text-sm font-medium"
+              className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors text-sm font-medium"
               title="Manual override"
             >
               <Settings className="h-4 w-4" />
@@ -125,12 +125,12 @@ export function WorkflowControls({
 
       {/* Override Panel */}
       {showOverride && (
-        <div className="p-4 bg-purple-50 rounded-lg border border-purple-200">
+        <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
           <div className="flex items-start gap-3 mb-3">
-            <Settings className="h-5 w-5 text-purple-600 flex-shrink-0 mt-0.5" />
+            <Settings className="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" />
             <div className="flex-1">
-              <h3 className="text-sm font-semibold text-purple-900 mb-1">Manual Override</h3>
-              <p className="text-xs text-purple-700">
+              <h3 className="text-sm font-semibold text-blue-900 mb-1">Manual Override</h3>
+              <p className="text-xs text-blue-700">
                 Provide specific instructions to guide the workflow. The agents will consider your
                 input in their decision-making.
               </p>
@@ -141,7 +141,7 @@ export function WorkflowControls({
             value={overrideInstruction}
             onChange={e => setOverrideInstruction(e.target.value)}
             placeholder="Enter your instructions (e.g., 'Focus on endodontic treatment options', 'Skip specialist referral')"
-            className="w-full px-3 py-2 border border-purple-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 mb-3"
+            className="w-full px-3 py-2 border border-blue-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 mb-3"
             rows={3}
           />
 
@@ -149,7 +149,7 @@ export function WorkflowControls({
             <button
               onClick={handleOverride}
               disabled={!overrideInstruction.trim()}
-              className="px-4 py-2 bg-purple-600 hover:bg-purple-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white rounded-lg transition-colors text-sm font-medium"
+              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white rounded-lg transition-colors text-sm font-medium"
             >
               Apply Override
             </button>

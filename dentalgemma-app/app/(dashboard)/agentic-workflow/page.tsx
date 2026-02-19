@@ -16,6 +16,41 @@ import { createWorkflowEngine } from '@/lib/agentic/workflow-engine';
 import { useAppStore } from '@/store/app-store';
 import type { WorkflowInput, WorkflowStep, WorkflowResult } from '@/types';
 import { Upload, FileText, MapPin, Sparkles, Download, FileDown, Save } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+
+const stripMarkdown = (markdown: string) => {
+  if (!markdown) return '';
+  
+  // Remove code blocks but keep content
+  let text = markdown.replace(/```[\s\S]*?```/g, (match) => {
+      return match.replace(/```/g, '');
+  });
+  
+  // Remove headers (#)
+  text = text.replace(/^#+\s+/gm, '');
+  
+  // Remove bold/italic (** or *)
+  text = text.replace(/(\*\*|__)(.*?)\1/g, '$2');
+  text = text.replace(/(\*|_)(.*?)\1/g, '$2');
+  
+  // Remove links [text](url) -> text
+  text = text.replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1');
+  
+  // Remove images ![text](url) -> text
+  text = text.replace(/!\[([^\]]+)\]\([^\)]+\)/g, '$1');
+  
+  // Remove blockquotes (>)
+  text = text.replace(/^>\s+/gm, '');
+  
+  // Lists: convert * or - to bullet points for better PDF rendering
+  text = text.replace(/^[-*+]\s+/gm, '• ');
+  
+  // Horizontal rules
+  text = text.replace(/^-{3,}\s*$/gm, '');
+  
+  return text;
+};
 
 export default function AgenticWorkflowPage() {
   const [input, setInput] = useState<WorkflowInput>({
@@ -63,13 +98,40 @@ export default function AgenticWorkflowPage() {
 
       // Execute workflow and collect steps
       const allSteps: WorkflowStep[] = [];
-      let stepIndex = 0;
+
+
+      let plannedAgents: string[] = [];
 
       for await (const step of engine.execute()) {
         allSteps.push(step);
-        setSteps([...allSteps]);
-        setCurrentStep(stepIndex);
-        stepIndex++;
+        
+        // Extract planned agents from Coordinator step
+        if (step.agent === 'Coordinator' && step.output?.plan?.requiredAgents) {
+          plannedAgents = step.output.plan.requiredAgents;
+        }
+        
+        // Create placeholders for remaining steps
+        // The loop returns completed steps. 
+        // If we have 1 step (Coordinator), we need placeholders for all planned agents.
+        // If we have 2 steps (Coordinator + 1st agent), we need placeholders for remaining planned agents.
+        const remainingAgents = plannedAgents.slice(allSteps.length - 1);
+        
+        const placeholders: WorkflowStep[] = remainingAgents.map(agent => ({
+          agent,
+          action: 'Waiting to start...',
+          input: null,
+          output: null,
+          confidence: 0,
+          timestamp: Date.now(), // Placeholder timestamp
+        }));
+        
+        setSteps([...allSteps, ...placeholders]);
+        
+        // currentStep points to the index of the step being processed (or just finished)
+        // If allSteps has 1 item, currentStep is 0 (Coordinator).
+        // If we want to show Coordinator as completed and next as active, use length.
+        setCurrentStep(allSteps.length);
+        
       }
 
       // Get final result
@@ -85,7 +147,8 @@ export default function AgenticWorkflowPage() {
       }
 
       setStatus('completed');
-      setCurrentStep(undefined);
+      setStatus('completed');
+      setCurrentStep(allSteps.length);
     } catch (err) {
       console.error('Workflow error:', err);
       setError((err as Error).message);
@@ -140,15 +203,50 @@ export default function AgenticWorkflowPage() {
       // Use jsPDF to generate PDF
       const { jsPDF } = await import('jspdf');
       const doc = new jsPDF();
+      
+      const pageWidth = doc.internal.pageSize.getWidth();
+      const pageHeight = doc.internal.pageSize.getHeight();
+      const margin = 20;
+      const contentWidth = pageWidth - (margin * 2);
+      let yPosition = 20;
 
       // Add title
       doc.setFontSize(18);
-      doc.text('Comprehensive Dental Diagnostic Report', 20, 20);
+      doc.setTextColor(0, 51, 153); // Dark Blue
+      doc.text('Comprehensive Dental Diagnostic Report', margin, yPosition);
+      yPosition += 15;
 
-      // Add content (simplified - in production, format properly)
+      // Add timestamp
       doc.setFontSize(10);
-      const lines = doc.splitTextToSize(result.finalReport, 170);
-      doc.text(lines, 20, 40);
+      doc.setTextColor(100, 100, 100); // Gray
+      doc.text(`Generated on: ${new Date().toLocaleString()}`, margin, yPosition);
+      yPosition += 10;
+      
+      // Add line separator
+      doc.setDrawColor(200, 200, 200);
+      doc.line(margin, yPosition, pageWidth - margin, yPosition);
+      yPosition += 10;
+
+      // Add content with pagination
+      doc.setFontSize(11);
+      doc.setTextColor(0, 0, 0);
+      
+      
+      // Split text into lines that fit the width
+      const plainText = stripMarkdown(result.finalReport);
+      const lines = doc.splitTextToSize(plainText, contentWidth);
+      const lineHeight = 7;
+      
+      for (let i = 0; i < lines.length; i++) {
+        // Check if we need a new page
+        if (yPosition + lineHeight > pageHeight - margin) {
+          doc.addPage();
+          yPosition = margin;
+        }
+        
+        doc.text(lines[i], margin, yPosition);
+        yPosition += lineHeight;
+      }
 
       // Save PDF
       doc.save(`diagnostic-report-${Date.now()}.pdf`);
@@ -166,7 +264,7 @@ export default function AgenticWorkflowPage() {
         id: crypto.randomUUID(),
         type: 'agentic' as const,
         summary: `Agentic Workflow: ${input.text.substring(0, 60)}${input.text.length > 60 ? '...' : ''}`,
-        urgency: 'medium' as const,
+        urgency: 'routine' as const,
         data: {
           input,
           steps,
@@ -203,12 +301,12 @@ export default function AgenticWorkflowPage() {
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
-        <div className="bg-gradient-to-r from-purple-600 to-blue-600 rounded-lg p-6 text-white">
-          <div className="flex items-center gap-3 mb-2">
+        <div className="bg-gradient-to-r from-blue-600 to-blue-800 rounded-lg p-8 text-white text-center flex flex-col items-center">
+          <div className="flex items-center justify-center gap-3 mb-3">
             <Sparkles className="h-8 w-8" />
-            <h1 className="text-3xl font-bold">Agentic Diagnostic Workflow</h1>
+            <h1 className="text-3xl font-bold tracking-tight">Agentic Diagnostic Workflow</h1>
           </div>
-          <p className="text-purple-100">
+          <p className="text-blue-100 text-lg max-w-2xl">
             Multi-agent AI system that autonomously orchestrates comprehensive dental diagnostics
           </p>
         </div>
@@ -273,7 +371,7 @@ export default function AgenticWorkflowPage() {
             <button
               onClick={handleStartWorkflow}
               disabled={!input.text.trim()}
-              className="w-full px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 disabled:from-gray-300 disabled:to-gray-300 disabled:cursor-not-allowed text-white rounded-lg transition-all text-base font-semibold shadow-lg"
+              className="w-full px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-800 hover:from-blue-700 hover:to-blue-900 disabled:from-gray-300 disabled:to-gray-300 disabled:cursor-not-allowed text-white rounded-lg transition-all text-base font-semibold shadow-lg"
             >
               <Sparkles className="inline h-5 w-5 mr-2" />
               Start Agentic Workflow
@@ -361,7 +459,7 @@ export default function AgenticWorkflowPage() {
               <div className="flex gap-2">
                 <button
                   onClick={handleSaveToHistory}
-                  className="flex items-center gap-2 px-4 py-2 bg-purple-500 hover:bg-purple-600 text-white rounded-lg transition-colors text-sm font-medium"
+                  className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors text-sm font-medium"
                 >
                   <Save className="h-4 w-4" />
                   Save to History
@@ -383,10 +481,10 @@ export default function AgenticWorkflowPage() {
               </div>
             </div>
 
-            <div className="prose max-w-none">
-              <pre className="whitespace-pre-wrap text-sm bg-gray-50 p-4 rounded-lg border border-gray-200">
+            <div className="prose max-w-none bg-gray-50 p-6 rounded-lg border border-gray-200">
+              <ReactMarkdown remarkPlugins={[remarkGfm]}>
                 {result.finalReport}
-              </pre>
+              </ReactMarkdown>
             </div>
           </div>
         )}

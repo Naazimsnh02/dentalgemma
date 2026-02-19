@@ -7,10 +7,11 @@
  * Requirements: 5.6, 5.8, 5.9
  */
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+import { useAppStore } from '@/store/app-store';
+import { Search } from 'lucide-react';
 import type { DentistInfo } from '@/types';
 import { DentistCard } from './dentist-card';
-import { Search } from 'lucide-react';
 
 interface DentistListProps {
   dentists: DentistInfo[];
@@ -25,49 +26,22 @@ export function DentistList({
   onDentistClick,
   isLoading = false,
 }: DentistListProps) {
-  const [favoriteDentists, setFavoriteDentists] = useState<Set<string>>(new Set());
+  const { favoriteDentists, saveDentist, unsaveDentist } = useAppStore();
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Load favorites from localStorage on client side only
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      try {
-        const stored = localStorage.getItem('dentalgemma:favorites-dentists');
-        if (stored) {
-          const favorites: DentistInfo[] = JSON.parse(stored);
-          setFavoriteDentists(new Set(favorites.map((d) => d.placeId)));
-        }
-      } catch (error) {
-        console.error('Failed to load favorites:', error);
-      }
-    }
-  }, []);
-
-  // Save favorites to localStorage
-  const saveFavorites = (placeIds: Set<string>) => {
-    try {
-      const favoriteDentistsList = dentists.filter((d) => placeIds.has(d.placeId));
-      localStorage.setItem(
-        'dentalgemma:favorites-dentists',
-        JSON.stringify(favoriteDentistsList)
-      );
-    } catch (error) {
-      console.error('Failed to save favorites:', error);
-    }
-  };
+  // Create a set of favorite place IDs for quick lookup
+  const favoritePlaceIds = new Set(favoriteDentists.map((d) => d.placeId));
 
   // Toggle favorite
   const handleToggleFavorite = (placeId: string) => {
-    setFavoriteDentists((prev) => {
-      const newFavorites = new Set(prev);
-      if (newFavorites.has(placeId)) {
-        newFavorites.delete(placeId);
-      } else {
-        newFavorites.add(placeId);
-      }
-      saveFavorites(newFavorites);
-      return newFavorites;
-    });
+    const dentist = dentists.find((d) => d.placeId === placeId);
+    if (!dentist) return;
+
+    if (favoritePlaceIds.has(placeId)) {
+      unsaveDentist(placeId);
+    } else {
+      saveDentist(dentist);
+    }
   };
 
   // Filter dentists by search query
@@ -84,8 +58,8 @@ export function DentistList({
 
   // Sort: favorites first, then by distance
   const sortedDentists = [...filteredDentists].sort((a, b) => {
-    const aIsFavorite = favoriteDentists.has(a.placeId);
-    const bIsFavorite = favoriteDentists.has(b.placeId);
+    const aIsFavorite = favoritePlaceIds.has(a.placeId);
+    const bIsFavorite = favoritePlaceIds.has(b.placeId);
     
     if (aIsFavorite && !bIsFavorite) return -1;
     if (!aIsFavorite && bIsFavorite) return 1;
@@ -165,7 +139,7 @@ export function DentistList({
               key={dentist.placeId}
               dentist={dentist}
               isSelected={selectedDentist === dentist.placeId}
-              isFavorite={favoriteDentists.has(dentist.placeId)}
+              isFavorite={favoritePlaceIds.has(dentist.placeId)}
               onClick={() => onDentistClick?.(dentist.placeId)}
               onToggleFavorite={handleToggleFavorite}
             />

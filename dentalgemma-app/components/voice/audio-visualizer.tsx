@@ -156,7 +156,7 @@ export default function AudioVisualizer({
   return (
     <div className="w-full space-y-2">
       {/* Canvas for waveform */}
-      <div className="relative w-full bg-gray-100 dark:bg-gray-800 rounded-lg overflow-hidden">
+      <div className="relative w-full bg-muted rounded-lg overflow-hidden">
         <canvas
           ref={canvasRef}
           width={800}
@@ -167,8 +167,8 @@ export default function AudioVisualizer({
         
         {/* Overlay when not active */}
         {!isActive && (
-          <div className="absolute inset-0 flex items-center justify-center bg-gray-100 dark:bg-gray-800">
-            <p className="text-gray-400 dark:text-gray-400">Audio visualization inactive</p>
+          <div className="absolute inset-0 flex items-center justify-center bg-muted">
+            <p className="text-muted-foreground">Audio visualization inactive</p>
           </div>
         )}
       </div>
@@ -176,8 +176,8 @@ export default function AudioVisualizer({
       {/* Noise level indicator */}
       {isActive && (
         <div className="flex items-center space-x-3">
-          <span className="text-sm text-gray-600 dark:text-gray-400">Noise Level:</span>
-          <div className="flex-1 h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+          <span className="text-sm text-muted-foreground">Noise Level:</span>
+          <div className="flex-1 h-2 bg-muted/50 rounded-full overflow-hidden">
             <div
               className={`h-full transition-all duration-200 ${
                 noiseLevel > 70
@@ -189,7 +189,7 @@ export default function AudioVisualizer({
               style={{ width: `${noiseLevel}%` }}
             />
           </div>
-          <span className="text-sm font-medium w-12 text-right">
+          <span className="text-sm font-medium w-12 text-right text-foreground">
             {noiseLevel}%
           </span>
         </div>

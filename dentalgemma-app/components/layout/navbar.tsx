@@ -2,8 +2,8 @@
 
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
-import { useState, useEffect } from 'react';
-import { Search, ChevronRight } from 'lucide-react';
+
+import { ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface BreadcrumbItem {
@@ -30,7 +30,7 @@ const routeLabels: Record<string, string> = {
 export function Navbar() {
   const pathname = usePathname();
   /* Removed online status logic */
-  const [searchQuery, setSearchQuery] = useState('');
+
 
   const getBreadcrumbs = (): BreadcrumbItem[] => {
     if (!pathname) return [];
@@ -53,14 +53,10 @@ export function Navbar() {
 
   const breadcrumbs = getBreadcrumbs();
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    // TODO: Implement global search functionality
-    console.log('Search query:', searchQuery);
-  };
+
 
   return (
-    <header className="sticky top-0 z-30 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <header className="sticky top-0 z-30 border-b bg-background">
       <div className="relative flex h-16 items-center px-6">
         {/* Breadcrumbs (Centered) */}
         <nav aria-label="Breadcrumb" className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center space-x-2">
@@ -74,13 +70,13 @@ export function Navbar() {
                       <ChevronRight className="mx-2 h-4 w-4 text-muted-foreground" />
                     )}
                     {isLast ? (
-                      <span className="text-sm font-medium text-foreground">
+                      <span className="text-xl font-semibold text-foreground">
                         {crumb.label}
                       </span>
                     ) : (
                       <Link
                         href={crumb.href}
-                        className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                        className="text-lg font-medium text-muted-foreground hover:text-foreground transition-colors"
                       >
                         {crumb.label}
                       </Link>
@@ -90,30 +86,11 @@ export function Navbar() {
               })}
             </ol>
           ) : (
-            <span className="text-sm font-medium">DentalGemma</span>
+            <span className="text-xl font-bold">DentalGemma</span>
           )}
         </nav>
 
-        {/* Right side: Search */}
-        <div className="ml-auto flex items-center gap-4">
-          {/* Global Search */}
-          <form onSubmit={handleSearch} className="relative">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <input
-              type="search"
-              placeholder="Search..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className={cn(
-                'h-9 w-64 rounded-md border border-input bg-background pl-9 pr-3 text-sm',
-                'placeholder:text-muted-foreground',
-                'focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2',
-                'transition-colors'
-              )}
-              aria-label="Global search"
-            />
-          </form>
-        </div>
+
       </div>
     </header>
   );

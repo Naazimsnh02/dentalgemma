@@ -54,31 +54,69 @@ export default function VoiceConsultationPage() {
     }
   }, []);
 
-  // Initialize clients
+  // Initialize clients based on mode
   useEffect(() => {
-    // Initialize Modal client for standard mode
-    modalClientRef.current = new ModalClient();
-    modalClientRef.current.startKeepAlive();
+    const initClients = async () => {
+      console.log(`🔧 Initializing clients for ${mode} mode...`);
+      
+      if (mode === 'enhanced') {
+        // Stop Modal client if running
+        if (modalClientRef.current) {
+          console.log('🛑 Stopping Modal client...');
+          modalClientRef.current.stopKeepAlive();
+          modalClientRef.current = null;
+        }
 
-    // Initialize Gemini client for enhanced mode (if API key available)
-    const initGemini = async () => {
-      const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY;
-      if (apiKey) {
-        try {
-          geminiClientRef.current = await createGeminiLiveClient(apiKey);
-        } catch (error) {
-          console.error('Failed to initialize Gemini client:', error);
+        // Initialize Gemini client for enhanced mode (if API key available)
+        if (!geminiClientRef.current) {
+          const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY;
+          console.log('🔑 Gemini API key present:', !!apiKey);
+          
+          if (apiKey) {
+            try {
+              console.log('🔄 Creating Gemini Live client...');
+              geminiClientRef.current = await createGeminiLiveClient(apiKey);
+              console.log('✅ Enhanced mode: Using Gemini Live only');
+            } catch (error) {
+              console.error('❌ Failed to initialize Gemini client:', error);
+              setError('Failed to initialize Gemini client. Switching to standard mode.');
+              setMode('standard');
+            }
+          } else {
+            console.error('❌ Gemini API key not configured');
+            setError('Gemini API key not configured. Switching to standard mode.');
+            setMode('standard');
+          }
+        } else {
+          console.log('✅ Gemini client already initialized');
+        }
+      } else {
+        // Stop Gemini client if running
+        if (geminiClientRef.current) {
+          console.log('🛑 Stopping Gemini client...');
+          geminiClientRef.current.disconnect();
+          geminiClientRef.current = null;
+        }
+
+        // Initialize Modal client for standard mode
+        if (!modalClientRef.current) {
+          console.log('🔄 Creating Modal client...');
+          modalClientRef.current = new ModalClient();
+          modalClientRef.current.startKeepAlive();
+          console.log('✅ Standard mode: Using DentalGemma via Modal');
+        } else {
+          console.log('✅ Modal client already initialized');
         }
       }
     };
 
-    initGemini();
+    initClients();
 
     return () => {
       modalClientRef.current?.stopKeepAlive();
       geminiClientRef.current?.disconnect();
     };
-  }, []);
+  }, [mode]);
 
   // Monitor online status
   useEffect(() => {
@@ -156,6 +194,9 @@ export default function VoiceConsultationPage() {
   const handleUserMessage = useCallback(async (text: string) => {
     if (!text.trim()) return;
 
+    // Capture current mode for error reporting
+    const currentMode = mode;
+
     // Add user message
     const userMessage: VoiceMessage = {
       id: Date.now().toString(),
@@ -170,15 +211,24 @@ export default function VoiceConsultationPage() {
     try {
       let aiResponse: string;
 
-      if (mode === 'enhanced' && geminiClientRef.current) {
-        // Use Gemini Live
+      if (currentMode === 'enhanced') {
+        // Enhanced mode: Use ONLY Gemini Live
+        if (!geminiClientRef.current) {
+          console.error('❌ Gemini client is null in enhanced mode');
+          throw new Error('Gemini client not initialized. Please switch to standard mode or check your API key.');
+        }
+        console.log('🚀 Enhanced mode: Sending to Gemini Live...');
         aiResponse = await geminiClientRef.current.sendText(text);
+        console.log('✅ Received response from Gemini Live');
       } else {
-        // Use standard mode with Modal.com
+        // Standard mode: Use ONLY Modal.com DentalGemma
         if (!modalClientRef.current) {
+          console.error('❌ Modal client is null in standard mode');
           throw new Error('Modal client not initialized');
         }
+        console.log('🚀 Standard mode: Sending to DentalGemma via Modal...');
         aiResponse = await modalClientRef.current.chat(text, messages);
+        console.log('✅ Received response from Modal');
       }
 
       // Add AI response
@@ -198,8 +248,8 @@ export default function VoiceConsultationPage() {
         setIsSpeaking(false);
       }
     } catch (error) {
-      console.error('Error processing message:', error);
-      setError('Failed to get AI response. Please try again.');
+      console.error(`❌ Error processing message in ${currentMode} mode:`, error);
+      setError(`Failed to get AI response (${currentMode} mode). Please try again.`);
     } finally {
       setIsProcessing(false);
     }
@@ -255,13 +305,18 @@ export default function VoiceConsultationPage() {
       handleStopListening();
     }
 
-    setMode(newMode);
-
-    if (newMode === 'enhanced' && !geminiClientRef.current) {
-      setError('Enhanced mode is not available. Gemini API key not configured.');
-      setMode('standard');
+    // Check if Gemini is available before switching to enhanced mode
+    if (newMode === 'enhanced') {
+      const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY;
+      if (!apiKey) {
+        setError('Enhanced mode is not available. Gemini API key not configured.');
+        return; // Don't switch mode
+      }
     }
-  }, [isListening, handleStopListening]);
+
+    console.log(`🔄 Switching from ${mode} to ${newMode} mode...`);
+    setMode(newMode);
+  }, [isListening, handleStopListening, mode]);
 
   // Handle settings change
   const handleSettingsChange = useCallback((newSettings: Partial<VoiceInterfaceSettings>) => {
@@ -348,10 +403,10 @@ export default function VoiceConsultationPage() {
 
       {/* Main Content */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Left Column: Voice Interface and Visualizer */}
+          {/* Left Column: Voice Interface and Visualizer */}
         <div className="space-y-6">
           {/* Voice Interface */}
-          <div className="bg-white dark:bg-gray-900 rounded-lg shadow-lg p-6">
+          <div className="bg-card text-card-foreground rounded-lg shadow-lg p-6 border border-border">
             <VoiceInterface
               mode={mode}
               onModeChange={handleModeChange}
@@ -362,18 +417,21 @@ export default function VoiceConsultationPage() {
               isProcessing={isProcessing}
               settings={settings}
               onSettingsChange={handleSettingsChange}
+              currentTranscript={currentTranscript}
+              onSubmit={() => handleUserMessage(currentTranscript)}
             />
           </div>
 
           {/* Audio Visualizer */}
-          <div className="bg-white dark:bg-gray-900 rounded-lg shadow-lg p-6">
-            <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">Audio Visualization</h3>
+          <div className="bg-card text-card-foreground rounded-lg shadow-lg p-6 border border-border">
+            <h3 className="text-lg font-semibold mb-4">Audio Visualization</h3>
             <AudioVisualizer
               isActive={isListening}
               audioStream={audioStream || undefined}
               height={120}
               barCount={64}
               barColor="#3b82f6"
+              backgroundColor="transparent"
             />
           </div>
 

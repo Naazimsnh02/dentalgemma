@@ -139,14 +139,14 @@ export function TreatmentForm({
     <form onSubmit={handleSubmit} className="space-y-6">
       {/* Treatment Name */}
       <div>
-        <label className="block text-sm font-medium mb-1">
-          Treatment Name <span className="text-red-500">*</span>
+        <label className="block text-sm font-medium mb-1 text-foreground">
+          Treatment Name <span className="text-destructive">*</span>
         </label>
         <input
           type="text"
           value={formData.name || ''}
           onChange={(e) => updateField('name', e.target.value)}
-          className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary bg-background border-input text-foreground placeholder:text-muted-foreground"
           placeholder="e.g., Root Canal Therapy"
         />
         {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name}</p>}
@@ -154,14 +154,14 @@ export function TreatmentForm({
 
       {/* Phase */}
       <div>
-        <label className="block text-sm font-medium mb-1">
-          Phase <span className="text-red-500">*</span>
+        <label className="block text-sm font-medium mb-1 text-foreground">
+          Phase <span className="text-destructive">*</span>
         </label>
         <input
           type="text"
           value={formData.phase || ''}
           onChange={(e) => updateField('phase', e.target.value)}
-          className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary bg-background border-input text-foreground placeholder:text-muted-foreground"
           placeholder="e.g., Initial Consultation, Treatment, Follow-up"
         />
         {errors.phase && <p className="text-red-500 text-sm mt-1">{errors.phase}</p>}
@@ -169,13 +169,13 @@ export function TreatmentForm({
 
       {/* Status */}
       <div>
-        <label className="block text-sm font-medium mb-1">
-          Status <span className="text-red-500">*</span>
+        <label className="block text-sm font-medium mb-1 text-foreground">
+          Status <span className="text-destructive">*</span>
         </label>
         <select
           value={formData.status || 'not-started'}
           onChange={(e) => updateField('status', e.target.value as TreatmentStatus)}
-          className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary bg-background border-input text-foreground"
         >
           <option value="not-started">Not Started</option>
           <option value="in-progress">In Progress</option>
@@ -186,8 +186,8 @@ export function TreatmentForm({
 
       {/* Completion Percentage */}
       <div>
-        <label className="block text-sm font-medium mb-1">
-          Completion Percentage <span className="text-red-500">*</span>
+        <label className="block text-sm font-medium mb-1 text-foreground">
+          Completion Percentage <span className="text-destructive">*</span>
         </label>
         <div className="space-y-2">
           <input
@@ -200,10 +200,10 @@ export function TreatmentForm({
             disabled={formData.status === 'not-started' || formData.status === 'completed'}
           />
           <div className="flex justify-between items-center">
-            <span className="text-2xl font-bold text-blue-600">
+            <span className="text-2xl font-bold text-primary">
               {formData.completionPercentage || 0}%
             </span>
-            <span className="text-sm text-gray-500">
+            <span className="text-sm text-muted-foreground">
               {formData.status === 'not-started' && '(Auto-set to 0%)'}
               {formData.status === 'completed' && '(Auto-set to 100%)'}
             </span>
@@ -216,7 +216,7 @@ export function TreatmentForm({
 
       {/* Next Appointment */}
       <div>
-        <label className="block text-sm font-medium mb-1">
+        <label className="block text-sm font-medium mb-1 text-foreground">
           Next Appointment (Optional)
         </label>
         <input
@@ -229,13 +229,13 @@ export function TreatmentForm({
           onChange={(e) =>
             updateField('nextAppointment', e.target.value ? new Date(e.target.value) : undefined)
           }
-          className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary bg-background border-input text-foreground"
         />
       </div>
 
       {/* Cost */}
       <div>
-        <label className="block text-sm font-medium mb-1">
+        <label className="block text-sm font-medium mb-1 text-foreground">
           Cost (Optional)
         </label>
         <div className="relative">
@@ -246,7 +246,7 @@ export function TreatmentForm({
             step="0.01"
             value={formData.cost || ''}
             onChange={(e) => updateField('cost', e.target.value ? parseFloat(e.target.value) : undefined)}
-            className="w-full pl-8 pr-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full pl-8 pr-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary bg-background border-input text-foreground placeholder:text-muted-foreground"
             placeholder="0.00"
           />
         </div>
@@ -254,13 +254,13 @@ export function TreatmentForm({
 
       {/* Notes */}
       <div>
-        <label className="block text-sm font-medium mb-1">
+        <label className="block text-sm font-medium mb-1 text-foreground">
           Notes
         </label>
         <textarea
           value={formData.notes || ''}
           onChange={(e) => updateField('notes', e.target.value)}
-          className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary bg-background border-input text-foreground placeholder:text-muted-foreground"
           rows={4}
           placeholder="Add any additional notes about this treatment..."
         />
@@ -268,23 +268,23 @@ export function TreatmentForm({
 
       {/* Document Upload */}
       <div>
-        <label className="block text-sm font-medium mb-1">
+        <label className="block text-sm font-medium mb-1 text-foreground">
           Documents
         </label>
         <input
           type="file"
           multiple
           onChange={handleDocumentUpload}
-          className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary bg-background border-input text-foreground"
         />
         {documents.length > 0 && (
           <div className="mt-3 space-y-2">
             {documents.map((doc, index) => (
               <div
                 key={index}
-                className="flex items-center justify-between px-3 py-2 bg-gray-100 rounded-md"
+                className="flex items-center justify-between px-3 py-2 bg-muted rounded-md border border-border"
               >
-                <span className="text-sm truncate flex-1">{doc.name}</span>
+                <span className="text-sm truncate flex-1 text-foreground">{doc.name}</span>
                 <button
                   type="button"
                   onClick={() => removeDocument(index)}
@@ -303,7 +303,7 @@ export function TreatmentForm({
         <button
           type="button"
           onClick={onCancel}
-          className="px-6 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400"
+          className="px-6 py-2 bg-secondary text-secondary-foreground rounded-md hover:bg-secondary/80 transition-colors"
         >
           Cancel
         </button>

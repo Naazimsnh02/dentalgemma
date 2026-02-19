@@ -15,6 +15,7 @@ import { DentistMap } from '@/components/dentist/dentist-map';
 import { DentistList } from '@/components/dentist/dentist-list';
 import { searchNearby } from '@/lib/api/places-client';
 import { AlertCircle, Search } from 'lucide-react';
+import { useAppStore } from '@/store/app-store';
 
 export default function DentistFinderPage() {
   const [dentists, setDentists] = useState<DentistInfo[]>([]);
@@ -23,6 +24,7 @@ export default function DentistFinderPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [hasSearched, setHasSearched] = useState(false);
+  const updateDashboardStats = useAppStore((state) => state.updateDashboardStats);
 
   // Handle filter changes and trigger search
   const handleFilterChange = async (filters: FilterValues) => {
@@ -65,6 +67,11 @@ export default function DentistFinderPage() {
       });
 
       setDentists(results);
+      
+      // Update dashboard stats with number of dentists found
+      updateDashboardStats({
+        dentistsLocated: results.length,
+      });
 
       // Update map center if we got results
       if (results.length > 0) {

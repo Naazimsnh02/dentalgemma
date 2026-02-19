@@ -19,6 +19,8 @@ export interface VoiceInterfaceProps {
   isProcessing: boolean;
   settings: VoiceInterfaceSettings;
   onSettingsChange: (settings: Partial<VoiceInterfaceSettings>) => void;
+  currentTranscript?: string;
+  onSubmit?: () => void;
 }
 
 export interface VoiceInterfaceSettings {
@@ -39,6 +41,8 @@ export default function VoiceInterface({
   isProcessing,
   settings,
   onSettingsChange,
+  currentTranscript,
+  onSubmit,
 }: VoiceInterfaceProps) {
   const [showSettings, setShowSettings] = useState(false);
   const [isPushToTalk, setIsPushToTalk] = useState(!settings.continuous);
@@ -64,13 +68,13 @@ export default function VoiceInterface({
   return (
     <div className="flex flex-col items-center space-y-6 p-6">
       {/* Mode Toggle */}
-      <div className="flex items-center space-x-4 bg-gray-100 dark:bg-gray-800 rounded-lg p-2">
+      <div className="flex items-center space-x-4 bg-muted rounded-lg p-2">
         <button
           onClick={handleModeToggle}
           className={`px-4 py-2 rounded-md transition-colors font-medium ${
             mode === 'standard'
-              ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-sm'
-              : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700'
+              ? 'bg-background text-foreground shadow-sm'
+              : 'text-muted-foreground hover:text-foreground hover:bg-background/50'
           }`}
         >
           Standard Mode
@@ -79,38 +83,44 @@ export default function VoiceInterface({
           onClick={handleModeToggle}
           className={`px-4 py-2 rounded-md transition-colors font-medium ${
             mode === 'enhanced'
-              ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-sm'
-              : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700'
+              ? 'bg-background text-foreground shadow-sm'
+              : 'text-muted-foreground hover:text-foreground hover:bg-background/50'
           }`}
         >
           Enhanced Mode
         </button>
       </div>
 
-      {/* Mode Description */}
-      <div className="text-center text-sm text-gray-600 dark:text-gray-400 max-w-md">
+      <div className="text-center text-sm text-muted-foreground max-w-md">
         {mode === 'standard' ? (
           <p>Using Web Speech API for speech recognition and synthesis</p>
         ) : (
           <p>Using Gemini Live for native audio processing with sub-500ms latency</p>
         )}
+        <p className="mt-2 text-xs opacity-75">
+          {!settings.continuous ? "Push-to-Talk: Press and hold to speak. Release to send." : "Continuous: Click once to record. Click again to stop."}
+        </p>
       </div>
 
       {/* Microphone Button */}
       <div className="relative">
         <button
-          onClick={handleMicClick}
+          onClick={settings.continuous ? handleMicClick : undefined}
+          onPointerDown={!settings.continuous ? onStartListening : undefined}
+          onPointerUp={!settings.continuous ? onStopListening : undefined}
+          onPointerLeave={!settings.continuous && isListening ? onStopListening : undefined}
           disabled={isProcessing}
           className={`
             relative w-32 h-32 rounded-full flex items-center justify-center
             transition-all duration-300 transform
             ${isListening 
-              ? 'bg-red-500 hover:bg-red-600 scale-110 animate-pulse' 
-              : 'bg-blue-500 hover:bg-blue-600 hover:scale-105'
+              ? 'bg-red-500 hover:bg-red-600 scale-110 active:scale-95' 
+              : 'bg-blue-500 hover:bg-blue-600 hover:scale-105 active:scale-95'
             }
             ${isProcessing ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
             shadow-lg hover:shadow-xl
             disabled:hover:scale-100
+            touch-none
           `}
           aria-label={isListening ? 'Stop listening' : 'Start listening'}
         >
@@ -126,8 +136,8 @@ export default function VoiceInterface({
         {/* Listening indicator rings */}
         {isListening && !isProcessing && (
           <>
-            <div className="absolute inset-0 rounded-full border-4 border-red-400 animate-ping opacity-75" />
-            <div className="absolute inset-0 rounded-full border-4 border-red-300 animate-pulse" />
+            <div className="absolute inset-0 rounded-full border-4 border-red-400 animate-ping opacity-75 pointer-events-none" />
+            <div className="absolute inset-0 rounded-full border-4 border-red-300 animate-pulse pointer-events-none" />
           </>
         )}
 
@@ -141,17 +151,34 @@ export default function VoiceInterface({
 
       {/* Status Text */}
       <div className="text-center">
-        <p className="text-lg font-medium text-gray-900 dark:text-gray-100">
+        <p className="text-lg font-medium text-foreground">
           {isProcessing ? (
             'Processing...'
           ) : isListening ? (
-            isPushToTalk ? 'Listening (Release to stop)' : 'Listening...'
+             settings.continuous ? 'Listening (Click to stop)' : 'Listening (Release to stop)'
           ) : isSpeaking ? (
             'AI is speaking...'
           ) : (
-            'Click to start'
+            settings.continuous ? 'Click to start' : 'Hold to speak'
           )}
         </p>
+        
+        {/* Interim Transcript display */}
+        {isListening && currentTranscript && (
+          <p className="mt-2 text-sm text-blue-600 dark:text-blue-400 italic max-w-sm">
+            "{currentTranscript}..."
+          </p>
+        )}
+
+        {/* Manual Submit Button for non-continuous mode or when user wants to force send */}
+        {isListening && !settings.continuous && currentTranscript && (
+          <button
+            onClick={onSubmit}
+            className="mt-4 px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg text-sm font-medium transition-colors shadow-sm"
+          >
+            Send Now
+          </button>
+        )}
       </div>
 
       {/* Push-to-Talk / Continuous Mode Toggle */}
@@ -163,14 +190,14 @@ export default function VoiceInterface({
             onChange={(e) => setIsPushToTalk(!e.target.checked)}
             className="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
           />
-          <span className="text-sm text-gray-700 dark:text-gray-300">Continuous Mode</span>
+          <span className="text-sm text-muted-foreground">Continuous Mode</span>
         </label>
       </div>
 
       {/* Settings Button */}
       <button
         onClick={() => setShowSettings(!showSettings)}
-        className="flex items-center space-x-2 px-4 py-2 bg-gray-100 dark:bg-gray-800 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors text-gray-700 dark:text-gray-300"
+        className="flex items-center space-x-2 px-4 py-2 bg-muted rounded-lg hover:bg-muted/80 transition-colors text-muted-foreground hover:text-foreground"
       >
         <Settings className="w-4 h-4" />
         <span>Voice Settings</span>
@@ -178,16 +205,16 @@ export default function VoiceInterface({
 
       {/* Settings Panel */}
       {showSettings && (
-        <div className="w-full max-w-md bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 space-y-4">
+        <div className="w-full max-w-md bg-popover text-popover-foreground border border-border rounded-lg shadow-lg p-6 space-y-4">
           <h3 className="text-lg font-semibold mb-4">Voice Settings</h3>
 
           {/* Language Selection */}
           <div>
-            <label className="block text-sm font-medium mb-2">Language</label>
+            <label className="block text-sm font-medium mb-2 text-muted-foreground">Language</label>
             <select
               value={settings.language}
               onChange={(e) => onSettingsChange({ language: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700"
+              className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground"
             >
               <option value="en-US">English (US)</option>
               <option value="en-GB">English (UK)</option>
@@ -204,7 +231,7 @@ export default function VoiceInterface({
 
           {/* Speech Rate */}
           <div>
-            <label className="block text-sm font-medium mb-2">
+            <label className="block text-sm font-medium mb-2 text-muted-foreground">
               Speech Rate: {settings.speechRate.toFixed(1)}x
             </label>
             <input
@@ -220,7 +247,7 @@ export default function VoiceInterface({
 
           {/* Pitch */}
           <div>
-            <label className="block text-sm font-medium mb-2">
+            <label className="block text-sm font-medium mb-2 text-muted-foreground">
               Pitch: {settings.pitch.toFixed(1)}
             </label>
             <input
@@ -236,7 +263,7 @@ export default function VoiceInterface({
 
           {/* Volume */}
           <div>
-            <label className="block text-sm font-medium mb-2">
+            <label className="block text-sm font-medium mb-2 text-muted-foreground">
               Volume: {Math.round(settings.volume * 100)}%
             </label>
             <input

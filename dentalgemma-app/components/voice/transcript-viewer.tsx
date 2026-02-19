@@ -84,11 +84,11 @@ export default function TranscriptViewer({
   };
 
   return (
-    <div className="flex flex-col h-full bg-white dark:bg-gray-900 rounded-lg shadow-lg">
+    <div className="flex flex-col h-full bg-card text-card-foreground rounded-lg shadow-lg border border-border">
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
+      <div className="flex items-center justify-between p-4 border-b border-border">
         <div className="flex items-center space-x-2">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Conversation Transcript</h3>
+          <h3 className="text-lg font-semibold">Conversation Transcript</h3>
           {isLive && (
             <span className="flex items-center space-x-1 text-sm text-red-500">
               <span className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
@@ -101,7 +101,7 @@ export default function TranscriptViewer({
           <button
             onClick={exportAsText}
             disabled={messages.length === 0}
-            className="p-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
+            className="p-2 text-muted-foreground hover:bg-muted rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
             title="Export transcript"
           >
             <Download className="w-5 h-5" />
@@ -109,7 +109,7 @@ export default function TranscriptViewer({
           <button
             onClick={handleClearTranscript}
             disabled={messages.length === 0}
-            className="p-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
+            className="p-2 text-muted-foreground hover:bg-muted rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
             title="Clear transcript"
           >
             <Trash2 className="w-5 h-5" />
@@ -120,7 +120,7 @@ export default function TranscriptViewer({
       {/* Messages */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {messages.length === 0 && !currentTranscript ? (
-          <div className="flex items-center justify-center h-full text-gray-400 dark:text-gray-400">
+          <div className="flex items-center justify-center h-full text-muted-foreground">
             <p>No messages yet. Start speaking to begin the conversation.</p>
           </div>
         ) : (
@@ -141,10 +141,10 @@ export default function TranscriptViewer({
                   <User className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                 </div>
                 <div className="flex-1">
-                  <div className="bg-blue-50 dark:bg-blue-900/30 rounded-lg p-3">
-                    <p className="text-sm italic">{currentTranscript}</p>
+                  <div className="bg-muted rounded-lg p-3">
+                    <p className="text-sm italic text-muted-foreground">{currentTranscript}</p>
                   </div>
-                  <p className="text-xs text-gray-400 mt-1">Listening...</p>
+                  <p className="text-xs text-muted-foreground mt-1">Listening...</p>
                 </div>
               </div>
             )}
@@ -155,8 +155,8 @@ export default function TranscriptViewer({
       </div>
 
       {/* Footer Stats */}
-      <div className="p-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
-        <div className="flex items-center justify-between text-sm text-gray-600 dark:text-gray-400">
+      <div className="p-4 border-t border-border bg-muted/50">
+        <div className="flex items-center justify-between text-sm text-muted-foreground">
           <span>{messages.length} messages</span>
           <span>
             {messages.filter((m) => m.speaker === 'user').length} from you,{' '}
@@ -192,42 +192,42 @@ function MessageBubble({ message, onCopy, isCopied }: MessageBubbleProps) {
     <div className={`flex items-start space-x-3 ${isUser ? '' : 'flex-row-reverse space-x-reverse'}`}>
       {/* Avatar */}
       <div
-        className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${
+        className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center shadow-sm ${
           isUser
-            ? 'bg-blue-100 dark:bg-blue-900'
-            : 'bg-green-100 dark:bg-green-900'
+            ? 'bg-blue-600'
+            : 'bg-teal-600'
         }`}
       >
         {isUser ? (
-          <User className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+          <User className="w-5 h-5 text-white" />
         ) : (
-          <Bot className="w-5 h-5 text-green-600 dark:text-green-400" />
+          <Bot className="w-5 h-5 text-white" />
         )}
       </div>
 
       {/* Message Content */}
       <div className={`flex-1 ${isUser ? '' : 'flex flex-col items-end'}`}>
         <div
-          className={`rounded-lg p-3 max-w-[80%] ${
+          className={`rounded-lg p-3 max-w-[80%] shadow-sm ${
             isUser
-              ? 'bg-blue-50 dark:bg-blue-900/30'
-              : 'bg-green-50 dark:bg-green-900/30'
+              ? 'bg-blue-600 dark:bg-blue-500 text-white'
+              : 'bg-muted dark:bg-muted/50 text-foreground border border-border/50'
           }`}
         >
           <MarkdownRenderer 
             content={message.text} 
-            className={`text-sm ${isUser ? 'text-blue-900 dark:text-blue-100' : 'text-green-900 dark:text-green-100'}`} 
+            className={`text-sm ${isUser ? 'text-white prose-invert' : 'text-foreground'}`} 
           />
         </div>
 
         {/* Timestamp and Actions */}
         <div className={`flex items-center space-x-2 mt-1 ${isUser ? '' : 'flex-row-reverse space-x-reverse'}`}>
-          <span className="text-xs text-gray-400">
+          <span className="text-xs text-muted-foreground">
             {formatTimestamp(message.timestamp)}
           </span>
           <button
             onClick={() => onCopy(message)}
-            className="text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+            className="text-xs text-muted-foreground hover:text-foreground"
             title="Copy message"
           >
             {isCopied ? (
@@ -296,36 +296,36 @@ export function ExportOptions({ messages, onClose }: ExportOptionsProps) {
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md w-full mx-4">
+      <div className="bg-popover text-popover-foreground rounded-lg p-6 max-w-md w-full mx-4 border border-border shadow-xl">
         <h3 className="text-lg font-semibold mb-4">Export Transcript</h3>
         
         <div className="space-y-3">
           <button
             onClick={exportAsText}
-            className="w-full px-4 py-3 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg text-left transition-colors"
+            className="w-full px-4 py-3 bg-muted hover:bg-muted/80 rounded-lg text-left transition-colors"
           >
             <div className="font-medium">Plain Text (.txt)</div>
-            <div className="text-sm text-gray-600 dark:text-gray-400">
+            <div className="text-sm text-muted-foreground">
               Simple text format with timestamps
             </div>
           </button>
 
           <button
             onClick={exportAsJSON}
-            className="w-full px-4 py-3 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg text-left transition-colors"
+            className="w-full px-4 py-3 bg-muted hover:bg-muted/80 rounded-lg text-left transition-colors"
           >
             <div className="font-medium">JSON (.json)</div>
-            <div className="text-sm text-gray-600 dark:text-gray-400">
+            <div className="text-sm text-muted-foreground">
               Structured data format for processing
             </div>
           </button>
 
           <button
             onClick={exportAsMarkdown}
-            className="w-full px-4 py-3 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg text-left transition-colors"
+            className="w-full px-4 py-3 bg-muted hover:bg-muted/80 rounded-lg text-left transition-colors"
           >
             <div className="font-medium">Markdown (.md)</div>
-            <div className="text-sm text-gray-600 dark:text-gray-400">
+            <div className="text-sm text-muted-foreground">
               Formatted text with headers
             </div>
           </button>
@@ -333,7 +333,7 @@ export function ExportOptions({ messages, onClose }: ExportOptionsProps) {
 
         <button
           onClick={onClose}
-          className="w-full mt-4 px-4 py-2 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 rounded-lg transition-colors"
+          className="w-full mt-4 px-4 py-2 bg-secondary hover:bg-secondary/80 text-secondary-foreground rounded-lg transition-colors"
         >
           Cancel
         </button>

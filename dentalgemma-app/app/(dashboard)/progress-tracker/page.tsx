@@ -22,6 +22,8 @@ import { TreatmentCard } from '@/components/treatment/treatment-card';
 import { ProgressCharts } from '@/components/dashboard/charts';
 import type { Treatment } from '@/types';
 import jsPDF from 'jspdf';
+import { Card, CardContent } from '@/components/ui/card';
+import { ClipboardList } from 'lucide-react';
 
 // ============================================================================
 // Main Component
@@ -159,8 +161,10 @@ export default function ProgressTrackerPage() {
     <div className="container mx-auto px-4 py-8 max-w-7xl">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-4xl font-bold text-gray-900 mb-2">Treatment Progress Tracker</h1>
-        <p className="text-gray-600">
+        <h1 className="text-4xl font-bold text-foreground mb-2">
+          Treatment Progress Tracker
+        </h1>
+        <p className="text-muted-foreground">
           Track your dental treatment progress, milestones, and appointments
         </p>
       </div>
@@ -185,9 +189,28 @@ export default function ProgressTrackerPage() {
 
       {/* Form Modal */}
       {showForm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6">
-            <h2 className="text-2xl font-bold mb-6">
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
+          <div className="bg-card text-card-foreground rounded-lg shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6 relative border border-border">
+            <button
+              onClick={handleCancel}
+              className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors"
+              aria-label="Close"
+            >
+              <svg
+                className="w-6 h-6"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            </button>
+            <h2 className="text-2xl font-bold mb-6 text-gray-900 dark:text-white">
               {editingTreatment ? 'Edit Treatment' : 'Add New Treatment'}
             </h2>
             <TreatmentForm
@@ -211,7 +234,7 @@ export default function ProgressTrackerPage() {
                   ${
                     activeTab === 'timeline'
                       ? 'border-blue-600 text-blue-600'
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-200'
                   }
                 `}
               >
@@ -224,7 +247,7 @@ export default function ProgressTrackerPage() {
                   ${
                     activeTab === 'list'
                       ? 'border-blue-600 text-blue-600'
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-200'
                   }
                 `}
               >
@@ -237,7 +260,7 @@ export default function ProgressTrackerPage() {
                   ${
                     activeTab === 'charts'
                       ? 'border-blue-600 text-blue-600'
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-200'
                   }
                 `}
               >
@@ -250,38 +273,30 @@ export default function ProgressTrackerPage() {
 
       {/* Content */}
       {treatments.length === 0 ? (
-        <div className="text-center py-16 bg-gray-50 rounded-lg">
-          <svg
-            className="mx-auto h-24 w-24 text-gray-400 mb-4"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={1.5}
-              d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"
-            />
-          </svg>
-          <h3 className="text-xl font-semibold text-gray-900 mb-2">No treatments yet</h3>
-          <p className="text-gray-600 mb-6">
-            Start tracking your dental treatments by adding your first treatment
-          </p>
-          <button
-            onClick={() => setShowForm(true)}
-            className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold"
-          >
-            Add Your First Treatment
-          </button>
-        </div>
+        <Card className="border-dashed border-2 py-16 flex flex-col items-center justify-center text-center">
+          <CardContent className="flex flex-col items-center">
+            <div className="p-4 rounded-full bg-muted mb-4">
+              <ClipboardList className="h-12 w-12 text-muted-foreground/60" />
+            </div>
+            <h3 className="text-xl font-semibold text-foreground mb-2">No treatments yet</h3>
+            <p className="text-muted-foreground mb-8 max-w-md">
+              Start tracking your dental treatments by adding your first treatment to see your progress timeline and analytics.
+            </p>
+            <button
+              onClick={() => setShowForm(true)}
+              className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold transition-all hover:scale-[1.02] active:scale-[0.98] shadow-md"
+            >
+              Add Your First Treatment
+            </button>
+          </CardContent>
+        </Card>
       ) : (
         <>
           {/* Timeline View */}
           {activeTab === 'timeline' && (
-            <div className="bg-white rounded-lg shadow-md p-6">
+            <Card className="shadow-md p-6">
               <TreatmentTimeline treatments={treatments} onTreatmentClick={handleEdit} />
-            </div>
+            </Card>
           )}
 
           {/* List View */}
@@ -303,14 +318,6 @@ export default function ProgressTrackerPage() {
         </>
       )}
 
-      {/* Disclaimer */}
-      <div className="mt-12 p-4 bg-amber-50 border border-amber-200 rounded-lg">
-        <p className="text-sm text-amber-950">
-          <strong>Note:</strong> This treatment tracker is for personal record-keeping only. Always
-          consult with your dental professional for medical advice and treatment decisions. Data is
-          stored locally in your browser.
-        </p>
-      </div>
     </div>
   );
 }

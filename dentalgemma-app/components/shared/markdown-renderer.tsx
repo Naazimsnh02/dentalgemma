@@ -15,37 +15,37 @@ export function MarkdownRenderer({ content, className = '' }: MarkdownRendererPr
         remarkPlugins={[remarkGfm]}
         components={{
           h1: ({ className, ...props }) => (
-            <h1 className="text-2xl font-bold mt-4 mb-2 text-foreground" {...props} />
+            <h1 className="text-2xl font-bold mt-4 mb-2" {...props} />
           ),
           h2: ({ className, ...props }) => (
-            <h2 className="text-xl font-bold mt-3 mb-2 text-foreground" {...props} />
+            <h2 className="text-xl font-bold mt-3 mb-2" {...props} />
           ),
           h3: ({ className, ...props }) => (
-            <h3 className="text-lg font-bold mt-2 mb-1 text-foreground" {...props} />
+            <h3 className="text-lg font-bold mt-2 mb-1" {...props} />
           ),
           p: ({ className, ...props }) => (
-            <p className="mb-2 leading-relaxed text-muted-foreground" {...props} />
+            <p className="mb-2 leading-relaxed" {...props} />
           ),
           ul: ({ className, ...props }) => (
-            <ul className="list-disc list-inside mb-2 space-y-1 text-muted-foreground" {...props} />
+            <ul className="list-disc list-inside mb-2 space-y-1" {...props} />
           ),
           ol: ({ className, ...props }) => (
-            <ol className="list-decimal list-inside mb-2 space-y-1 text-muted-foreground" {...props} />
+            <ol className="list-decimal list-inside mb-2 space-y-1" {...props} />
           ),
           li: ({ className, ...props }) => (
             <li className="ml-4" {...props} />
           ),
           strong: ({ className, ...props }) => (
-            <strong className="font-semibold text-foreground" {...props} />
+            <strong className="font-semibold" {...props} />
           ),
           em: ({ className, ...props }) => (
             <em className="italic" {...props} />
           ),
           blockquote: ({ className, ...props }) => (
-            <blockquote className="border-l-4 border-primary pl-4 italic my-2 text-muted-foreground" {...props} />
+            <blockquote className="border-l-4 border-primary pl-4 italic my-2 opacity-80" {...props} />
           ),
           code: ({ className, children, ...props }) => (
-            <code className="bg-muted px-1.5 py-0.5 rounded text-sm font-mono text-foreground" {...props}>
+            <code className="bg-muted/50 px-1.5 py-0.5 rounded text-sm font-mono" {...props}>
               {children}
             </code>
           ),

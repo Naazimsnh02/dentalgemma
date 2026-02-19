@@ -28,10 +28,8 @@ export default function DashboardPage() {
     updateDashboardStats({
       totalAnalyses,
       casesAssessed: clinicalCount,
-      papersFound: savedPapers.length,
-      dentistsLocated: favoriteDentists.length,
     });
-  }, [analysisHistory, savedPapers, favoriteDentists, updateDashboardStats]);
+  }, [analysisHistory, updateDashboardStats]);
 
   // Get personalized greeting based on time of day
   const greeting = useMemo(() => {
