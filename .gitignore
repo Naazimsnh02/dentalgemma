@@ -57,3 +57,6 @@ finetune/output/
 
 # Custom
 .kiro/
+# Documentation
+AGENTS.md
+SUBMISSION.md

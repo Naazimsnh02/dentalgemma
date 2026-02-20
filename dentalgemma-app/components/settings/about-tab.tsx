@@ -25,7 +25,7 @@ export function AboutTab() {
             <p className="text-sm text-muted-foreground">Version 1.0.0</p>
           </div>
           <p className="text-sm">
-            A production-ready dental AI diagnostic platform leveraging the fine-tuned DentalGemma 1.5 4B IT (Multimodal) model 
+            A dental AI diagnostic platform leveraging the fine-tuned DentalGemma 1.5 4B IT (Multimodal) model 
             for comprehensive dental diagnostics, clinical assessments, and evidence-based treatment recommendations.
           </p>
         </div>

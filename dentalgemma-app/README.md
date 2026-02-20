@@ -1,12 +1,12 @@
 # DentalGemma - AI Dental Diagnostics Platform
 
-Production-ready dental AI diagnostic platform built with Next.js 16, featuring cloud-first architecture with GPU-accelerated inference via Modal.com.
+Multimodal dental AI diagnostic platform built with Next.js 16, featuring cloud-first architecture with GPU-accelerated inference via Modal.com.
 
 ## Features
 
 - 🦷 **X-Ray Analysis Suite** - Cavity detection, OPG classification, tooth identification
 - 📋 **Clinical Case Assessment** - Comprehensive diagnostic reports with evidence-based recommendations
-- 🎤 **Voice Consultation** - Hybrid voice system (Web Speech API + Gemini Live)
+- 🎤 **Voice Consultation** - Voice system (Web Speech API)
 - 🤖 **Agentic Workflows** - Multi-agent diagnostic orchestration
 - 📍 **Dentist Finder** - Location-based specialist search
 - 📊 **Treatment Tracker** - Progress monitoring and milestone tracking
@@ -21,7 +21,7 @@ Production-ready dental AI diagnostic platform built with Next.js 16, featuring 
 - **UI Components**: shadcn/ui
 - **State Management**: Zustand
 - **AI/ML**: Vercel AI SDK 6, Modal.com (DentalGemma 1.5 4B IT)
-- **APIs**: Google Places, PubMed E-Utils, Gemini 2.5 Flash
+- **APIs**: Google Places, PubMed E-Utils
 - **Deployment**: Vercel (frontend), Modal.com (backend)
 
 ## Getting Started
@@ -29,7 +29,7 @@ Production-ready dental AI diagnostic platform built with Next.js 16, featuring 
 ### Prerequisites
 
 - Node.js 20+ and npm
-- API keys for Google Places, Google Gemini, and Modal.com
+- API keys for Google Places and Modal.com
 
 ### Installation
 
@@ -69,7 +69,11 @@ dentalgemma-app/
 ├── hooks/           # Custom React hooks
 ├── types/           # TypeScript type definitions
 ├── store/           # Zustand state management
-└── public/          # Static assets and PWA files
+├── __tests__/       # Automated testing suite
+├── scripts/         # Utility scripts
+├── public/          # Static assets and PWA files
+├── jest.config.js   # Test configuration
+└── vercel.json      # Vercel configuration
 ```
 
 ## Environment Variables

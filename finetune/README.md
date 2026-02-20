@@ -35,7 +35,7 @@ MedGemma was **not** trained on dental data, making this a true novel task adapt
 
 Dental diagnostics remains an underserved domain in medical AI. While MedGemma excels at general medical imaging tasks, it has no exposure to dental-specific data. **DentalGemma** bridges this gap by:
 
-1. **Curating** 6 diverse dental datasets spanning radiography, clinical photography, pathology classification, and clinical case assessment
+1. **Curating** 5 diverse dental datasets spanning radiography, clinical photography, pathology classification, object detection, and clinical case assessment
 2. **Preprocessing** raw data into standardized HuggingFace datasets with clinically accurate chat-format annotations
 3. **Fine-tuning** MedGemma 1.5 4B IT using full bfloat16 LoRA with critical fixes for label masking and image preprocessing
 
@@ -60,13 +60,12 @@ finetune/
 │   ├── process_cavity_detection.py   # Clinical photo analysis with compositional answers
 │   ├── process_opg_classification.py # 6-class OPG pathology with differential diagnosis
 │   ├── process_panoramic.py          # Dentition assessment with clinical context
-│   ├── process_opg_detection.py      # Location-aware diagnosis with region mapping (NEW)
+│   ├── process_opg_detection.py      # Location-aware diagnosis with region mapping
 │   ├── process_text_cases.py         # JSONL clinical cases → chat-format instruct data
-│   ├── answer_builder.py             # Compositional answer generation utility (NEW)
+│   ├── answer_builder.py             # Compositional answer generation utility
 │   ├── inspect_dataset.py            # Dataset inspection utility
-│   ├── README_vqa.md                 # HuggingFace dataset card (VQA)
-│   ├── README_instruct.md            # HuggingFace dataset card (Instruct)
-│   └── requirements.txt             # Preprocessing dependencies
+│   ├── export_to_csv.py              # Export utility
+│   └── requirements.txt              # Preprocessing dependencies
 ├── datasets/                         # Raw source datasets (not tracked in git)
 │   ├── Dental Cavity Detection Dataset/
 │   │   ├── train/
@@ -89,7 +88,7 @@ finetune/
 │   └── Wildstashdental 2.5k-instruct/
 │       └── dental_training_data_v3.jsonl
 ├── output/                           # Built datasets (not tracked in git)
-├── dentalgemma-fine-tune-v1.ipynb    # Fine-tuning notebook (Latest version with bfloat16 LoRA)
+├── dentalgemma-fine-tune.ipynb       # Fine-tuning notebook (Latest version with bfloat16 LoRA)
 ├── dentalgemma_validation.ipynb      # Validation and inference notebook
 └── README.md                         # This file
 ```
@@ -153,13 +152,13 @@ Each case includes structured clinical information: patient demographics, chief 
 
 ### Source Datasets
 
-| # | Dataset | Raw Images | Output VQA Pairs | Image Type | Task | License |
-|:-:|:--------|:-----------|:----------------:|:-----------|:-----|:--------|
-| 1 | **[Dental Cavity Detection](https://www.kaggle.com/datasets/maazmakhdoom/dental-cavity-detection-dataset)** | 418 | ~642 | Clinical Photographs | Cavity/normal detection with clinical reasoning | CC BY-SA 4.0 |
-| 2 | **[Dental OPG Classification](https://www.kaggle.com/datasets/imtkaggleteam/dental-opg-xray-dataset)** (v1 + v4, merged & deduped) | 517 | ~1,214 | Panoramic OPG | 6-class pathology classification with differential diagnosis | CC BY-NC-SA 4.0 |
-| 3 | **[Panoramic Dental Xray](https://www.kaggle.com/datasets/orvile/panoramic-dental-xray-dataset)** (firstpart + secondpart) | 64 | ~128 | Panoramic X-rays | Dentition completeness & tooth type identification | CC BY-SA 4.0 |
-| 4 | **[Dental OPG Object Detection](https://www.kaggle.com/datasets/imtkaggleteam/dental-opg-xray-dataset)** (same source as #2) | 232 | ~545 | Panoramic OPG | Location-aware pathology detection with region mapping | CC BY-NC-SA 4.0 |
-| 5 | **[dental-2.5k-instruct](https://huggingface.co/datasets/Wildstash/dental-2.5k-instruct)** | N/A (text-only) | 2,494 | Text-only | Clinical case assessment (98 conditions) | Apache 2.0 |
+| Dataset | Raw Images | Output VQA Pairs | Image Type | Task | License |
+|:--------|:-----------|:----------------:|:-----------|:-----|:--------|
+| **[Dental Cavity Detection](https://www.kaggle.com/datasets/maazmakhdoom/dental-cavity-detection-dataset)** | 418 | ~642 | Clinical Photographs | Cavity/normal detection with clinical reasoning | CC BY-SA 4.0 |
+| **[Dental OPG Classification](https://www.kaggle.com/datasets/imtkaggleteam/dental-opg-xray-dataset)** (v1 + v4, merged & deduped) | 517 | ~1,214 | Panoramic OPG | 6-class pathology classification with differential diagnosis | CC BY-NC-SA 4.0 |
+| **[Panoramic Dental Xray](https://www.kaggle.com/datasets/orvile/panoramic-dental-xray-dataset)** (firstpart + secondpart) | 64 | ~128 | Panoramic X-rays | Dentition completeness & tooth type identification | CC BY-SA 4.0 |
+| **[Dental OPG Object Detection](https://www.kaggle.com/datasets/imtkaggleteam/dental-opg-xray-dataset)** (same source as Classification) | 232 | ~545 | Panoramic OPG | Location-aware pathology detection with region mapping | CC BY-NC-SA 4.0 |
+| **[dental-2.5k-instruct](https://huggingface.co/datasets/Wildstash/dental-2.5k-instruct)** | N/A (text-only) | 2,494 | Text-only | Clinical case assessment (98 conditions) | Apache 2.0 |
 
 **Note:** Each image generates 1-3 VQA pairs using diverse question types, resulting in ~2,529 total VQA pairs from ~1,231 unique images.
 
@@ -235,7 +234,7 @@ Raw datasets should be placed under `datasets/` following the directory structur
 
 ### Running Fine-Tuning
 
-The notebook `dentalgemma-fine-tune-v1.ipynb` is fully Colab-ready:
+The notebook `dentalgemma-fine-tune.ipynb` is fully Colab-ready:
 
 1. **Open in Google Colab** and select an **A100 GPU** runtime (≥40 GB VRAM required for full bfloat16)
 2. **Set your HuggingFace token** in Colab Secrets (name: `HF_TOKEN`, needs write access)

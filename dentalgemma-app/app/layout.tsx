@@ -16,7 +16,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "DentalGemma - AI Dental Diagnostics",
-  description: "Production-ready dental AI diagnostic platform with X-ray analysis, clinical assessments, and evidence-based recommendations",
+  description: "Multimodal dental AI diagnostic platform with X-ray analysis, clinical assessments, and evidence-based recommendations",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
