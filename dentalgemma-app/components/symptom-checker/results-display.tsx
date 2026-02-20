@@ -21,37 +21,27 @@ const URGENCY_CONFIG: Record<
     label: string;
     icon: React.ReactNode;
     color: string;
-    bgColor: string;
-    borderColor: string;
   }
 > = {
   emergency: {
     label: 'Emergency',
     icon: <AlertTriangle className="h-5 w-5" />,
     color: 'text-red-700 dark:text-red-400',
-    bgColor: 'bg-red-50 dark:bg-red-950/20',
-    borderColor: 'border-red-200 dark:border-red-800',
   },
   urgent: {
     label: 'Urgent',
     icon: <Clock className="h-5 w-5" />,
     color: 'text-orange-700 dark:text-orange-400',
-    bgColor: 'bg-orange-50 dark:bg-orange-950/20',
-    borderColor: 'border-orange-200 dark:border-orange-800',
   },
   routine: {
     label: 'Routine',
     icon: <CheckCircle2 className="h-5 w-5" />,
     color: 'text-blue-700 dark:text-blue-400',
-    bgColor: 'bg-blue-50 dark:bg-blue-950/20',
-    borderColor: 'border-blue-200 dark:border-blue-800',
   },
   'home-care': {
     label: 'Home Care',
     icon: <Home className="h-5 w-5" />,
     color: 'text-green-700 dark:text-green-400',
-    bgColor: 'bg-green-50 dark:bg-green-950/20',
-    borderColor: 'border-green-200 dark:border-green-800',
   },
 };
 
@@ -61,13 +51,7 @@ export function ResultsDisplay({ result, onSave, onExport, onStartOver }: Result
   return (
     <div className="space-y-6">
       {/* Urgency Banner */}
-      <Card
-        className={cn(
-          'border-2',
-          urgencyConfig.bgColor,
-          urgencyConfig.borderColor
-        )}
-      >
+      <Card>
         <CardHeader>
           <div className="flex items-center gap-3">
             <div className={urgencyConfig.color}>{urgencyConfig.icon}</div>
@@ -149,7 +133,7 @@ export function ResultsDisplay({ result, onSave, onExport, onStartOver }: Result
       </Card>
 
       {/* Red Flags */}
-      <Card className="border-red-200 dark:border-red-800">
+      <Card>
         <CardHeader>
           <div className="flex items-center gap-2 text-red-700 dark:text-red-400">
             <AlertTriangle className="h-5 w-5" />
@@ -163,32 +147,15 @@ export function ResultsDisplay({ result, onSave, onExport, onStartOver }: Result
           <ul className="space-y-2">
             {result.redFlags.map((flag, index) => (
               <li key={index} className="flex items-start gap-2">
-                <AlertTriangle className="h-5 w-5 text-red-600 dark:text-red-400 mt-0.5 flex-shrink-0" />
-                <span className="text-sm font-medium text-red-900 dark:text-red-100">
-                  {flag}
-                </span>
+                <CheckCircle2 className="h-5 w-5 text-muted-foreground mt-0.5 flex-shrink-0" />
+                <span className="text-sm">{flag}</span>
               </li>
             ))}
           </ul>
         </CardContent>
       </Card>
 
-      {/* Important Disclaimer */}
-      <Card className="border-amber-200 bg-amber-50 dark:bg-amber-950/20 dark:border-amber-800">
-        <CardContent className="pt-6">
-          <div className="flex gap-3">
-            <AlertTriangle className="h-5 w-5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
-            <div className="text-sm text-amber-900 dark:text-amber-100 space-y-2">
-              <p className="font-medium">Important Reminder</p>
-              <p>
-                This assessment is for informational purposes only and is not a substitute 
-                for professional medical advice. Only a qualified dentist can provide an 
-                accurate diagnosis after a proper examination.
-              </p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+
 
       <Separator />
 

@@ -456,29 +456,66 @@ export class ModalClient {
       // Prefer structured JSON from backend; fall back to text parsing
       if ((response as any).case_assessment) {
         const ca = (response as any).case_assessment;
+        const rawText = response.assessment || '';
+
+        // Normalize urgency to valid values
+        const rawUrgency = (ca.urgency || '').toLowerCase().replace(/[^a-z-]/g, '');
+        const validUrgencies = ['emergency', 'urgent', 'routine', 'home-care'] as const;
+        const urgency = validUrgencies.includes(rawUrgency as any)
+          ? (rawUrgency as typeof validUrgencies[number])
+          : this.extractUrgencyLevel(rawText);
+
+        // Extract diagnosis with fallback to raw text parsing
+        const primary = ca.diagnosis?.primary || this.extractDiagnosisFromText(rawText);
+        const differential = Array.isArray(ca.diagnosis?.differential)
+          ? ca.diagnosis.differential.filter((d: string) => d && d.length > 0)
+          : this.extractDifferential(rawText);
+
+        // Extract etiology with fallback
+        const rootCause = ca.etiology?.rootCause || ca.etiology?.root_cause || this.extractEtiologyFromText(rawText);
+
+        // Extract protocol - handle both array and string
+        let protocol: string[] = [];
+        if (Array.isArray(ca.managementPlan?.protocol)) {
+          protocol = ca.managementPlan.protocol.filter((s: string) => s && s.length > 0);
+        } else if (typeof ca.managementPlan?.protocol === 'string') {
+          protocol = [ca.managementPlan.protocol];
+        } else if (Array.isArray(ca.management_plan?.protocol)) {
+          protocol = ca.management_plan.protocol.filter((s: string) => s && s.length > 0);
+        }
+
+        // Extract antibiotics - handle variations
+        const abSection = ca.antibiotics || ca.antibiotic;
+        const antibiotics = abSection ? {
+          indicated: abSection.indicated === true || abSection.indicated === 'true' || abSection.indicated === 'yes',
+          reason: abSection.reason || abSection.rationale || 'Not specified',
+        } : undefined;
+
+        // Extract follow-up - handle variations
+        const fuSection = ca.followUp || ca.follow_up || ca.followup;
+        const monitoring = Array.isArray(fuSection?.monitoring)
+          ? fuSection.monitoring.filter((s: string) => s && s.length > 0)
+          : [];
+
+        // Extract counseling - handle variations
+        const counseling = ca.patientCounseling || ca.patient_counseling || ca.counseling;
+        const explanation = counseling?.explanation || counseling?.summary || '';
+
         return {
           success: true,
-          diagnosis: {
-            primary: ca.diagnosis?.primary || 'Diagnosis pending',
-            differential: ca.diagnosis?.differential || [],
-          },
-          etiology: {
-            rootCause: ca.etiology?.rootCause || 'To be determined',
-          },
-          urgency: ca.urgency || 'routine',
+          diagnosis: { primary, differential },
+          etiology: { rootCause },
+          urgency,
           managementPlan: {
-            protocol: ca.managementPlan?.protocol || [],
+            protocol: protocol.length > 0 ? protocol : ['Refer to clinical assessment details'],
           },
-          antibiotics: ca.antibiotics ? {
-            indicated: !!ca.antibiotics.indicated,
-            reason: ca.antibiotics.reason || 'Not specified',
-          } : undefined,
+          antibiotics,
           followUp: {
-            timing: ca.followUp?.timing || 'To be determined',
-            monitoring: ca.followUp?.monitoring || [],
+            timing: fuSection?.timing || fuSection?.schedule || 'To be determined',
+            monitoring,
           },
           patientCounseling: {
-            explanation: ca.patientCounseling?.explanation || '',
+            explanation: explanation || 'Please consult your dentist for a detailed explanation of your condition and treatment options.',
           },
           processingTime,
         };
@@ -530,7 +567,7 @@ export class ModalClient {
         }
       );
 
-      return response.message || (response as any).response || '';
+      return this.cleanResponseText(response.message || (response as any).response || '');
     } catch (error) {
       if (error instanceof ModalClientError) {
         throw error;
@@ -541,6 +578,40 @@ export class ModalClient {
         { error }
       );
     }
+  }
+
+  /**
+   * Clean response text by removing thought blocks and special tokens
+   */
+  private cleanResponseText(text: string): string {
+    if (!text) return '';
+
+    let clean = text.trim();
+
+    // 1. Remove <unusedXX>thought ... <unusedXX> blocks (common in Gemma fine-tunes)
+    // This handles both closed blocks and unclosed ones if they have the start tag
+    clean = clean.replace(/<unused\d+>thought[\s\S]*?<unused\d+>/gi, '');
+    clean = clean.replace(/<unused\d+>thought[\s\S]*?(?=\n\n|$)/gi, '');
+
+    // 2. Remove standard XML-style thought blocks
+    clean = clean.replace(/<thought>[\s\S]*?<\/thought>/gi, '');
+    clean = clean.replace(/<thought>[\s\S]*$/gi, ''); // Unclosed tag
+
+    // 3. Remove standalone special tokens and formatting markers
+    clean = clean.replace(/<unused\d+>/gi, '');
+    clean = clean.replace(/<start_of_turn>/gi, '');
+    clean = clean.replace(/<end_of_turn>/gi, '');
+    clean = clean.replace(/<\|im_start\|>/gi, '');
+    clean = clean.replace(/<\|im_end\|>/gi, '');
+    clean = clean.replace(/<\|assistant\|>/gi, '');
+    clean = clean.replace(/<\|user\|>/gi, '');
+
+    // 4. Handle leading "thought" or "reasoning" words (case-insensitive)
+    // This handles the specific case reported where the text starts with the word "thought"
+    // We remove the word "thought" followed by any combination of :, -, or whitespace
+    clean = clean.replace(/^(?:thought|reasoning|analysis)[:\s\-\n]*/i, '');
+
+    return clean.trim();
   }
 
   /**
@@ -1057,6 +1128,34 @@ export class ModalClient {
     }
     
     return items;
+  }
+
+  private extractDiagnosisFromText(text: string): string {
+    const patterns = [
+      /(?:diagnosis|diagnosed with|condition)[:\s]+(.+?)(?:\.|$)/i,
+      /(?:patient (?:has|presents with|suffering from))[:\s]+(.+?)(?:\.|$)/i,
+    ];
+    for (const pattern of patterns) {
+      const match = text.match(pattern);
+      if (match && match[1].trim().length > 3) {
+        return match[1].trim();
+      }
+    }
+    return 'Diagnosis pending';
+  }
+
+  private extractEtiologyFromText(text: string): string {
+    const patterns = [
+      /(?:etiology|cause|caused by|due to)[:\s]+(.+?)(?:\.|$)/i,
+      /(?:result of|resulting from)[:\s]+(.+?)(?:\.|$)/i,
+    ];
+    for (const pattern of patterns) {
+      const match = text.match(pattern);
+      if (match && match[1].trim().length > 3) {
+        return match[1].trim();
+      }
+    }
+    return 'To be determined';
   }
 
   private extractSection(text: string, section: string): string {

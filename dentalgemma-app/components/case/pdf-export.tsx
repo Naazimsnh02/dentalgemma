@@ -43,42 +43,60 @@ export function generateAssessmentPDF(options: PDFExportOptions): void {
   };
 
   // Helper function to add text with word wrap
-  const addText = (text: string, fontSize: number = 10, isBold: boolean = false) => {
+  const addText = (text: string, fontSize: number = 10, isBold: boolean = false, indent: number = 0) => {
     doc.setFontSize(fontSize);
     doc.setFont('helvetica', isBold ? 'bold' : 'normal');
-    const lines = doc.splitTextToSize(text, contentWidth);
     
+    // Split text to fit width
+    const lines = doc.splitTextToSize(text, contentWidth - indent);
+    
+    // Check if entire block fits, if not, check per line
+    if (yPosition + (lines.length * fontSize * 0.5) > pageHeight - margin) {
+       // If block is too big, just add page immediately to avoid orphaned lines if possible
+       if (lines.length > 20) { 
+          // large block, let it flow naturally
+       } else {
+          checkPageBreak(lines.length * fontSize * 0.5);
+       }
+    }
+
     lines.forEach((line: string) => {
-      checkPageBreak(5);
-      doc.text(line, margin, yPosition);
-      yPosition += fontSize * 0.5;
+      checkPageBreak(fontSize * 0.5); // Check for each line
+      doc.text(line, margin + indent, yPosition);
+      yPosition += (fontSize * 0.5); // Increment y by roughly half font size (mm approx)
     });
-    yPosition += 2;
+    yPosition += 3; // Add small spacing after block
   };
 
-  // Helper function to add section header
+  // Helper function to add section header with background
   const addSectionHeader = (title: string) => {
-    checkPageBreak(20);
-    yPosition += 5;
+    checkPageBreak(15);
+    yPosition += 2;
     doc.setFillColor(59, 130, 246); // Blue
-    doc.rect(margin, yPosition - 5, contentWidth, 8, 'F');
+    doc.rect(margin, yPosition, contentWidth, 8, 'F');
     doc.setTextColor(255, 255, 255);
     doc.setFontSize(12);
     doc.setFont('helvetica', 'bold');
-    doc.text(title, margin + 2, yPosition);
+    doc.text(title, margin + 2, yPosition + 5.5);
     doc.setTextColor(0, 0, 0);
-    yPosition += 8;
+    yPosition += 12; // Move past header
   };
 
   // Helper function to add bullet list
   const addBulletList = (items: string[]) => {
     items.forEach((item) => {
-      checkPageBreak(5);
+      // Pre-calculate height of item
+      doc.setFontSize(10);
       const lines = doc.splitTextToSize(`• ${item}`, contentWidth - 5);
+      const height = lines.length * 5;
+      
+      checkPageBreak(height);
+      
       lines.forEach((line: string) => {
-        doc.text(line, margin + 5, yPosition);
-        yPosition += 5;
+         doc.text(line, margin + 5, yPosition);
+         yPosition += 5;
       });
+      yPosition += 1;
     });
     yPosition += 2;
   };
@@ -86,12 +104,18 @@ export function generateAssessmentPDF(options: PDFExportOptions): void {
   // Helper function to add numbered list
   const addNumberedList = (items: string[]) => {
     items.forEach((item, index) => {
-      checkPageBreak(5);
-      const lines = doc.splitTextToSize(`${index + 1}. ${item}`, contentWidth - 5);
+      doc.setFontSize(10);
+      const prefix = `${index + 1}. `;
+      const lines = doc.splitTextToSize(`${prefix}${item}`, contentWidth - 5);
+      const height = lines.length * 5;
+
+      checkPageBreak(height);
+
       lines.forEach((line: string) => {
         doc.text(line, margin + 5, yPosition);
         yPosition += 5;
       });
+      yPosition += 1;
     });
     yPosition += 2;
   };
@@ -100,19 +124,18 @@ export function generateAssessmentPDF(options: PDFExportOptions): void {
   // Document Header
   // ============================================================================
   
-  doc.setFillColor(30, 58, 138); // Dark blue
+  doc.setFillColor(30, 58, 138); // Dark blue header
   doc.rect(0, 0, pageWidth, 40, 'F');
   
   doc.setTextColor(255, 255, 255);
-  doc.setFontSize(24);
+  doc.setFontSize(22);
   doc.setFont('helvetica', 'bold');
   doc.text('Clinical Assessment Report', margin, 20);
   
   doc.setFontSize(10);
   doc.setFont('helvetica', 'normal');
-  doc.text(`Generated: ${new Date().toLocaleString()}`, margin, 30);
+  doc.text(`Generated: ${new Date().toLocaleString()}`, margin, 32);
 
-  
   doc.setTextColor(0, 0, 0);
   yPosition = 50;
 
@@ -121,11 +144,22 @@ export function generateAssessmentPDF(options: PDFExportOptions): void {
   // ============================================================================
   
   if (includePatientInfo && caseData) {
-    addSectionHeader('PATIENT INFORMATION');
-    addText(`Age: ${caseData.patient.age} years`, 10, true);
-    addText(`Gender: ${caseData.patient.gender.charAt(0).toUpperCase() + caseData.patient.gender.slice(1)}`, 10, true);
+    // We create a simpler compact block for patient info
+    doc.setFontSize(14);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Patient Data', margin, yPosition);
+    yPosition += 6;
+
+    doc.setDrawColor(200, 200, 200);
+    doc.line(margin, yPosition, pageWidth - margin, yPosition);
+    yPosition += 5;
+
+    addText(`Age: ${caseData.patient.age}`, 10, false);
+    yPosition -= 3; // tighter spacing
+    addText(`Gender: ${caseData.patient.gender.charAt(0).toUpperCase() + caseData.patient.gender.slice(1)}`, 10, false);
     if (caseData.patient.patientId) {
-      addText(`Patient ID: ${caseData.patient.patientId}`, 10, true);
+        yPosition -= 3;
+        addText(`ID: ${caseData.patient.patientId}`, 10, false);
     }
     yPosition += 5;
   }
@@ -136,10 +170,10 @@ export function generateAssessmentPDF(options: PDFExportOptions): void {
   
   checkPageBreak(25);
   const urgencyColors: Record<string, [number, number, number]> = {
-    'emergency': [220, 38, 38],
-    'urgent': [249, 115, 22],
-    'routine': [59, 130, 246],
-    'home-care': [34, 197, 94],
+    'emergency': [220, 38, 38],   // Red
+    'urgent': [234, 88, 12],      // Orange
+    'routine': [37, 99, 235],     // Blue
+    'home-care': [22, 163, 74],   // Green
   };
   
   const urgencyLabels: Record<string, string> = {
@@ -150,98 +184,119 @@ export function generateAssessmentPDF(options: PDFExportOptions): void {
   };
 
   const urgencyColor = urgencyColors[assessment.urgency] || [107, 114, 128];
+  
   doc.setFillColor(...urgencyColor);
-  doc.rect(margin, yPosition, contentWidth, 15, 'F');
+  doc.rect(margin, yPosition, contentWidth, 14, 'F');
   
   doc.setTextColor(255, 255, 255);
-  doc.setFontSize(12);
+  doc.setFontSize(11);
   doc.setFont('helvetica', 'bold');
-  doc.text(urgencyLabels[assessment.urgency] || `URGENCY: ${assessment.urgency.toUpperCase()}`, margin + 2, yPosition + 10);
+  
+  // Center text in banner
+  const bannerText = urgencyLabels[assessment.urgency] || `URGENCY: ${assessment.urgency.toUpperCase()}`;
+  doc.text(bannerText, margin + 4, yPosition + 9);
+  
   doc.setTextColor(0, 0, 0);
-  yPosition += 20;
+  yPosition += 22;
 
   // ============================================================================
-  // Section 1: Patient Assessment
+  // 1. Patient Assessment
   // ============================================================================
   
   addSectionHeader('1. PATIENT ASSESSMENT');
-  addText('Primary Diagnosis:', 11, true);
-  addText(assessment.diagnosis.primary, 10);
-  yPosition += 3;
   
-  if (assessment.diagnosis.differential.length > 0) {
+  if (assessment.diagnosis.primary) {
+      addText('Primary Diagnosis:', 10, true);
+      addText(assessment.diagnosis.primary, 10, false, 5); 
+  }
+  
+  if (assessment.diagnosis.differential && assessment.diagnosis.differential.length > 0) {
     addText('Differential Diagnoses:', 10, true);
     addBulletList(assessment.diagnosis.differential);
   }
 
-  addText('Etiology / Root Cause:', 10, true);
-  addText(assessment.etiology.rootCause, 10);
+  if (assessment.etiology.rootCause) {
+      addText('Etiology / Root Cause:', 10, true);
+      addText(assessment.etiology.rootCause, 10, false, 5);
+  }
 
   // ============================================================================
-  // Section 2: Management Plan
+  // 2. Management Plan
   // ============================================================================
   
   addSectionHeader('2. MANAGEMENT PLAN');
-  addText('Recommended Treatment Protocol:', 11, true);
-  addNumberedList(assessment.managementPlan.protocol);
+  
+  if (assessment.managementPlan.protocol && assessment.managementPlan.protocol.length > 0) {
+      addText('Recommended Treatment Protocol:', 10, true);
+      addNumberedList(assessment.managementPlan.protocol);
+  }
 
   // ============================================================================
-  // Section 3: Antibiotics
+  // 3. Antibiotic Considerations
   // ============================================================================
   
-  addSectionHeader('3. ANTIBIOTIC CONSIDERATIONS');
-  addText(`Antibiotics Indicated: ${assessment.antibiotics?.indicated ? 'YES' : 'NO'}`, 11, true);
-  addText('Reasoning:', 10, true);
-  addText(assessment.antibiotics?.reason || 'No specific clinical indication for antibiotics at this time.', 10);
+  addSectionHeader('3. ANTIBIOTICS');
+  
+  addText(`Indicated: ${assessment.antibiotics?.indicated ? 'YES' : 'NO'}`, 10, true);
+  if (assessment.antibiotics?.reason) {
+      addText('Reasoning:', 10, true);
+      addText(assessment.antibiotics.reason, 10, false, 5);
+  }
 
   // ============================================================================
-  // Section 4: Follow-up
+  // 4. Follow-up
   // ============================================================================
   
   addSectionHeader('4. FOLLOW-UP SCHEDULE');
-  addText('Timing:', 11, true);
-  addText(assessment.followUp.timing, 10);
-  yPosition += 3;
   
-  if (assessment.followUp.monitoring.length > 0) {
+  if (assessment.followUp.timing) {
+      addText('Timing:', 10, true);
+      addText(assessment.followUp.timing, 10, false, 5);
+  }
+  
+  if (assessment.followUp.monitoring && assessment.followUp.monitoring.length > 0) {
     addText('Monitoring Parameters:', 10, true);
     addBulletList(assessment.followUp.monitoring);
   }
 
   // ============================================================================
-  // Section 5: Patient Counseling
+  // 5. Patient Counseling
   // ============================================================================
   
   addSectionHeader('5. PATIENT COUNSELING');
-  addText('Patient-Friendly Explanation:', 11, true);
-  addText(assessment.patientCounseling.explanation, 10);
+  
+  if (assessment.patientCounseling.explanation) {
+      addText('Explanation for Patient:', 10, true);
+      addText(assessment.patientCounseling.explanation, 10, false, 5);
+  }
 
   // ============================================================================
   // Footer - Medical Disclaimer
   // ============================================================================
+  if (yPosition + 30 > pageHeight - margin) {
+     doc.addPage();
+     yPosition = margin;
+  } else {
+     yPosition += 10;
+  }
   
-  checkPageBreak(35);
-  yPosition += 10;
-  doc.setFillColor(243, 244, 246);
-  doc.rect(margin, yPosition, contentWidth, 25, 'F');
-  
+  doc.setDrawColor(200, 200, 200);
+  doc.line(margin, yPosition, pageWidth - margin, yPosition);
+  yPosition += 5;
+
   doc.setFontSize(8);
-  doc.setFont('helvetica', 'bold');
-  doc.text('MEDICAL DISCLAIMER', margin + 2, yPosition + 5);
+  doc.setTextColor(100, 100, 100);
+  doc.setFont('helvetica', 'italic');
   
-  doc.setFont('helvetica', 'normal');
-  const disclaimer = 'This assessment is generated by AI and is for educational purposes only. It should not replace professional medical advice, diagnosis, or treatment. Always consult with a qualified healthcare provider for medical decisions.';
-  const disclaimerLines = doc.splitTextToSize(disclaimer, contentWidth - 4);
-  let disclaimerY = yPosition + 10;
+  const disclaimer = 'Note: This assessment is generated by AI (DentalGemma) and is intended for educational and clinical support purposes only. It is NOT a substitute for professional diagnosis or treatment. All clinical decisions remain the responsibility of the attending provider.';
+  const disclaimerLines = doc.splitTextToSize(disclaimer, contentWidth);
+  
   disclaimerLines.forEach((line: string) => {
-    doc.text(line, margin + 2, disclaimerY);
-    disclaimerY += 4;
+    doc.text(line, margin, yPosition);
+    yPosition += 4;
   });
 
-  // ============================================================================
   // Save PDF
-  // ============================================================================
-  
   const filename = `dental-assessment-${new Date().toISOString().split('T')[0]}.pdf`;
   doc.save(filename);
 }

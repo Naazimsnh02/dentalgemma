@@ -59,17 +59,17 @@ export default function EducationPage() {
 
           {/* Quick Stats */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-6">
-            <div className="bg-white rounded-lg border border-gray-200 p-4">
+            <div className="bg-white rounded-lg border border-gray-200 p-4 text-center">
               <div className="text-3xl font-bold text-blue-600 mb-1">
                 {dentalConditions.length}
               </div>
               <div className="text-sm text-gray-600">Dental Conditions</div>
             </div>
-            <div className="bg-white rounded-lg border border-gray-200 p-4">
+            <div className="bg-white rounded-lg border border-gray-200 p-4 text-center">
               <div className="text-3xl font-bold text-green-600 mb-1">8</div>
               <div className="text-sm text-gray-600">Categories</div>
             </div>
-            <div className="bg-white rounded-lg border border-gray-200 p-4">
+            <div className="bg-white rounded-lg border border-gray-200 p-4 text-center">
               <div className="text-3xl font-bold text-purple-600 mb-1">32</div>
               <div className="text-sm text-gray-600">Adult Teeth</div>
             </div>
@@ -145,7 +145,7 @@ export default function EducationPage() {
         <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
           <a
             href="/symptom-checker"
-            className="bg-white rounded-lg border border-gray-200 p-6 hover:border-blue-300 hover:shadow-md transition-all group"
+            className="bg-white rounded-lg border border-gray-200 p-6 hover:border-blue-300 hover:shadow-md transition-all group text-center"
           >
             <h3 className="text-lg font-bold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors">
               Symptom Checker
@@ -156,7 +156,7 @@ export default function EducationPage() {
           </a>
           <a
             href="/dentist-finder"
-            className="bg-white rounded-lg border border-gray-200 p-6 hover:border-blue-300 hover:shadow-md transition-all group"
+            className="bg-white rounded-lg border border-gray-200 p-6 hover:border-blue-300 hover:shadow-md transition-all group text-center"
           >
             <h3 className="text-lg font-bold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors">
               Find a Dentist
@@ -167,7 +167,7 @@ export default function EducationPage() {
           </a>
           <a
             href="/research"
-            className="bg-white rounded-lg border border-gray-200 p-6 hover:border-blue-300 hover:shadow-md transition-all group"
+            className="bg-white rounded-lg border border-gray-200 p-6 hover:border-blue-300 hover:shadow-md transition-all group text-center"
           >
             <h3 className="text-lg font-bold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors">
               Research Dashboard

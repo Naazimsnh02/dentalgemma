@@ -204,16 +204,6 @@ export function ConditionPage({
 
         {/* Right Column - Related Conditions */}
         <div className="space-y-6">
-          {/* Medical Disclaimer */}
-          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-            <h3 className="text-sm font-semibold text-yellow-900 mb-2">
-              ⚠️ Medical Disclaimer
-            </h3>
-            <p className="text-xs text-yellow-800 leading-relaxed">
-              This information is for educational purposes only and should not replace professional medical advice. 
-              Always consult with a qualified dentist or healthcare provider for diagnosis and treatment.
-            </p>
-          </div>
 
           {/* Related Conditions */}
           {relatedConditions.length > 0 && (

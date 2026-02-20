@@ -17,7 +17,7 @@ import type {
 
 // Default settings
 const defaultSettings: UserSettings = {
-  theme: 'system',
+  theme: 'light',
   voiceSettings: {
     mode: 'standard',
     language: 'en-US',

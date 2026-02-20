@@ -63,7 +63,7 @@ function isOverdue(treatment: Treatment): boolean {
 export function TreatmentTimeline({ treatments, onTreatmentClick }: TreatmentTimelineProps) {
   // Sort treatments by creation date
   const sortedTreatments = useMemo(() => {
-    return [...treatments].sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
+    return [...treatments].sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
   }, [treatments]);
 
   if (sortedTreatments.length === 0) {

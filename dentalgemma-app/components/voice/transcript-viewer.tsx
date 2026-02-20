@@ -6,7 +6,8 @@
 // ============================================================================
 
 import { useEffect, useRef, useState } from 'react';
-import { Download, Copy, Trash2, User, Bot } from 'lucide-react';
+import { Download, Copy, Trash2, Send } from 'lucide-react';
+import Image from 'next/image';
 import { MarkdownRenderer } from '@/components/shared/markdown-renderer';
 import { VoiceMessage } from '@/types';
 
@@ -16,6 +17,7 @@ export interface TranscriptViewerProps {
   isLive?: boolean;
   onExport?: () => void;
   onClear?: () => void;
+  onSendMessage?: (text: string) => void;
 }
 
 export default function TranscriptViewer({
@@ -24,8 +26,10 @@ export default function TranscriptViewer({
   isLive = false,
   onExport,
   onClear,
+  onSendMessage,
 }: TranscriptViewerProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [inputText, setInputText] = useState('');
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
   // Auto-scroll to bottom when new messages arrive
@@ -137,8 +141,14 @@ export default function TranscriptViewer({
             {/* Current live transcript */}
             {currentTranscript && (
               <div className="flex items-start space-x-3 opacity-60">
-                <div className="flex-shrink-0 w-8 h-8 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center">
-                  <User className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                <div className="flex-shrink-0 w-8 h-8 rounded-full overflow-hidden">
+                  <Image 
+                    src="/profile.png" 
+                    alt="User" 
+                    width={32} 
+                    height={32}
+                    className="w-full h-full object-cover"
+                  />
                 </div>
                 <div className="flex-1">
                   <div className="bg-muted rounded-lg p-3">
@@ -152,6 +162,36 @@ export default function TranscriptViewer({
             <div ref={messagesEndRef} />
           </>
         )}
+      </div>
+
+      {/* Input Area */}
+      <div className="p-4 border-t border-border bg-background">
+        <form 
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (inputText.trim() && onSendMessage) {
+              onSendMessage(inputText);
+              setInputText('');
+            }
+          }} 
+          className="flex gap-2"
+        >
+          <input
+            type="text"
+            value={inputText}
+            onChange={(e) => setInputText(e.target.value)}
+            placeholder="Type a message..."
+            className="flex-1 px-4 py-2 rounded-lg border border-input bg-background focus:outline-none focus:ring-2 focus:ring-primary"
+            disabled={!onSendMessage}
+          />
+          <button
+            type="submit"
+            disabled={!inputText.trim() || !onSendMessage}
+            className="p-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          >
+            <Send className="w-5 h-5" />
+          </button>
+        </form>
       </div>
 
       {/* Footer Stats */}
@@ -191,18 +231,14 @@ function MessageBubble({ message, onCopy, isCopied }: MessageBubbleProps) {
   return (
     <div className={`flex items-start space-x-3 ${isUser ? '' : 'flex-row-reverse space-x-reverse'}`}>
       {/* Avatar */}
-      <div
-        className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center shadow-sm ${
-          isUser
-            ? 'bg-blue-600'
-            : 'bg-teal-600'
-        }`}
-      >
-        {isUser ? (
-          <User className="w-5 h-5 text-white" />
-        ) : (
-          <Bot className="w-5 h-5 text-white" />
-        )}
+      <div className="flex-shrink-0 w-8 h-8 rounded-full overflow-hidden shadow-sm">
+        <Image 
+          src={isUser ? '/profile.png' : '/icon.png'} 
+          alt={isUser ? 'User' : 'AI Assistant'} 
+          width={32} 
+          height={32}
+          className="w-full h-full object-cover"
+        />
       </div>
 
       {/* Message Content */}

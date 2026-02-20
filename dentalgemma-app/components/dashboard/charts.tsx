@@ -175,16 +175,22 @@ export function ProgressCharts({ treatments }: ProgressChartsProps) {
         <h3 className="text-xl font-bold mb-4">Cost Tracking</h3>
         {costData.length > 0 ? (
           <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={costData}>
+            <BarChart data={costData} margin={{ top: 10, right: 30, left: 20, bottom: 20 }}>
               <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="name" angle={-45} textAnchor="end" height={100} />
-              <YAxis label={{ value: 'Cost ($)', angle: -90, position: 'insideLeft' }} />
+              <XAxis 
+                dataKey="name" 
+                angle={0} 
+                textAnchor="middle" 
+                height={40} 
+                tick={{ fontSize: 12 }}
+              />
+              <YAxis label={{ value: 'Cost ($)', angle: -90, position: 'insideLeft', offset: 0 }} />
               <Tooltip
                 formatter={(value: number | undefined) => [`$${(value ?? 0).toFixed(2)}`, 'Cost']}
                 contentStyle={{ backgroundColor: '#fff', border: '1px solid #ccc' }}
               />
-              <Legend />
-              <Bar dataKey="cost" fill="#10b981" name="Treatment Cost" />
+              <Legend verticalAlign="top" height={36}/>
+              <Bar dataKey="cost" fill="#10b981" name="Treatment Cost" radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         ) : (

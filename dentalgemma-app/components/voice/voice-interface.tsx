@@ -67,36 +67,33 @@ export default function VoiceInterface({
 
   return (
     <div className="flex flex-col items-center space-y-6 p-6">
-      {/* Mode Toggle */}
-      <div className="flex items-center space-x-4 bg-muted rounded-lg p-2">
-        <button
-          onClick={handleModeToggle}
-          className={`px-4 py-2 rounded-md transition-colors font-medium ${
-            mode === 'standard'
-              ? 'bg-background text-foreground shadow-sm'
-              : 'text-muted-foreground hover:text-foreground hover:bg-background/50'
-          }`}
-        >
-          Standard Mode
-        </button>
-        <button
-          onClick={handleModeToggle}
-          className={`px-4 py-2 rounded-md transition-colors font-medium ${
-            mode === 'enhanced'
-              ? 'bg-background text-foreground shadow-sm'
-              : 'text-muted-foreground hover:text-foreground hover:bg-background/50'
-          }`}
-        >
-          Enhanced Mode
-        </button>
-      </div>
+      {/* Mode Toggle - Hidden for now, keeping code for future use */}
+      {false && (
+        <div className="flex items-center space-x-4 bg-muted rounded-lg p-2">
+          <button
+            onClick={handleModeToggle}
+            className={`px-4 py-2 rounded-md transition-colors font-medium ${
+              mode === 'standard'
+                ? 'bg-background text-foreground shadow-sm'
+                : 'text-muted-foreground hover:text-foreground hover:bg-background/50'
+            }`}
+          >
+            Standard Mode
+          </button>
+          <button
+            onClick={handleModeToggle}
+            className={`px-4 py-2 rounded-md transition-colors font-medium ${
+              mode === 'enhanced'
+                ? 'bg-background text-foreground shadow-sm'
+                : 'text-muted-foreground hover:text-foreground hover:bg-background/50'
+            }`}
+          >
+            Enhanced Mode
+          </button>
+        </div>
+      )}
 
       <div className="text-center text-sm text-muted-foreground max-w-md">
-        {mode === 'standard' ? (
-          <p>Using Web Speech API for speech recognition and synthesis</p>
-        ) : (
-          <p>Using Gemini Live for native audio processing with sub-500ms latency</p>
-        )}
         <p className="mt-2 text-xs opacity-75">
           {!settings.continuous ? "Push-to-Talk: Press and hold to speak. Release to send." : "Continuous: Click once to record. Click again to stop."}
         </p>

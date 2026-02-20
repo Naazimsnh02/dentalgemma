@@ -29,6 +29,8 @@ interface TreatmentCardProps {
 
 function getIndicatorColor(treatment: Treatment): {
   bg: string;
+  badgeBg: string;
+  badgeText: string;
   border: string;
   text: string;
   label: string;
@@ -36,8 +38,10 @@ function getIndicatorColor(treatment: Treatment): {
   // Completed treatments - Green
   if (treatment.status === 'completed') {
     return {
-      bg: 'bg-green-50 dark:bg-green-900/20',
-      border: 'border-green-500 dark:border-green-600',
+      bg: 'bg-green-50/50 dark:bg-green-900/10',
+      badgeBg: 'bg-green-600 dark:bg-green-600',
+      badgeText: 'text-white',
+      border: 'border-green-500/50 dark:border-green-600/50',
       text: 'text-green-700 dark:text-green-300',
       label: 'Completed',
     };
@@ -50,8 +54,10 @@ function getIndicatorColor(treatment: Treatment): {
 
     if (appointmentDate < now) {
       return {
-        bg: 'bg-red-50 dark:bg-red-900/20',
-        border: 'border-red-500 dark:border-red-600',
+        bg: 'bg-red-50/50 dark:bg-red-900/10',
+        badgeBg: 'bg-red-600 dark:bg-red-600',
+        badgeText: 'text-white',
+        border: 'border-red-500/50 dark:border-red-600/50',
         text: 'text-red-700 dark:text-red-300',
         label: 'Overdue',
       };
@@ -61,8 +67,10 @@ function getIndicatorColor(treatment: Treatment): {
     const daysUntil = Math.ceil((appointmentDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
     if (daysUntil <= 7) {
       return {
-        bg: 'bg-yellow-50 dark:bg-yellow-900/20',
-        border: 'border-yellow-500 dark:border-yellow-600',
+        bg: 'bg-yellow-50/50 dark:bg-yellow-900/10',
+        badgeBg: 'bg-amber-500 dark:bg-amber-600',
+        badgeText: 'text-white',
+        border: 'border-yellow-500/50 dark:border-yellow-600/50',
         text: 'text-yellow-700 dark:text-yellow-300',
         label: 'Upcoming',
       };
@@ -72,8 +80,10 @@ function getIndicatorColor(treatment: Treatment): {
   // Default for in-progress or not-started without urgent appointments
   if (treatment.status === 'in-progress') {
     return {
-      bg: 'bg-blue-50 dark:bg-blue-900/20',
-      border: 'border-blue-500 dark:border-blue-600',
+      bg: 'bg-blue-50/50 dark:bg-blue-900/10',
+      badgeBg: 'bg-blue-600 dark:bg-blue-600',
+      badgeText: 'text-white',
+      border: 'border-blue-500/50 dark:border-blue-600/50',
       text: 'text-blue-700 dark:text-blue-300',
       label: 'In Progress',
     };
@@ -81,6 +91,8 @@ function getIndicatorColor(treatment: Treatment): {
 
   return {
     bg: 'bg-muted/50 dark:bg-muted/20',
+    badgeBg: 'bg-muted/80 dark:bg-muted/80',
+    badgeText: 'text-muted-foreground',
     border: 'border-border',
     text: 'text-muted-foreground',
     label: 'Not Started',
@@ -112,8 +124,8 @@ export function TreatmentCard({ treatment, onEdit, onDelete }: TreatmentCardProp
   return (
     <div
       className={`
-        ${indicator.bg} ${indicator.border}
-        border-l-4 rounded-lg shadow-md p-6
+        ${indicator.bg}
+        rounded-lg shadow-md p-6
         hover:shadow-lg transition-shadow bg-card text-card-foreground border border-border
       `}
     >
@@ -148,7 +160,7 @@ export function TreatmentCard({ treatment, onEdit, onDelete }: TreatmentCardProp
         <span
           className={`
             inline-block px-3 py-1 rounded-full text-sm font-semibold
-            ${indicator.text} ${indicator.bg} border ${indicator.border}
+            ${indicator.badgeText} ${indicator.badgeBg} border ${indicator.border}
           `}
         >
           {indicator.label}

@@ -94,18 +94,15 @@ export function Questionnaire({ onComplete, onCancel }: QuestionnaireProps) {
 
   if (showDisclaimer) {
     return (
-      <Card className="border-amber-200 bg-amber-50 dark:bg-amber-950/20">
+      <Card>
         <CardHeader>
-          <div className="flex items-center gap-2 text-amber-800 dark:text-amber-200">
-            <AlertTriangle className="h-6 w-6" />
-            <CardTitle>Medical Disclaimer</CardTitle>
-          </div>
-          <CardDescription className="text-amber-700 dark:text-amber-300">
+          <CardTitle>Medical Disclaimer</CardTitle>
+          <CardDescription>
             Please read carefully before proceeding
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="text-sm text-amber-900 dark:text-amber-100 space-y-3">
+          <div className="text-sm space-y-3">
             <p className="font-medium">
               ⚠️ This symptom checker is for educational and informational purposes only.
             </p>

@@ -22,6 +22,7 @@ import { ModalClient } from '@/lib/api/modal-client';
 
 export default function VoiceConsultationPage() {
   // State
+  // Mode is locked to 'standard' for now, enhanced mode hidden but code kept for future use
   const [mode, setMode] = useState<VoiceMode>('standard');
   const [isListening, setIsListening] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
@@ -157,10 +158,26 @@ export default function VoiceConsultationPage() {
       });
 
       recognition.onEnd(() => {
-        setIsListening(false);
-        if (audioStream) {
-          audioStream.getTracks().forEach(track => track.stop());
-          setAudioStream(null);
+        // In continuous mode, automatically restart recognition if still listening
+        // This prevents the mic from stopping during pauses in speech
+        if (settings.continuous && isListening) {
+          console.log('🔄 Recognition ended, restarting in continuous mode...');
+          try {
+            recognition.start();
+          } catch (error) {
+            console.error('Failed to restart recognition:', error);
+            setIsListening(false);
+            if (audioStream) {
+              audioStream.getTracks().forEach(track => track.stop());
+              setAudioStream(null);
+            }
+          }
+        } else {
+          setIsListening(false);
+          if (audioStream) {
+            audioStream.getTracks().forEach(track => track.stop());
+            setAudioStream(null);
+          }
         }
       });
 
@@ -169,7 +186,7 @@ export default function VoiceConsultationPage() {
       console.error('Failed to initialize recognition:', error);
       setError('Failed to initialize speech recognition');
     }
-  }, [settings.continuous, settings.language, audioStream]);
+  }, [settings.continuous, settings.language, audioStream, isListening]);
 
   // Initialize speech synthesis
   const initSynthesis = useCallback(async () => {
@@ -299,8 +316,14 @@ export default function VoiceConsultationPage() {
     }
   }, [audioStream]);
 
-  // Handle mode change
+  // Handle mode change - kept for future use when enhanced mode is re-enabled
   const handleModeChange = useCallback((newMode: VoiceMode) => {
+    // Mode switching disabled for now - always use standard mode
+    if (newMode !== 'standard') {
+      console.log('Enhanced mode is currently disabled');
+      return;
+    }
+
     if (isListening) {
       handleStopListening();
     }
@@ -438,12 +461,13 @@ export default function VoiceConsultationPage() {
         </div>
 
         {/* Right Column: Transcript */}
-        <div className="h-full">
+        <div className="h-[600px] lg:h-[670px]">
           <TranscriptViewer
             messages={messages}
             currentTranscript={currentTranscript}
             isLive={isListening}
             onClear={handleClearTranscript}
+            onSendMessage={handleUserMessage}
           />
         </div>
       </div>
