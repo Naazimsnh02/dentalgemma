@@ -57,6 +57,9 @@ finetune/output/
 
 # Custom
 .kiro/
+dentalgemma-mobile/
+docs/
+
 # Documentation
 AGENTS.md
 SUBMISSION.md

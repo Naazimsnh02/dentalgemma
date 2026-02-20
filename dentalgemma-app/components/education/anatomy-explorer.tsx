@@ -3,12 +3,12 @@
 /**
  * Dental Anatomy Explorer Component
  * 
- * Interactive SVG visualization of dental anatomy with hover tooltips
- * Requirements: 8.4
+ * Interactive SVG visualization of dental anatomy with realistic occlusal 
+ * tooth paths, 3D enamel styling, and HTML tooltips.
  */
 
 import { useState } from 'react';
-import { Info } from 'lucide-react';
+import { Info, HelpCircle } from 'lucide-react';
 
 interface ToothInfo {
   number: number;
@@ -16,6 +16,7 @@ interface ToothInfo {
   type: string;
   description: string;
   position: { x: number; y: number };
+  isUpper?: boolean;
 }
 
 // Dental anatomy data (Universal Numbering System)
@@ -57,24 +58,50 @@ const lowerTeeth: ToothInfo[] = [
   { number: 17, name: 'Third Molar', type: 'Molar', description: 'Wisdom tooth, often removed', position: { x: 800, y: 300 } },
 ];
 
-const allTeeth = [...upperTeeth, ...lowerTeeth];
+const allTeeth: ToothInfo[] = [
+  ...upperTeeth.map(t => ({ ...t, isUpper: true })),
+  ...lowerTeeth.map(t => ({ ...t, isUpper: false }))
+];
+
+const ToothPaths = ({ type }: { type: string }) => {
+  switch (type) {
+    case 'Incisor': return (
+      <path d="M -11,-6 C -5,-9 5,-9 11,-6 C 12,-1 9,6 5,8 C 2,10 -2,10 -5,8 C -9,6 -12,-1 -11,-6 Z" />
+    );
+    case 'Canine': return (
+      <path d="M -9,-6 C 0,-13 0,-13 9,-6 C 11,-1 8,7 4,9 C 2,11 -2,11 -4,9 C -8,7 -11,-1 -9,-6 Z" />
+    );
+    case 'Premolar': return (
+      <>
+        <path d="M -10,-8 C -5,-11 5,-11 10,-8 C 12,0 12,6 8,10 C 4,13 -4,13 -8,10 C -12,6 -12,0 -10,-8 Z" />
+        <path d="M -5,1 L 5,1" stroke="rgba(0,0,0,0.12)" strokeWidth="1.5" fill="none" strokeLinecap="round" />
+      </>
+    );
+    case 'Molar': return (
+      <>
+        <path d="M -13,-11 C -5,-13 5,-13 13,-11 C 15,-2 15,5 11,11 C 5,15 -5,15 -11,11 C -15,5 -15,-2 -13,-11 Z" />
+        <path d="M -6,0 L 6,0 M 0,-5 L 0,5" stroke="rgba(0,0,0,0.12)" strokeWidth="1.5" fill="none" strokeLinecap="round" />
+        <circle cx="-4" cy="-3" r="1" fill="rgba(0,0,0,0.08)" />
+        <circle cx="4" cy="-3" r="1" fill="rgba(0,0,0,0.08)" />
+        <circle cx="-4" cy="3" r="1" fill="rgba(0,0,0,0.08)" />
+        <circle cx="4" cy="3" r="1" fill="rgba(0,0,0,0.08)" />
+      </>
+    );
+    default: return <path d="M -10,-10 L 10,-10 L 10,10 L -10,10 Z" />;
+  }
+};
 
 export function AnatomyExplorer() {
   const [hoveredTooth, setHoveredTooth] = useState<ToothInfo | null>(null);
   const [selectedTooth, setSelectedTooth] = useState<ToothInfo | null>(null);
 
-  const getToothColor = (type: string): string => {
+  const getTypeStyle = (type: string) => {
     switch (type) {
-      case 'Incisor':
-        return '#3B82F6'; // Blue
-      case 'Canine':
-        return '#10B981'; // Green
-      case 'Premolar':
-        return '#F59E0B'; // Orange
-      case 'Molar':
-        return '#EF4444'; // Red
-      default:
-        return '#6B7280'; // Gray
+      case 'Incisor': return { color: '#3B82F6', bg: 'bg-blue-50', border: 'border-blue-200', text: 'text-blue-700' };
+      case 'Canine': return { color: '#10B981', bg: 'bg-green-50', border: 'border-green-200', text: 'text-green-700' };
+      case 'Premolar': return { color: '#F59E0B', bg: 'bg-amber-50', border: 'border-amber-200', text: 'text-amber-700' };
+      case 'Molar': return { color: '#EF4444', bg: 'bg-red-50', border: 'border-red-200', text: 'text-red-700' };
+      default: return { color: '#6B7280', bg: 'bg-gray-50', border: 'border-gray-200', text: 'text-gray-700' };
     }
   };
 
@@ -83,59 +110,134 @@ export function AnatomyExplorer() {
   };
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 p-6">
-      <div className="flex items-center gap-3 mb-6">
-        <div className="p-2 bg-blue-100 rounded-lg">
-          <Info size={24} className="text-blue-600" />
+    <div className="bg-white rounded-xl border border-gray-200 p-8 shadow-sm">
+      <div className="flex items-center gap-4 mb-8">
+        <div className="p-3 bg-blue-50 rounded-xl">
+          <Info size={26} className="text-blue-600" />
         </div>
         <div>
-          <h2 className="text-xl font-bold text-gray-900">Dental Anatomy Explorer</h2>
-          <p className="text-sm text-gray-600">Hover over teeth to learn more about each type</p>
+          <h2 className="text-2xl font-bold text-gray-900">Dental Anatomy Explorer</h2>
+          <p className="text-gray-600 mt-1">Explore interactive 3D anatomy to understand your teeth better.</p>
         </div>
       </div>
 
-      {/* SVG Diagram */}
-      <div className="relative bg-gray-50 rounded-lg p-8 mb-6">
+      {/* Modern SVG Viewer Container */}
+      <div className="relative w-full aspect-[2/1] bg-gradient-to-b from-slate-50 to-white rounded-2xl border border-gray-200/60 shadow-inner mb-8 overflow-hidden group">
+        
+        {/* Dynamic HTML Tooltip */}
+        <div 
+          className="absolute z-20 pointer-events-none transition-all duration-300 ease-out"
+          style={{
+            left: hoveredTooth ? `${(hoveredTooth.position.x / 850) * 100}%` : '50%',
+            top: hoveredTooth
+              ? hoveredTooth.isUpper
+                ? `calc(${(hoveredTooth.position.y / 400) * 100}% + 24px)`
+                : `calc(${(hoveredTooth.position.y / 400) * 100}% - 24px)`
+              : '50%',
+            opacity: hoveredTooth ? 1 : 0,
+            transform: hoveredTooth
+              ? hoveredTooth.isUpper
+                ? 'translate(-50%, 0%) scale(1)'
+                : 'translate(-50%, -100%) scale(1)'
+              : 'translate(-50%, -100%) scale(0.95)',
+          }}
+        >
+          {hoveredTooth && (
+            <div className={`bg-white/95 backdrop-blur-md shadow-xl border ${getTypeStyle(hoveredTooth.type).border} rounded-xl p-3 w-52 flex flex-col items-center relative`}>
+              {/* Little triangle pointer — top for upper teeth, bottom for lower teeth */}
+              {hoveredTooth.isUpper ? (
+                <div className="absolute -top-2 left-1/2 -translate-x-1/2 w-4 h-4 bg-white border-t border-l border-inherit transform rotate-45"></div>
+              ) : (
+                <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-4 h-4 bg-white border-b border-r border-inherit transform rotate-45"></div>
+              )}
+              
+              <div className="flex items-center gap-2 mb-1">
+                <span className={`w-3 h-3 rounded-full`} style={{ backgroundColor: getTypeStyle(hoveredTooth.type).color }} />
+                <span className="font-bold text-gray-900 text-sm">Tooth #{hoveredTooth.number}</span>
+              </div>
+              <p className="font-semibold text-gray-800 text-center">{hoveredTooth.name}</p>
+              <p className={`text-xs mt-1 font-medium px-2 py-0.5 rounded-full ${getTypeStyle(hoveredTooth.type).bg} ${getTypeStyle(hoveredTooth.type).text}`}>
+                {hoveredTooth.type}
+              </p>
+            </div>
+          )}
+        </div>
+
         <svg
           viewBox="0 0 850 400"
-          className="w-full h-auto"
-          style={{ maxHeight: '400px' }}
+          className="w-full h-full absolute inset-0 drop-shadow-sm"
         >
-          {/* Upper Jaw Arc */}
+          <defs>
+            {/* Realistic Enamel Gradient */}
+            <radialGradient id="enamel" cx="40%" cy="30%" r="60%">
+              <stop offset="0%" stopColor="#ffffff" />
+              <stop offset="70%" stopColor="#f8fafc" />
+              <stop offset="100%" stopColor="#e2e8f0" />
+            </radialGradient>
+            <radialGradient id="enamelHover" cx="40%" cy="30%" r="60%">
+              <stop offset="0%" stopColor="#ffffff" />
+              <stop offset="60%" stopColor="#ffffff" />
+              <stop offset="100%" stopColor="#f1f5f9" />
+            </radialGradient>
+            
+            <filter id="toothShadow" x="-30%" y="-30%" width="160%" height="160%">
+              <feDropShadow dx="0" dy="2" stdDeviation="3" floodOpacity="0.15" />
+            </filter>
+            
+            <filter id="archGlow" x="-50%" y="-50%" width="200%" height="200%">
+              <feGaussianBlur stdDeviation="6" result="coloredBlur"/>
+              <feMerge>
+                <feMergeNode in="coloredBlur"/>
+                <feMergeNode in="SourceGraphic"/>
+              </feMerge>
+            </filter>
+          </defs>
+
+          {/* Aesthetic Arch Lines */}
           <path
             d="M 50 100 Q 425 40 800 100"
             fill="none"
-            stroke="#D1D5DB"
-            strokeWidth="2"
-            strokeDasharray="5,5"
+            stroke="#E2E8F0"
+            strokeWidth="6"
+            strokeLinecap="round"
           />
-
-          {/* Lower Jaw Arc */}
           <path
             d="M 50 300 Q 425 360 800 300"
             fill="none"
-            stroke="#D1D5DB"
-            strokeWidth="2"
-            strokeDasharray="5,5"
+            stroke="#E2E8F0"
+            strokeWidth="6"
+            strokeLinecap="round"
           />
 
-          {/* Midline */}
+          {/* Center Midline */}
           <line
             x1="425"
-            y1="50"
+            y1="60"
             x2="425"
-            y2="350"
-            stroke="#D1D5DB"
-            strokeWidth="1"
-            strokeDasharray="3,3"
+            y2="340"
+            stroke="#CBD5E1"
+            strokeWidth="2"
+            strokeDasharray="4,6"
           />
 
-          {/* Teeth */}
+          {/* Render Each Tooth */}
           {allTeeth.map((tooth) => {
             const isHovered = hoveredTooth?.number === tooth.number;
             const isSelected = selectedTooth?.number === tooth.number;
-            const scale = isHovered || isSelected ? 1.2 : 1;
-            const opacity = isHovered || isSelected ? 1 : 0.8;
+            
+            // Calculate outward rotation - teeth should face away from arch center
+            const cx = 425;
+            const cy = tooth.isUpper ? 60 : 340; // Use actual arch curve center
+            const dx = tooth.position.x - cx;
+            const dy = tooth.position.y - cy;
+            const angleRad = Math.atan2(dy, dx);
+            // Adjust rotation: upper teeth point down, lower teeth point up
+            const rotAngle = angleRad * (180 / Math.PI) + (tooth.isUpper ? 90 : -90);
+
+            const outX = Math.cos(angleRad) * 28;
+            const outY = Math.sin(angleRad) * 28;
+
+            const styleData = getTypeStyle(tooth.type);
 
             return (
               <g
@@ -143,69 +245,53 @@ export function AnatomyExplorer() {
                 onMouseEnter={() => setHoveredTooth(tooth)}
                 onMouseLeave={() => setHoveredTooth(null)}
                 onClick={() => handleToothClick(tooth)}
-                style={{ cursor: 'pointer' }}
+                className="cursor-pointer outline-none"
                 transform={`translate(${tooth.position.x}, ${tooth.position.y})`}
               >
-                {/* Tooth Shape */}
-                <circle
-                  cx="0"
-                  cy="0"
-                  r={15 * scale}
-                  fill={getToothColor(tooth.type)}
-                  opacity={opacity}
-                  stroke={isSelected ? '#1F2937' : 'white'}
-                  strokeWidth={isSelected ? 3 : 2}
-                  className="transition-all duration-200"
-                />
+                <g>
+                  {/* Invisible Hit Area to prevent hover jitter - scales with tooth */}
+                  <circle cx="0" cy="0" r="28" fill="transparent" />
+
+                  {/* Glowing halo indicator when selected or hovered */}
+                  {(isHovered || isSelected) && (
+                    <circle 
+                      cx="0" cy="0" r="16" 
+                      fill="none"
+                      stroke={styleData.color} 
+                      strokeWidth="3"
+                      opacity="0.4"
+                      filter="url(#archGlow)"
+                    />
+                  )}
+
+                  {/* Rotated Tooth shape with Enamel gradient */}
+                  <g transform={`rotate(${rotAngle})`}>
+                    <g 
+                      fill={isHovered ? "url(#enamelHover)" : "url(#enamel)"} 
+                      filter="url(#toothShadow)"
+                    >
+                      <ToothPaths type={tooth.type} />
+                    </g>
+                    {/* Outline indicator of the tooth type */}
+                    <g fill="none" strokeWidth="1.5" stroke={styleData.color} opacity={isSelected ? 1 : (isHovered ? 0.8 : 0.4)}>
+                      <ToothPaths type={tooth.type} />
+                    </g>
+                  </g>
+                </g>
                 
-                {/* Tooth Number */}
+                {/* Outward spreading Tooth Number */}
                 <text
-                  x="0"
-                  y="5"
+                  x={outX}
+                  y={outY + 4} // Slightly adjust for vertical centering
                   textAnchor="middle"
-                  fill="white"
-                  fontSize="10"
-                  fontWeight="bold"
+                  fill={isHovered || isSelected ? styleData.color : "#64748B"}
+                  fontSize="12"
+                  fontWeight={isHovered || isSelected ? "800" : "600"}
                   pointerEvents="none"
+                  className="transition-all duration-200"
                 >
                   {tooth.number}
                 </text>
-
-                {/* Hover Tooltip */}
-                {isHovered && (
-                  <g>
-                    <rect
-                      x="-60"
-                      y="-50"
-                      width="120"
-                      height="35"
-                      fill="white"
-                      stroke="#E5E7EB"
-                      strokeWidth="1"
-                      rx="4"
-                      filter="drop-shadow(0 2px 4px rgba(0,0,0,0.1))"
-                    />
-                    <text
-                      x="0"
-                      y="-35"
-                      textAnchor="middle"
-                      fill="#111827"
-                      fontSize="10"
-                      fontWeight="bold"
-                    >
-                      #{tooth.number} - {tooth.name}
-                    </text>
-                    <text
-                      x="0"
-                      y="-23"
-                      textAnchor="middle"
-                      fill="#6B7280"
-                      fontSize="8"
-                    >
-                      {tooth.type}
-                    </text>
-                  </g>
-                )}
               </g>
             );
           })}
@@ -213,48 +299,50 @@ export function AnatomyExplorer() {
       </div>
 
       {/* Legend */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+      <div className="flex flex-wrap justify-center gap-6 mb-8 bg-gray-50 border border-gray-100 rounded-xl p-4">
         {['Incisor', 'Canine', 'Premolar', 'Molar'].map((type) => (
-          <div key={type} className="flex items-center gap-2">
+          <div key={type} className="flex items-center gap-2 px-3 py-1 bg-white rounded-full shadow-sm border border-gray-100">
             <div
-              className="w-4 h-4 rounded-full"
-              style={{ backgroundColor: getToothColor(type) }}
+              className="w-3.5 h-3.5 rounded-full shadow-inner"
+              style={{ backgroundColor: getTypeStyle(type).color }}
             />
-            <span className="text-sm text-gray-700 font-medium">{type}</span>
+            <span className="text-sm text-gray-700 font-semibold">{type}</span>
           </div>
         ))}
       </div>
 
-      {/* Selected Tooth Info */}
-      {selectedTooth && (
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+      {/* Selected Tooth Info Container */}
+      {selectedTooth ? (
+        <div className={`border rounded-xl p-5 shadow-sm transition-all duration-500 ease-out animate-in slide-in-from-bottom-4 ${getTypeStyle(selectedTooth.type).bg} ${getTypeStyle(selectedTooth.type).border}`}>
           <div className="flex items-start justify-between gap-4">
             <div className="flex-1">
-              <h3 className="text-lg font-bold text-gray-900 mb-1">
-                Tooth #{selectedTooth.number} - {selectedTooth.name}
-              </h3>
-              <p className="text-sm text-blue-700 font-medium mb-2">
-                {selectedTooth.type}
-              </p>
-              <p className="text-sm text-gray-700">
-                {selectedTooth.description}
-              </p>
+              <div className="flex items-center gap-3 mb-2">
+                <span className={`flex items-center justify-center w-8 h-8 rounded-full font-bold text-white shadow-sm`} style={{ backgroundColor: getTypeStyle(selectedTooth.type).color }}>
+                  {selectedTooth.number}
+                </span>
+                <h3 className="text-xl font-bold text-gray-900">
+                  {selectedTooth.name}
+                </h3>
+              </div>
+              <div className="mt-3 text-gray-700 leading-relaxed bg-white/60 p-4 rounded-lg">
+                <p className="mb-2"><strong>Category:</strong> {selectedTooth.type}</p>
+                <p><strong>Function & Notes:</strong> {selectedTooth.description}</p>
+              </div>
             </div>
             <button
               onClick={() => setSelectedTooth(null)}
-              className="text-gray-400 hover:text-gray-600 transition-colors"
-              aria-label="Close"
+              className="p-2 rounded-full hover:bg-black/5 text-gray-500 hover:text-gray-800 transition-colors"
+              aria-label="Close details"
             >
               ✕
             </button>
           </div>
         </div>
-      )}
-
-      {/* Instructions */}
-      {!selectedTooth && (
-        <div className="text-center text-sm text-gray-500">
-          Click on any tooth to see detailed information
+      ) : (
+        <div className="bg-slate-50 border border-slate-200 border-dashed rounded-xl p-6 text-center text-slate-500 flex flex-col items-center justify-center min-h-[140px]">
+          <HelpCircle className="w-8 h-8 opacity-40 mb-2" />
+          <p className="font-medium">Information Panel</p>
+          <p className="text-sm mt-1">Select any tooth from the interactive view above to explore its clinical details.</p>
         </div>
       )}
     </div>
