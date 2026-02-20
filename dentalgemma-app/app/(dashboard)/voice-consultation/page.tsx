@@ -328,15 +328,6 @@ export default function VoiceConsultationPage() {
       handleStopListening();
     }
 
-    // Check if Gemini is available before switching to enhanced mode
-    if (newMode === 'enhanced') {
-      const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY;
-      if (!apiKey) {
-        setError('Enhanced mode is not available. Gemini API key not configured.');
-        return; // Don't switch mode
-      }
-    }
-
     console.log(`🔄 Switching from ${mode} to ${newMode} mode...`);
     setMode(newMode);
   }, [isListening, handleStopListening, mode]);
