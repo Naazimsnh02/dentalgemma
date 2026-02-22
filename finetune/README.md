@@ -257,12 +257,12 @@ DentalGemma VQA dataset (HuggingFace Hub)
 MedGemma 1.5 4B IT (full bfloat16)
     ↓ LoRA fine-tuning (SFTTrainer, 10 epochs)
     ↓ early stopping at step 2100 (val loss: 0.1585)
-VQA-adapted model
+Stage 1 adapted checkpoint
 
 Stage 2: Instruct Training (Text-only)
 DentalGemma Instruct dataset (HuggingFace Hub)
     ↓ load & parse messages with label masking
-VQA-adapted model
+Stage 1 adapted checkpoint
     ↓ LoRA fine-tuning (SFTTrainer, 10 epochs)
     ↓ early stopping at step 500 (val loss: 0.0224)
 Final LoRA adapter

@@ -5,9 +5,15 @@ Offline dental AI assistant running the fine-tuned DentalGemma 1.5 4B IT model e
 ## Features
 
 - **Automatic Model Download** — Download models directly from Hugging Face on first launch
-- **Chat** — Multi-turn dental AI conversation with streaming responses
-- **X-ray Analysis** — Pick dental X-rays from camera/gallery for AI analysis
 - **Fully Offline** — All inference runs on-device, no internet required after model download
+- **Core Features**:
+  - **Chat Assistant** — Ask questions and get AI-powered dental advice with image analysis
+  - **Symptom Checker** — Interactive questionnaire to assess your dental symptoms
+  - **Clinical Assessment** — Comprehensive case assessment with AI-powered diagnosis and treatment planning
+  - **Image Analysis** — Analyze dental X-rays and photos with AI
+  - **Education Portal** — Browse 98 dental conditions and learn about oral health
+  - **Dentist Finder** — Find nearby dental professionals with maps and filters
+  - **Research Dashboard** — Search PubMed for dental research papers and save for offline reading
 
 ## Prerequisites
 
@@ -124,13 +130,20 @@ If the app shows "Model Files Missing" after pushing files:
 ```
 src/
 ├── App.tsx                     # Root component with screen navigation
-├── types.ts                    # Shared TypeScript types
-├── screens/
-│   ├── ChatScreen.tsx          # Main chat interface
-│   └── ModelSetupScreen.tsx    # Model file check + load screen
-├── components/
+├── types/                      # Shared TypeScript types
+├── screens/                    # Application screens
+│   ├── ChatScreen.tsx          # Chat Assistant interface
+│   ├── ClinicalAssessmentScreen.tsx # Clinical assessment feature
+│   ├── DentistFinderScreen.tsx # Map-based dentist finder
+│   ├── EducationScreen.tsx     # Education portal
+│   ├── HomeScreen.tsx          # Feature dashboard navigation
+│   ├── ImageAnalysisScreen.tsx # X-ray and photo analysis
+│   ├── ModelSetupScreen.tsx    # Model file download + load screen
+│   ├── ResearchScreen.tsx      # PubMed research dashboard
+│   └── SymptomCheckerScreen.tsx# Symptoms questionnaire
+├── components/                 # Reusable UI components
 │   ├── ChatBubble.tsx          # Message bubble (text + image)
-│   ├── ImagePickerButton.tsx   # Camera/gallery picker for X-rays
+│   ├── ImagePickerButton.tsx   # Camera/gallery picker for images
 │   └── ModelStatus.tsx         # Loading progress bar
 ├── hooks/
 │   └── useDentalGemma.ts       # llama.rn integration hook

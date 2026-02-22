@@ -7,7 +7,7 @@
 This document serves as the **single source of truth** for deploying the DentalGemma 1.5 4B IT model on Modal.com. 
 
 **DentalGemma** is a specialized medical AI model fine-tuned for dental diagnostics, capable of:
-1.  **X-Ray Analysis:** Multimodal VQA for detecting abnormalities in radiographs.
+1.  **Dental Image Analysis:** Multimodal analysis for detecting abnormalities in clinical photos and radiographs.
 2.  **Clinical Assessment:** Comprehensive evaluation of patient symptoms and history.
 3.  **Dental Chat:** Intelligent Q&A for general dental queries.
 

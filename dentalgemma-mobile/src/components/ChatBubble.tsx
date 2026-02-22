@@ -1,5 +1,6 @@
 import React, {useState, useEffect} from 'react';
 import {View, Text, Image, StyleSheet, Animated} from 'react-native';
+import Markdown from 'react-native-markdown-display';
 import type {Message} from '../types';
 
 type ChatBubbleProps = {
@@ -76,12 +77,16 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({message}) => {
         )}
         {message.isStreaming && !message.content ? (
           <TypingIndicator />
-        ) : (
+        ) : isUser ? (
           <Text
-            style={[styles.text, isUser ? styles.userText : styles.assistantText]}
+            style={[styles.text, styles.userText]}
             selectable>
             {message.content}
           </Text>
+        ) : (
+          <Markdown style={markdownStyles}>
+            {message.content}
+          </Markdown>
         )}
       </View>
     </View>
@@ -158,3 +163,76 @@ const styles = StyleSheet.create({
     marginHorizontal: 3,
   },
 });
+
+const markdownStyles = {
+  body: {
+    fontSize: 15,
+    lineHeight: 22,
+    color: '#212121',
+  },
+  heading1: {
+    fontSize: 18,
+    fontWeight: '700' as const,
+    color: '#111827',
+    marginBottom: 6,
+    marginTop: 4,
+  },
+  heading2: {
+    fontSize: 16,
+    fontWeight: '700' as const,
+    color: '#111827',
+    marginBottom: 4,
+    marginTop: 4,
+  },
+  heading3: {
+    fontSize: 15,
+    fontWeight: '600' as const,
+    color: '#1e40af',
+    marginBottom: 2,
+    marginTop: 4,
+  },
+  bullet_list: {
+    marginVertical: 4,
+  },
+  ordered_list: {
+    marginVertical: 4,
+  },
+  list_item: {
+    marginBottom: 2,
+  },
+  strong: {
+    fontWeight: '700' as const,
+    color: '#111827',
+  },
+  em: {
+    fontStyle: 'italic' as const,
+  },
+  code_inline: {
+    backgroundColor: '#f3f4f6',
+    borderRadius: 4,
+    paddingHorizontal: 4,
+    fontSize: 13,
+    color: '#1d4ed8',
+  },
+  fence: {
+    backgroundColor: '#f3f4f6',
+    borderRadius: 8,
+    padding: 10,
+    marginVertical: 4,
+    fontSize: 13,
+    color: '#374151',
+  },
+  blockquote: {
+    borderLeftWidth: 3,
+    borderLeftColor: '#2563eb',
+    paddingLeft: 10,
+    marginLeft: 0,
+    marginVertical: 4,
+    color: '#4b5563',
+  },
+  hr: {
+    backgroundColor: '#e5e7eb',
+    height: 1,
+    marginVertical: 8,
+  },
+};

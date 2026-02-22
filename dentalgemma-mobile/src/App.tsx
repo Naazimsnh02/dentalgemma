@@ -5,6 +5,7 @@ import {toggleNativeLog, addNativeLogListener} from 'llama.rn';
 import {ModelSetupScreen} from './screens/ModelSetupScreen';
 import {ChatScreen} from './screens/ChatScreen';
 import {SymptomCheckerScreen} from './screens/SymptomCheckerScreen';
+import {ClinicalAssessmentScreen} from './screens/ClinicalAssessmentScreen';
 import {ImageAnalysisScreen} from './screens/ImageAnalysisScreen';
 import {EducationScreen} from './screens/EducationScreen';
 import {DentistFinderScreen} from './screens/DentistFinderScreen';
@@ -19,7 +20,7 @@ addNativeLogListener((level, text) => {
   console.log(['[rnllama]', level ? `[${level}]` : '', text].filter(Boolean).join(' '));
 });
 
-type Screen = 'home' | 'chat' | 'symptom-checker' | 'image-analysis' | 'education' | 'dentist-finder' | 'research';
+type Screen = 'home' | 'chat' | 'symptom-checker' | 'clinical-assessment' | 'image-analysis' | 'education' | 'dentist-finder' | 'research';
 
 const App: React.FC = () => {
   const [modelState, setModelState] = useState<ModelState>('checking');
@@ -62,6 +63,10 @@ const App: React.FC = () => {
     setCurrentScreen('symptom-checker');
   }, []);
 
+  const handleNavigateToClinicalAssessment = useCallback(() => {
+    setCurrentScreen('clinical-assessment');
+  }, []);
+
   const handleNavigateToImageAnalysis = useCallback(() => {
     setCurrentScreen('image-analysis');
   }, []);
@@ -98,6 +103,7 @@ const App: React.FC = () => {
         <HomeScreen
           onNavigateToChat={handleNavigateToChat}
           onNavigateToSymptomChecker={handleNavigateToSymptomChecker}
+          onNavigateToClinicalAssessment={handleNavigateToClinicalAssessment}
           onNavigateToImageAnalysis={handleNavigateToImageAnalysis}
           onNavigateToEducation={handleNavigateToEducation}
           onNavigateToDentistFinder={handleNavigateToDentistFinder}
@@ -116,6 +122,12 @@ const App: React.FC = () => {
         />
       ) : currentScreen === 'symptom-checker' ? (
         <SymptomCheckerScreen
+          sendMessage={sendMessage}
+          isGenerating={isGenerating}
+          onBack={handleBackToHome}
+        />
+      ) : currentScreen === 'clinical-assessment' ? (
+        <ClinicalAssessmentScreen
           sendMessage={sendMessage}
           isGenerating={isGenerating}
           onBack={handleBackToHome}

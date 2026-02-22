@@ -5,13 +5,12 @@ import {
   FlatList,
   TouchableOpacity,
   Text,
-  Image,
   KeyboardAvoidingView,
   Platform,
   StyleSheet,
 } from 'react-native';
+import {SafeAreaView} from 'react-native-safe-area-context';
 import {ChatBubble} from '../components/ChatBubble';
-import {ImagePickerButton} from '../components/ImagePickerButton';
 import type {Message} from '../types';
 import DeviceInfo from 'react-native-device-info';
 
@@ -41,7 +40,6 @@ export const ChatScreen: React.FC<ChatScreenProps> = ({
 }) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputText, setInputText] = useState('');
-  const [selectedImage, setSelectedImage] = useState<string | undefined>();
   const flatListRef = useRef<FlatList>(null);
 
   const [memoryStats, setMemoryStats] = useState({ used: 0, total: 0 });
@@ -66,15 +64,14 @@ export const ChatScreen: React.FC<ChatScreenProps> = ({
 
   const handleSend = useCallback(async () => {
     const text = inputText.trim();
-    if (!text && !selectedImage) {
+    if (!text) {
       return;
     }
 
     const userMessage: Message = {
       id: Date.now().toString(),
       role: 'user',
-      content: text || 'Analyze this dental X-ray.',
-      image: selectedImage,
+      content: text,
       timestamp: Date.now(),
     };
 
@@ -90,13 +87,12 @@ export const ChatScreen: React.FC<ChatScreenProps> = ({
     const history = [...messages];
     setMessages(prev => [...prev, userMessage, assistantMessage]);
     setInputText('');
-    setSelectedImage(undefined);
 
     let accumulated = '';
     try {
       const finalText = await sendMessage(
         userMessage.content,
-        selectedImage,
+        undefined,
         history,
         token => {
           accumulated += token;
@@ -131,7 +127,7 @@ export const ChatScreen: React.FC<ChatScreenProps> = ({
         ),
       );
     }
-  }, [inputText, selectedImage, messages, sendMessage]);
+  }, [inputText, messages, sendMessage]);
 
   const handleClearChat = useCallback(async () => {
     setMessages([]);
@@ -139,17 +135,18 @@ export const ChatScreen: React.FC<ChatScreenProps> = ({
   }, [resetContext]);
 
   return (
+    <SafeAreaView style={styles.safeArea} edges={['top']}>
     <KeyboardAvoidingView
       style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}>
       <View style={styles.header}>
         <TouchableOpacity onPress={onBack} style={styles.backButton}>
-          <Text style={styles.backText}>←</Text>
+          <Text style={styles.backButtonText}>← Back</Text>
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>🦷 DentalGemma</Text>
+        <Text style={styles.headerTitle}>DentalGemma</Text>
         <TouchableOpacity onPress={handleClearChat} style={styles.clearButton}>
-          <Text style={styles.clearText}>Clear</Text>
+          <Text style={styles.clearText}>New</Text>
         </TouchableOpacity>
       </View>
 
@@ -178,7 +175,7 @@ export const ChatScreen: React.FC<ChatScreenProps> = ({
             <Text style={styles.emptyIcon}>🦷</Text>
             <Text style={styles.emptyTitle}>DentalGemma</Text>
             <Text style={styles.emptySubtitle}>
-              Ask me about dental conditions{'\n'}or share an X-ray for analysis
+              Ask me about dental conditions.
             </Text>
             <View style={styles.suggestions}>
               <TouchableOpacity
@@ -204,22 +201,7 @@ export const ChatScreen: React.FC<ChatScreenProps> = ({
         }
       />
 
-      {selectedImage && (
-        <View style={styles.imagePreview}>
-          <Image source={{uri: selectedImage}} style={styles.previewImage} />
-          <TouchableOpacity
-            onPress={() => setSelectedImage(undefined)}
-            style={styles.removeImage}>
-            <Text style={styles.removeImageText}>✕</Text>
-          </TouchableOpacity>
-        </View>
-      )}
-
       <View style={styles.inputContainer}>
-        <ImagePickerButton
-          onImageSelected={setSelectedImage}
-          disabled={isGenerating}
-        />
         <TextInput
           style={styles.input}
           value={inputText}
@@ -238,53 +220,60 @@ export const ChatScreen: React.FC<ChatScreenProps> = ({
           <TouchableOpacity
             style={[
               styles.sendButton,
-              !inputText.trim() && !selectedImage && styles.sendDisabled,
+              !inputText.trim() && styles.sendDisabled,
             ]}
             onPress={handleSend}
-            disabled={!inputText.trim() && !selectedImage}>
-            <Text style={styles.sendText}>↑</Text>
+            disabled={!inputText.trim()}>
+            <Text style={styles.sendText}>➤</Text>
           </TouchableOpacity>
         )}
       </View>
     </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#ffffff',
+  },
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#f9fafb',
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 16,
-    paddingTop: Platform.OS === 'ios' ? 56 : 16,
-    paddingBottom: 12,
-    backgroundColor: '#FFFFFF',
+    paddingVertical: 12,
+    backgroundColor: '#ffffff',
     borderBottomWidth: 1,
-    borderBottomColor: '#E0E0E0',
+    borderBottomColor: '#e5e7eb',
   },
   backButton: {
-    padding: 8,
+    paddingVertical: 8,
+    paddingRight: 16,
   },
-  backText: {
-    fontSize: 24,
-    color: '#1976D2',
+  backButtonText: {
+    fontSize: 16,
+    color: '#2563eb',
+    fontWeight: '600',
   },
   headerTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#212121',
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#111827',
   },
   clearButton: {
-    padding: 8,
+    paddingVertical: 8,
+    paddingLeft: 16,
   },
   clearText: {
-    fontSize: 14,
-    color: '#1976D2',
-    fontWeight: '500',
+    fontSize: 16,
+    color: '#2563eb',
+    fontWeight: '600',
   },
   errorBar: {
     backgroundColor: '#FFF3E0',
@@ -336,32 +325,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#424242',
   },
-  imagePreview: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    backgroundColor: '#F5F5F5',
-  },
-  previewImage: {
-    width: 60,
-    height: 60,
-    borderRadius: 8,
-  },
-  removeImage: {
-    marginLeft: 12,
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    backgroundColor: '#E0E0E0',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  removeImageText: {
-    fontSize: 14,
-    color: '#616161',
-    fontWeight: '600',
-  },
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'flex-end',
@@ -391,12 +354,13 @@ const styles = StyleSheet.create({
     marginLeft: 8,
   },
   sendDisabled: {
-    backgroundColor: '#BDBDBD',
+    backgroundColor: '#E0E0E0',
   },
   sendText: {
-    fontSize: 20,
+    fontSize: 18,
     color: '#FFFFFF',
     fontWeight: '700',
+    transform: [{ rotate: '-45deg' }],
   },
   stopButton: {
     width: 40,

@@ -80,3 +80,69 @@ export type DentistInfo = {
   address: string;
   location: Location;
 };
+
+// Clinical Assessment Types
+export type PatientInfo = {
+  age: number;
+  gender: 'male' | 'female' | 'other';
+  occupation?: string;
+};
+
+export type ChiefComplaint = {
+  description: string;
+};
+
+export type ClinicalFindings = {
+  description: string;
+};
+
+export type RadiographicFindings = {
+  description: string;
+  xrayImage?: string;
+};
+
+export type MedicalHistory = {
+  systemicConditions?: string;
+  medications?: string;
+  habits?: string;
+  history?: string;
+};
+
+export type ClinicalCase = {
+  id: string;
+  patient: PatientInfo;
+  chiefComplaint: ChiefComplaint;
+  history: string;
+  clinicalFindings: ClinicalFindings;
+  radiographicFindings: RadiographicFindings;
+  medicalHistory: MedicalHistory;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
+export type CaseAssessment = {
+  success: boolean;
+  diagnosis: {
+    primary: string;
+    differential: string[];
+  };
+  etiology: {
+    rootCause: string;
+  };
+  urgency: UrgencyLevel;
+  managementPlan: {
+    protocol: string[];
+  };
+  antibiotics?: {
+    indicated: boolean;
+    reason: string;
+  };
+  followUp: {
+    timing: string;
+    monitoring: string[];
+  };
+  patientCounseling: {
+    explanation: string;
+  };
+  processingTime: number;
+};

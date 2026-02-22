@@ -48,9 +48,10 @@
 - **Fine-tuned MedGemma 1.5 4B IT** — Specialized for dental diagnostics across 98 clinical conditions
 - **Cloud-First Architecture** — GPU-accelerated inference via Modal.com for high accuracy and speed
 - **Multi-Agent Diagnostic System** — Intelligent workflow orchestration using Vercel AI SDK 6
-- **Voice Consultation** — Web Speech API with DentalGemma
+- **Voice Consultation** — Web Speech API combined with DentalGemma
 - **Evidence-Based Research** — Integrated PubMed search for clinical guidelines
-- **Practical Utility** — Dentist finder, treatment tracking, patient education, and more
+- **Mobile Companion App** — Offline-capable React Native application running DentalGemma natively via llama.cpp
+- **Practical Utility** — Dentist finder, treatment tracking, patient education, Symptom Checker and more
 
 ### Why DentalGemma?
 
@@ -59,7 +60,8 @@ MedGemma was **not originally trained on dental data**, making this a novel task
 1. Curating 5 diverse dental datasets (5,023 total samples)
 2. Fine-tuning with full bfloat16 precision LoRA for maximum diagnostic accuracy
 3. Building a comprehensive web application with 13 integrated features
-4. Deploying on cloud infrastructure for real-world accessibility
+4. Creating a fully offline, native on-device mobile proxy using `llama.rn`
+5. Deploying on cloud infrastructure for real-world accessibility
 
 ---
 
@@ -69,9 +71,9 @@ MedGemma was **not originally trained on dental data**, making this a novel task
 
 | Feature | Description | Technology |
 |---------|-------------|------------|
-| 🔍 **X-Ray Analysis** | Analyze dental radiographs and clinical photographs for pathology detection, cavity assessment, and tooth identification | DentalGemma Multimodal (VQA) |
-| 📋 **Clinical Assessment** | Comprehensive diagnostic reports with diagnosis, treatment plans, antibiotic recommendations, and follow-up schedules | DentalGemma Instruct |
-| 🎤 **Voice Consultation** | Hands-free clinical queries with real-time transcription and audio responses | Web Speech API |
+| 📸 **Dental Image Analysis** | Analyze clinical photos and radiographs (OPG, bitewing, periapical) for cavity detection and oral health assessment | DentalGemma 1.5 4B IT |
+| 📋 **Clinical Assessment** | Comprehensive diagnostic reports with diagnosis, treatment plans, antibiotic recommendations, and follow-up schedules | DentalGemma 1.5 4B IT |
+| 🎤 **Voice Consultation** | Hands-free clinical queries using the Web Speech API backed by the DentalGemma model | Web Speech API |
 | 🤖 **Agentic Workflows** | Multi-agent system orchestrating X-ray analysis, research synthesis, and specialist referrals | Vercel AI SDK 6 |
 
 ### Additional Features
@@ -81,8 +83,8 @@ MedGemma was **not originally trained on dental data**, making this a novel task
 | 🗺️ **Dentist Finder** | Location-based search for dental specialists with ratings, reviews, and directions |
 | 📊 **Treatment Tracker** | Visual progress monitoring with milestones, charts, and cost tracking |
 | 🔬 **Research Dashboard** | PubMed integration for evidence-based literature search and citation export |
-| 📚 **Patient Education** | Interactive learning portal covering 98 dental conditions with visual aids |
-| 🔍 **Symptom Checker** | AI-powered urgency assessment with guided questionnaire |
+| 📚 **Patient Education Portal** | Interactive learning portal with anatomy explorer covering 98 dental conditions |
+| 🔍 **Symptom Checker** | AI-powered urgency assessment using the DentalGemma model |
 | 📈 **Analytics Dashboard** | Usage statistics, condition distribution, and activity timeline |
 | ℹ️ **Model Information** | Detailed model architecture, training data, and performance metrics |
 | ⚙️ **Settings & History** | Customizable preferences and analysis history management |
@@ -142,9 +144,9 @@ MedGemma was **not originally trained on dental data**, making this a novel task
 │              Deployed on Vercel · Tailwind v4 · shadcn/ui           │
 │                                                                     │
 │  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐              │
-│  │ X-Ray    │ │ Clinical │ │ Voice    │ │ Agentic  │              │
+│  │ Image    │ │ Clinical │ │ Voice    │ │ Agentic  │              │
 │  │ Analyzer │ │ Case     │ │ Consult  │ │ Workflow │              │
-│  │  (VQA)   │ │ Assess.  │ │ (WebAPI) │ │ Engine   │              │
+│  │ (Vision) │ │ Assess.  │ │ (WebAPI) │ │ Engine   │              │
 │  └────┬─────┘ └────┬─────┘ └────┬─────┘ └────┬─────┘              │
 │       │             │            │             │                    │
 │  ┌────┴─────────────┴────────────┴─────────────┴────────────┐      │
@@ -160,6 +162,21 @@ MedGemma was **not originally trained on dental data**, making this a novel task
 │  │ Dentist  │ │ Progress │ │ Research │ │ Patient  │              │
 │  │ Finder   │ │ Tracker  │ │ Dashboard│ │ Education│              │
 │  └──────────┘ └──────────┘ └──────────┘ └──────────┘              │
+└─────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────┐
+│                    MOBILE (React Native 0.84)                       │
+│              Offline Local Inference using llama.cpp                │
+│                                                                     │
+│  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐              │
+│  │ Live Chat│ │ Image    │ │ Symptom  │ │ Dentist  │              │
+│  │ Assistant│ │ Analysis │ │ Checker  │ │ Finder   │              │
+│  └────┬─────┘ └────┬─────┘ └────┬─────┘ └──────────┘              │
+│       │             │            │                                  │
+│  ┌────┴─────────────┴────────────┴──────────────────────────┐      │
+│  │               llama.rn (llama.cpp) ON-DEVICE             │      │
+│  │     (GGUF Quantized Models running 100% Offline)         │      │
+│  └──────────────────────────────────────────────────────────┘      │
 └─────────────────────────────────────────────────────────────────────┘
 
 ┌─────────────────────────────────────────────────────────────────────┐
@@ -197,6 +214,14 @@ MedGemma was **not originally trained on dental data**, making this a novel task
 | **Forms** | React Hook Form + Zod | Form validation and performance |
 | **Markdown** | react-markdown | Render AI-generated responses |
 | **PDF Generation** | jsPDF + html2canvas | Export reports and analyses |
+
+### Mobile Application
+
+| Category | Technology | Purpose |
+|----------|------------|---------|
+| **Framework** | React Native 0.84 | Cross-platform mobile development |
+| **Local Inference AI** | llama.rn / llama.cpp | On-device, fully-offline quantized GGUF foundation model bindings |
+| **Hardware Permissions** | react-native-image-picker / react-native-fs | Camera, File System access for inference context |
 
 ### Backend & APIs
 
@@ -388,13 +413,13 @@ MedGemma was **not originally trained on dental data**, making this a novel task
 dentalgemma/
 ├── dentalgemma-app/              # Next.js frontend application
 │   ├── app/                      # Next.js App Router
-│   │   ├── (dashboard)/          # Dashboard pages (13 features)
+│   │   ├── (dashboard)/          # Dashboard pages (Core Features)
 │   │   ├── api/                  # API routes
 │   │   ├── page.tsx              # Landing page
 │   │   └── layout.tsx            # Root layout
 │   ├── components/               # React components
 │   │   ├── ui/                   # shadcn/ui components
-│   │   ├── xray/                 # X-ray analysis components
+│   │   ├── xray/                 # Image analysis components
 │   │   ├── case/                 # Clinical assessment components
 │   │   ├── voice/                # Voice consultation components
 │   │   ├── agentic/              # Agentic workflow components
@@ -416,6 +441,13 @@ dentalgemma/
 │   ├── public/                   # Static assets and PWA files
 │   ├── jest.config.js            # Test configuration
 │   └── vercel.json               # Vercel deployment config
+├── dentalgemma-mobile/           # React Native offline application
+│   ├── src/
+│   │   ├── components/           # Mobile reusable components
+│   │   ├── constants/            # Inference configuration and prompts
+│   │   ├── hooks/                # Local integration hook (useDentalGemma.ts)
+│   │   └── screens/              # Core mobile screens
+│   └── package.json              # RN definitions
 ├── finetune/                     # Model fine-tuning pipeline
 │   ├── preprocessing/            # Data preprocessing scripts
 │   │   ├── build_dataset.py      # Main dataset builder
@@ -471,7 +503,7 @@ dentalgemma/
 | Track | Evidence |
 |-------------|----------|
 | **🏆 Main Track** | Production-ready application with 13 integrated features, professional deployment, comprehensive documentation |
-| **🏆 Novel Task** | MedGemma not originally trained on dental data; 4 datasets curated, 5,023 samples, dual VQA + Instruct fine-tuning, 98 dental conditions |
+| **🏆 Novel Task** | MedGemma not originally trained on dental data; 4 datasets curated, 5,023 samples, unified multimodal fine-tuning, 98 dental conditions |
 | **🏆 Agentic Workflow** | Vercel AI SDK 6 multi-agent system with 6-step autonomous diagnostic pipeline, transparent reasoning, tool calling |
 
 ### Evaluation Criteria Coverage

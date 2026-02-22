@@ -11,6 +11,7 @@ import {SafeAreaView} from 'react-native-safe-area-context';
 interface HomeScreenProps {
   onNavigateToChat: () => void;
   onNavigateToSymptomChecker: () => void;
+  onNavigateToClinicalAssessment: () => void;
   onNavigateToImageAnalysis: () => void;
   onNavigateToEducation: () => void;
   onNavigateToDentistFinder: () => void;
@@ -21,6 +22,7 @@ interface HomeScreenProps {
 export const HomeScreen: React.FC<HomeScreenProps> = ({
   onNavigateToChat,
   onNavigateToSymptomChecker,
+  onNavigateToClinicalAssessment,
   onNavigateToImageAnalysis,
   onNavigateToEducation,
   onNavigateToDentistFinder,
@@ -68,6 +70,19 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
             <Text style={styles.featureTitle}>Symptom Checker</Text>
             <Text style={styles.featureDescription}>
               Interactive questionnaire to assess your dental symptoms
+            </Text>
+          </TouchableOpacity>
+
+          {/* Clinical Assessment Feature */}
+          <TouchableOpacity
+            style={styles.featureCard}
+            onPress={onNavigateToClinicalAssessment}>
+            <View style={styles.featureIconContainer}>
+              <Text style={styles.featureIcon}>📋</Text>
+            </View>
+            <Text style={styles.featureTitle}>Clinical Assessment</Text>
+            <Text style={styles.featureDescription}>
+              Comprehensive case assessment with AI-powered diagnosis and treatment planning
             </Text>
           </TouchableOpacity>
 
