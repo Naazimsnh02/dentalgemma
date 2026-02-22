@@ -42,19 +42,25 @@ export type SymptomResult = {
   redFlags: string[];
 };
 
+export type SimpleSymptomResult = {
+  urgency: UrgencyLevel;
+  markdownReport: string;
+};
+
 export type AnalysisType = 'photo' | 'xray';
 export type UrgencyLevel = 'emergency' | 'urgent' | 'routine' | 'home-care';
 
 export type ImageAnalysisResult = {
   type: AnalysisType;
-  findings: string[];
-  confidence: number;
-  urgency: UrgencyLevel;
-  recommendations: string[];
-  condition?: 'healthy' | 'decay' | 'other';
-  severity?: 'mild' | 'moderate' | 'severe';
-  pathologyClass?: 'Healthy' | 'Caries' | 'Impacted' | 'BDC-BDR' | 'Infection' | 'Fractured';
-  differentialDiagnosis?: string[];
+  rawAnalysis?: string; // Full raw text from model
+  findings: string[]; // For backward compatibility
+  confidence: number; // Not displayed
+  urgency: UrgencyLevel; // Not displayed
+  recommendations: string[]; // Not displayed
+  condition?: 'healthy' | 'decay' | 'other'; // Not displayed
+  severity?: 'mild' | 'moderate' | 'severe'; // Not displayed
+  pathologyClass?: 'Healthy' | 'Caries' | 'Impacted' | 'BDC-BDR' | 'Infection' | 'Fractured'; // Not displayed
+  differentialDiagnosis?: string[]; // Not displayed
 };
 
 export type Location = {

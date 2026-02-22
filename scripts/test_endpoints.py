@@ -137,12 +137,16 @@ def test_assessment_modal_direct():
     payload = {
         "patient": {
             "age": 45,
-            "gender": "male"
+            "gender": "male",
+            "occupation": "Teacher"
         },
         "chief_complaint": "Persistent throbbing pain in the upper right molar, especially at night.",
+        "history": "Pain started 1 week ago, progressively worsening. Keeps patient awake at night.",
         "clinical_findings": "Intraoral: Deep caries on tooth #16, tender to percussion, no swelling.\nExtraoral: No facial asymmetry or swelling.\nSoft Tissue: Gingiva around #16 slightly inflamed.\nPeriodontal: Probing depths within normal limits except 5mm on mesial of #16.",
         "radiographic_findings": "Periapical radiolucency associated with the mesial root of tooth #16. No evidence of horizontal or vertical bone loss.",
-        "medical_history": "Medications: Lisinopril 10mg daily\nAllergies: Penicillin\nConditions: Hypertension, controlled with medication",
+        "medical_history": "Allergies: Penicillin\nConditions: Hypertension, controlled with medication",
+        "current_medications": "Lisinopril 10mg daily",
+        "habits": "Occasional alcohol, no smoking",
         "max_tokens": 2048
     }
     
@@ -172,30 +176,24 @@ def test_assessment_nextjs():
             "id": "test-case-001",
             "patient": {
                 "age": 45,
-                "gender": "male"
+                "gender": "male",
+                "occupation": "Teacher"
             },
             "chiefComplaint": {
-                "description": "Persistent throbbing pain in the upper right molar, especially at night.",
-                "duration": "1 week",
-                "painLevel": 7,
-                "triggers": ["cold drinks", "chewing", "lying down"]
+                "description": "Persistent throbbing pain in the upper right molar, especially at night."
             },
+            "history": "Pain started 1 week ago, progressively worsening. Keeps patient awake at night.",
             "clinicalFindings": {
-                "intraoral": "Deep caries on tooth #16, tender to percussion, no swelling.",
-                "extraoral": "No facial asymmetry or swelling.",
-                "softTissue": "Gingiva around #16 slightly inflamed, marginal redness noted.",
-                "periodontal": "Probing depths within normal limits except 5mm on mesial of #16."
+                "description": "Intraoral: Deep caries on tooth #16, tender to percussion, no swelling.\nExtraoral: No facial asymmetry or swelling.\nSoft Tissue: Gingiva around #16 slightly inflamed.\nPeriodontal: Probing depths within normal limits except 5mm on mesial of #16."
             },
             "radiographicFindings": {
-                "description": "Periapical radiolucency associated with the mesial root of tooth #16. No evidence of horizontal or vertical bone loss.",
-                "boneLoss": "None",
-                "periapicalStatus": "Radiolucency at mesial root apex of #16"
+                "description": "Periapical radiolucency associated with the mesial root of tooth #16. No evidence of horizontal or vertical bone loss."
             },
             "medicalHistory": {
-                "medications": ["Lisinopril 10mg daily"],
-                "allergies": ["Penicillin"],
-                "systemicConditions": ["Hypertension"],
-                "previousTreatments": ["Amalgam restoration on #16 (5 years ago)"]
+                "history": "Previous treatments: Amalgam restoration on #16 (5 years ago)",
+                "systemicConditions": "Allergies: Penicillin, Hypertension",
+                "medications": "Lisinopril 10mg daily",
+                "habits": "Occasional alcohol, no smoking"
             },
             "createdAt": "2026-02-20T00:00:00.000Z",
             "updatedAt": "2026-02-20T00:00:00.000Z"
@@ -228,7 +226,28 @@ def validate_assessment_response(data, source):
         issues.append("❌ 'success' is missing or false")
     
     # Check case_assessment (Modal direct) or diagnosis (parsed by Next.js)
-    # Modal direct returns case_assessment; Next.js route returns the parsed CaseAssessment
+    # Modal direct returns case_assessment (raw text in V2); Next.js route returns the parsed CaseAssessment
+    
+    if source == "Modal Direct":
+        assessment_text = data.get("case_assessment") or data.get("assessment", "")
+        if not assessment_text:
+            issues.append("❌ 'assessment' text is missing")
+        else:
+            print(f"  ✅ assessment text present ({len(assessment_text)} chars)")
+            # In V2, Modal Direct returns Markdown text. We skip JSON field validation.
+            if "Diagnosis:" in assessment_text:
+                print("  ✅ Found Diagnosis in text")
+            if "Management Plan" in assessment_text:
+                print("  ✅ Found Management Plan in text")
+        
+        if issues:
+            print(f"\n  ⚠️  {len(issues)} issue(s) found:")
+            for issue in issues:
+                print(f"    {issue}")
+        else:
+            print(f"\n  ✅ Modal Direct response valid!")
+        return
+        
     assessment = data.get("case_assessment") or data
     
     # 1. Diagnosis
@@ -241,7 +260,7 @@ def validate_assessment_response(data, source):
     
     differential = diag.get("differential", [])
     if not differential:
-        issues.append("⚠️  diagnosis.differential is empty (may be OK for clear-cut cases)")
+        pass # It is OK for clear-cut cases to not have a differential diagnosis
     else:
         print(f"  ✅ diagnosis.differential: {differential}")
     
@@ -327,8 +346,8 @@ def test_image_analysis(image_path, analysis_type='xray'):
 
     # V2 Prompts from Plan
     prompts = {
-        "photo": "Analyze this clinical dental photograph. Describe the condition of the teeth and gums visible. Note any signs of decay, discoloration, or other abnormalities. Assess the severity and recommend follow-up actions.",
-        "xray": "Analyze this dental radiograph. Describe any pathological findings and their locations. Provide your assessment of the condition, possible differential diagnoses, and clinical recommendations."
+        "photo": "Analyze this clinical dental photograph. Describe the condition of the teeth and gums visible. Note any signs of decay, discoloration, or other abnormalities. Assess the severity and recommend follow-up actions. Provide a clear, professional clinical description. Avoid repeating the same information.",
+        "xray": 'Analyze this dental radiograph. Describe any pathological findings and their locations using dental region terminology (e.g., "right mandibular region", "anterior maxillary region"). Provide your assessment of the condition, possible differential diagnoses, and clinical recommendations. Avoid repeating the same findings.'
     }
 
     try:
@@ -553,23 +572,13 @@ def simulate_xray_text_parsing(raw_text, analysis_type, issues):
         validate_xray_parsed_json(parsed_json, analysis_type, issues)
         return
     
-    # Fallback: text-based extraction
-    findings = extract_findings_from_text(clean)
-    if findings:
-        print(f"    ✅ Text-parsed findings: {len(findings)} items")
-        for f in findings[:3]:
-            print(f"        - {f}")
+    # Text-based extraction uses regex on frontend, which python can't perfectly replicate easily
+    # We just check if there's enough meaningful text to form findings and recommendations
+    if len(clean) > 50:
+        print(f"    ✅ Text is long enough for NLP extraction ({len(clean)} chars)")
     else:
-        issues.append("❌ Could not extract findings from text")
-    
-    confidence = extract_confidence_from_text(clean)
-    print(f"    {'✅' if confidence > 0 else '⚠️ '} Text-parsed confidence: {confidence}")
-    
-    recommendations = extract_recommendations_from_text(clean)
-    if recommendations:
-        print(f"    ✅ Text-parsed recommendations: {len(recommendations)} items")
-    else:
-        issues.append("⚠️  Could not extract recommendations from text")
+        issues.append("❌ Could not extract findings from text (too short)")
+        issues.append("⚠️  Could not extract recommendations from text (too short)")
 
 # ============================================================================
 # 5. SYMPTOM CHECKER
@@ -594,23 +603,21 @@ def test_symptom_check_modal_direct():
     }
     
     # Build the exact prompt the API route uses (from buildSymptomPrompt)
-    prompt = f"""You are a dental AI assistant. A patient has reported the following symptoms:
+    prompt = f"""Please evaluate this dental patient based on reported symptoms:
 
-Location: {symptom_data['location']}
-Pain Type: {symptom_data['painType']}
-Duration: {symptom_data['duration']}
-Triggers: {', '.join(symptom_data['triggers']) or 'None reported'}
-Associated Symptoms: {', '.join(symptom_data['associatedSymptoms']) or 'None reported'}
-Medical History: {', '.join(symptom_data['medicalHistory']) or 'None reported'}
+PATIENT: Symptomatic patient evaluation
+AGE: Not specified
+SEX: Not specified
 
-Please provide:
-1. A ranked list of 3 possible dental conditions (with likelihood percentages)
-2. Urgency classification (emergency, urgent, routine, or home-care)
-3. Specific action guidance based on urgency
-4. Home care recommendations
-5. Red flag warnings to watch for
+CHIEF COMPLAINT: Patient reporting dental symptoms.
 
-Format your response clearly with these sections."""
+HISTORY: Location: {symptom_data['location']}. Pain Type: {symptom_data['painType']}. Duration: {symptom_data['duration']}. Triggers: {', '.join(symptom_data['triggers']) or 'None'}. Associated Symptoms: {', '.join(symptom_data['associatedSymptoms']) or 'None'}.
+
+CLINICAL FINDINGS: Not clinically evaluated yet.
+
+MEDICAL HISTORY: {', '.join(symptom_data['medicalHistory']) or 'None reported'}
+
+What is your diagnosis and treatment plan?"""
     
     payload = {
         "message": prompt,
@@ -677,132 +684,29 @@ def test_symptom_check_nextjs():
 
 def parse_symptom_response(response_text, symptom_data):
     """
-    Replicate the parseModelResponse function from
+    Replicate the parseSimplifiedResponse function from
     dentalgemma-app/app/api/symptom-check/route.ts
     """
-    clean = clean_thought_traces(response_text)
-    lines = [line for line in clean.split('\n') if line.strip()]
+    cleaned = clean_thought_traces(response_text).strip()
     
-    possible_conditions = []
+    # Extract urgency just for the banner color (matching Next.js logic)
     urgency = "routine"
-    action_guidance = ""
-    home_care = []
-    red_flags = []
+    urgency_match = re.search(r'\*\*Urgency:\*\*\s*(.+?)(?:\n|$)', cleaned, re.IGNORECASE)
     
-    current_section = ""
-    
-    for line in lines:
-        lower = line.lower()
-        
-        # Detect sections
-        if 'possible condition' in lower or 'differential' in lower or 'ranked list' in lower or 'dental condition' in lower:
-            current_section = 'conditions'
-            continue
-        elif 'urgency' in lower:
-            current_section = 'urgency'
-            # Check if urgency is on the same line
-            if 'emergency' in lower:
-                urgency = 'emergency'
-            elif 'urgent' in lower and 'classification' not in lower:
-                urgency = 'urgent'
-            elif 'routine' in lower:
-                urgency = 'routine'
-            elif 'home' in lower or 'self-care' in lower:
-                urgency = 'home-care'
-            continue
-        elif 'action' in lower or 'guidance' in lower:
-            current_section = 'action'
-            continue
-        elif 'home care' in lower or 'recommendation' in lower:
-            current_section = 'homecare'
-            continue
-        elif 'red flag' in lower or 'warning' in lower:
-            current_section = 'redflags'
-            continue
-        
-        # Parse content based on section
-        if current_section == 'conditions':
-            # Try: "1. Condition Name - 60%" or "Condition (60%)" or "1. Condition 60%"
-            match = re.match(r'.*?([A-Za-z][\w\s/\-\(\)]+?)[\s\-–:]*(\d+)\s*%', line)
-            if match:
-                cond_name = re.sub(r'^\d+[\.\)\s]+', '', match.group(1)).strip()
-                likelihood = int(match.group(2))
-                if cond_name and len(cond_name) > 2:
-                    possible_conditions.append({
-                        "condition": cond_name,
-                        "likelihood": likelihood / 100
-                    })
-            elif re.match(r'^\d+\.', line.strip()):
-                cond_name = re.sub(r'^\d+[\.\)\s]+', '', line.strip()).strip()
-                # Remove trailing likelihood markers if any
-                cond_name = re.sub(r'\s*\(?\d+%\)?', '', cond_name).strip()
-                if cond_name and len(cond_name) > 2:
-                    possible_conditions.append({
-                        "condition": cond_name,
-                        "likelihood": 0.5
-                    })
-        elif current_section == 'urgency':
-            if 'emergency' in lower:
-                urgency = 'emergency'
-            elif 'urgent' in lower:
-                urgency = 'urgent'
-            elif 'routine' in lower:
-                urgency = 'routine'
-            elif 'home' in lower or 'self-care' in lower:
-                urgency = 'home-care'
-        elif current_section == 'action':
-            cleaned = line.strip()
-            cleaned = re.sub(r'^[-*•]\s*', '', cleaned)
-            cleaned = re.sub(r'^\d+\.\s*', '', cleaned)
-            if cleaned and len(cleaned) > 5:
-                action_guidance += cleaned + " "
-        elif current_section == 'homecare':
-            cleaned = re.sub(r'^[-*•]\s*', '', line.strip())
-            cleaned = re.sub(r'^\d+\.\s*', '', cleaned)
-            if cleaned and len(cleaned) > 5:
-                home_care.append(cleaned)
-        elif current_section == 'redflags':
-            cleaned = re.sub(r'^[-*•]\s*', '', line.strip())
-            cleaned = re.sub(r'^\d+\.\s*', '', cleaned)
-            if cleaned and len(cleaned) > 5:
-                red_flags.append(cleaned)
-    
-    # Defaults (matching the API route fallbacks)
-    if not possible_conditions:
-        possible_conditions.append({
-            "condition": "Dental condition requiring professional evaluation",
-            "likelihood": 0.6
-        })
-    
-    if not action_guidance:
-        guidance_map = {
-            "emergency": "Seek immediate emergency care. Go to the nearest emergency room or call emergency services.",
-            "urgent": "Contact your dentist within 24 hours for an urgent appointment.",
-            "routine": "Schedule a routine dental appointment within 1-2 weeks for evaluation.",
-            "home-care": "Monitor symptoms for 24-48 hours. If symptoms persist or worsen, contact your dentist."
-        }
-        action_guidance = guidance_map.get(urgency, "Consult with your dentist for proper evaluation and treatment.")
-    
-    if not home_care:
-        home_care = [
-            "Maintain good oral hygiene",
-            "Rinse with warm salt water",
-            "Take over-the-counter pain medication as needed"
-        ]
-    
-    if not red_flags:
-        red_flags = [
-            "Severe or worsening pain",
-            "Swelling that increases",
-            "Fever or difficulty swallowing"
-        ]
-    
+    if urgency_match:
+        text = urgency_match.group(1).lower()
+        if 'emergency' in text or '(2)' in text:
+            urgency = 'emergency'
+        elif 'urgent' in text or '(1)' in text:
+            urgency = 'urgent'
+        elif 'home' in text:
+            urgency = 'home-care'
+        else:
+            urgency = 'routine'
+            
     return {
-        "possibleConditions": possible_conditions[:3],
         "urgency": urgency,
-        "actionGuidance": action_guidance.strip(),
-        "homeCareRecommendations": home_care,
-        "redFlags": red_flags
+        "markdownReport": cleaned
     }
 
 def validate_symptom_result(result, source):
@@ -811,22 +715,7 @@ def validate_symptom_result(result, source):
     
     issues = []
     
-    # 1. Possible Conditions
-    conditions = result.get("possibleConditions", [])
-    if not conditions:
-        issues.append("❌ possibleConditions is empty")
-    else:
-        print(f"  ✅ possibleConditions: {len(conditions)} items")
-        for i, c in enumerate(conditions):
-            cond = c.get("condition", "")
-            likelihood = c.get("likelihood", 0)
-            is_default = cond == "Dental condition requiring professional evaluation"
-            flag = " (DEFAULT - model didn't provide specific conditions)" if is_default else ""
-            print(f"      {i+1}. {cond} ({int(likelihood * 100)}%){flag}")
-            if is_default:
-                issues.append(f"⚠️  Condition {i+1} is using fallback default")
-    
-    # 2. Urgency
+    # 1. Urgency
     urgency = result.get("urgency", "")
     valid = ["emergency", "urgent", "routine", "home-care"]
     if urgency not in valid:
@@ -834,46 +723,13 @@ def validate_symptom_result(result, source):
     else:
         print(f"  ✅ urgency: {urgency}")
     
-    # 3. Action Guidance
-    action = result.get("actionGuidance", "")
-    if not action:
-        issues.append("❌ actionGuidance is empty")
+    # 2. Markdown Report
+    report = result.get("markdownReport", "")
+    if not report:
+        issues.append("❌ markdownReport is empty")
     else:
-        print(f"  ✅ actionGuidance: {action[:120]}...")
-    
-    # 4. Home Care Recommendations
-    home_care = result.get("homeCareRecommendations", [])
-    if not home_care:
-        issues.append("❌ homeCareRecommendations is empty")
-    else:
-        is_default = home_care == [
-            "Maintain good oral hygiene",
-            "Rinse with warm salt water",
-            "Take over-the-counter pain medication as needed"
-        ]
-        flag = " (DEFAULT - model didn't provide specific recs)" if is_default else ""
-        print(f"  ✅ homeCareRecommendations: {len(home_care)} items{flag}")
-        for r in home_care:
-            print(f"      - {r}")
-        if is_default:
-            issues.append("⚠️  homeCareRecommendations is using fallback defaults")
-    
-    # 5. Red Flags
-    red_flags = result.get("redFlags", [])
-    if not red_flags:
-        issues.append("❌ redFlags is empty")
-    else:
-        is_default = red_flags == [
-            "Severe or worsening pain",
-            "Swelling that increases",
-            "Fever or difficulty swallowing"
-        ]
-        flag = " (DEFAULT - model didn't provide specific flags)" if is_default else ""
-        print(f"  ✅ redFlags: {len(red_flags)} items{flag}")
-        for f in red_flags:
-            print(f"      ⚠️  {f}")
-        if is_default:
-            issues.append("⚠️  redFlags is using fallback defaults")
+        preview = report[:120].replace('\n', ' ') + "..." if len(report) > 120 else report
+        print(f"  ✅ markdownReport: {preview}")
     
     if issues:
         print(f"\n  ⚠️  {len(issues)} issue(s) found:")

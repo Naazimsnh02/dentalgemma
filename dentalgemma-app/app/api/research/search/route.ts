@@ -144,11 +144,11 @@ function applyContentTypeFilter(query: string, contentType?: string): string {
   }
 
   const typeFilters: Record<string, string> = {
-    'research': 'research article[pt]',
-    'trial': 'clinical trial[pt]',
-    'review': 'systematic review[pt] OR review[pt]',
-    'case-report': 'case reports[pt]',
-    'guideline': 'guideline[pt] OR practice guideline[pt]',
+    'research': 'Journal Article[pt]',
+    'trial': 'Clinical Trial[pt]',
+    'review': 'Systematic Review[pt] OR Review[pt]',
+    'case-report': 'Case Reports[pt]',
+    'guideline': 'Guideline[pt] OR Practice Guideline[pt]',
   };
 
   const filter = typeFilters[contentType];

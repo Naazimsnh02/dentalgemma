@@ -1,174 +1,68 @@
 import React from 'react';
-import {View, Text, StyleSheet, ScrollView, TouchableOpacity} from 'react-native';
-import type {ImageAnalysisResult, UrgencyLevel} from '../../types';
+import {View, Text, StyleSheet, TouchableOpacity} from 'react-native';
+import type {ImageAnalysisResult} from '../../types';
 
 interface ImageAnalysisResultsProps {
   result: ImageAnalysisResult;
   onStartOver: () => void;
+  onExportPDF?: () => void;
+  onExportJSON?: () => void;
 }
 
-const urgencyConfig: Record<
-  UrgencyLevel,
-  {color: string; bgColor: string; label: string; icon: string}
-> = {
-  emergency: {
-    color: '#991b1b',
-    bgColor: '#fef2f2',
-    label: 'Emergency',
-    icon: '🚨',
-  },
-  urgent: {
-    color: '#c2410c',
-    bgColor: '#fff7ed',
-    label: 'Urgent',
-    icon: '⚠️',
-  },
-  routine: {
-    color: '#1e40af',
-    bgColor: '#eff6ff',
-    label: 'Routine',
-    icon: 'ℹ️',
-  },
-  'home-care': {
-    color: '#15803d',
-    bgColor: '#f0fdf4',
-    label: 'Home Care',
-    icon: '✅',
-  },
-};
+// Helper function to strip markdown formatting
+function stripMarkdown(text: string): string {
+  return text
+    // Remove bold/italic markers
+    .replace(/\*\*(.+?)\*\*/g, '$1')
+    .replace(/\*(.+?)\*/g, '$1')
+    .replace(/__(.+?)__/g, '$1')
+    .replace(/_(.+?)_/g, '$1')
+    // Remove headers
+    .replace(/^#{1,6}\s+/gm, '')
+    // Remove bullet points and list markers
+    .replace(/^\s*[-*+]\s+/gm, '')
+    .replace(/^\s*\d+\.\s+/gm, '')
+    // Remove code blocks
+    .replace(/```[\s\S]*?```/g, '')
+    .replace(/`(.+?)`/g, '$1')
+    // Remove links but keep text
+    .replace(/\[(.+?)\]\(.+?\)/g, '$1')
+    // Clean up extra whitespace
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+}
 
 export const ImageAnalysisResults: React.FC<ImageAnalysisResultsProps> = ({
   result,
   onStartOver,
+  onExportPDF,
+  onExportJSON,
 }) => {
-  const urgency = urgencyConfig[result.urgency];
+  // Get the raw text and strip markdown
+  const rawText = result.rawAnalysis || result.findings.join(' ');
+  const plainText = stripMarkdown(rawText);
 
   return (
     <View>
-      {/* Urgency Card */}
-      <View style={[styles.card, {backgroundColor: urgency.bgColor}]}>
-        <View style={styles.urgencyHeader}>
-          <Text style={styles.urgencyIcon}>{urgency.icon}</Text>
-          <View style={styles.urgencyTextContainer}>
-            <Text style={[styles.urgencyLabel, {color: urgency.color}]}>
-              {urgency.label} Priority
-            </Text>
-            <Text style={styles.urgencySubtext}>
-              Analysis Type: {result.type === 'photo' ? 'Clinical Photo' : 'X-Ray'}
-            </Text>
-          </View>
-        </View>
+      {/* Single Clinical Analysis Card */}
+      <View style={styles.card}>
+        <Text style={styles.sectionTitle}>Clinical Analysis</Text>
+        <Text style={styles.analysisText}>{plainText}</Text>
       </View>
 
-      {/* Type-Specific Info */}
-      <View style={styles.card}>
-        <Text style={styles.sectionTitle}>Analysis Details</Text>
-        {result.type === 'photo' ? (
-          <View style={styles.detailsContainer}>
-            <View style={styles.detailRow}>
-              <Text style={styles.detailLabel}>Condition:</Text>
-              <View
-                style={[
-                  styles.badge,
-                  result.condition === 'decay'
-                    ? styles.badgeDecay
-                    : result.condition === 'healthy'
-                    ? styles.badgeHealthy
-                    : styles.badgeOther,
-                ]}>
-                <Text
-                  style={[
-                    styles.badgeText,
-                    result.condition === 'decay'
-                      ? styles.badgeTextDecay
-                      : result.condition === 'healthy'
-                      ? styles.badgeTextHealthy
-                      : styles.badgeTextOther,
-                  ]}>
-                  {result.condition === 'decay'
-                    ? 'Decay Detected'
-                    : result.condition === 'healthy'
-                    ? 'Healthy'
-                    : 'Other Finding'}
-                </Text>
-              </View>
-            </View>
-            {result.severity && (
-              <View style={styles.detailRow}>
-                <Text style={styles.detailLabel}>Severity:</Text>
-                <Text style={styles.detailValue}>
-                  {result.severity.charAt(0).toUpperCase() +
-                    result.severity.slice(1)}
-                </Text>
-              </View>
-            )}
-            <View style={styles.detailRow}>
-              <Text style={styles.detailLabel}>Confidence:</Text>
-              <Text style={styles.detailValue}>
-                {Math.round(result.confidence * 100)}%
-              </Text>
-            </View>
-          </View>
-        ) : (
-          <View style={styles.detailsContainer}>
-            {result.pathologyClass && (
-              <View style={styles.detailRow}>
-                <Text style={styles.detailLabel}>Primary Pathology:</Text>
-                <View style={styles.badgePrimary}>
-                  <Text style={styles.badgeTextPrimary}>
-                    {result.pathologyClass}
-                  </Text>
-                </View>
-              </View>
-            )}
-            <View style={styles.detailRow}>
-              <Text style={styles.detailLabel}>Confidence:</Text>
-              <Text style={styles.detailValue}>
-                {Math.round(result.confidence * 100)}%
-              </Text>
-            </View>
-            {result.differentialDiagnosis &&
-              result.differentialDiagnosis.length > 0 && (
-                <View style={styles.differentialContainer}>
-                  <Text style={styles.detailLabel}>
-                    Differential Diagnosis:
-                  </Text>
-                  {result.differentialDiagnosis.map((dx, i) => (
-                    <Text key={i} style={styles.differentialItem}>
-                      • {dx}
-                    </Text>
-                  ))}
-                </View>
-              )}
-          </View>
+      {/* Export buttons */}
+      <View style={styles.exportButtons}>
+        {onExportPDF && (
+          <TouchableOpacity style={styles.exportButton} onPress={onExportPDF}>
+            <Text style={styles.exportButtonText}>📄 Export PDF</Text>
+          </TouchableOpacity>
+        )}
+        {onExportJSON && (
+          <TouchableOpacity style={styles.exportButtonSecondary} onPress={onExportJSON}>
+            <Text style={styles.exportButtonSecondaryText}>📋 Export JSON</Text>
+          </TouchableOpacity>
         )}
       </View>
-
-      {/* Findings */}
-      {result.findings.length > 0 && (
-        <View style={styles.card}>
-          <Text style={styles.sectionTitle}>Findings</Text>
-          {result.findings.map((finding, index) => (
-            <View key={index} style={styles.findingItem}>
-              <Text style={styles.bullet}>•</Text>
-              <Text style={styles.findingText}>{finding}</Text>
-            </View>
-          ))}
-        </View>
-      )}
-
-      {/* Recommendations */}
-      {result.recommendations.length > 0 && (
-        <View style={styles.card}>
-          <Text style={styles.sectionTitle}>Recommendations</Text>
-          {result.recommendations.map((rec, index) => (
-            <View key={index} style={styles.recommendationItem}>
-              <Text style={styles.checkmark}>✓</Text>
-              <Text style={styles.recommendationText}>{rec}</Text>
-            </View>
-          ))}
-        </View>
-      )}
 
       {/* Disclaimer */}
       <View style={styles.disclaimerCard}>
@@ -180,13 +74,14 @@ export const ImageAnalysisResults: React.FC<ImageAnalysisResultsProps> = ({
         </Text>
       </View>
 
-      {/* Action Buttons */}
+      {/* Action Button */}
       <TouchableOpacity style={styles.primaryButton} onPress={onStartOver}>
         <Text style={styles.primaryButtonText}>Analyze Another Image</Text>
       </TouchableOpacity>
     </View>
   );
 };
+
 
 const styles = StyleSheet.create({
   card: {
@@ -200,128 +95,51 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 3,
   },
-  urgencyHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  urgencyIcon: {
-    fontSize: 32,
-    marginRight: 12,
-  },
-  urgencyTextContainer: {
-    flex: 1,
-  },
-  urgencyLabel: {
+  sectionTitle: {
     fontSize: 18,
     fontWeight: '700',
-  },
-  urgencySubtext: {
-    fontSize: 13,
-    color: '#6b7280',
-    marginTop: 2,
-  },
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: '700',
     color: '#111827',
     marginBottom: 12,
   },
-  detailsContainer: {
+  analysisText: {
+    fontSize: 14,
+    color: '#374151',
+    lineHeight: 22,
+    whiteSpace: 'pre-wrap',
+  },
+  exportButtons: {
+    flexDirection: 'row',
+    justifyContent: 'center',
     gap: 12,
+    paddingTop: 16,
+    paddingBottom: 16,
+    borderTopWidth: 1,
+    borderTopColor: '#e5e7eb',
+    marginBottom: 16,
   },
-  detailRow: {
-    flexDirection: 'row',
+  exportButton: {
+    flex: 1,
+    backgroundColor: '#2563eb',
+    borderRadius: 8,
+    paddingVertical: 12,
     alignItems: 'center',
-    justifyContent: 'space-between',
   },
-  detailLabel: {
+  exportButtonText: {
+    color: '#ffffff',
     fontSize: 14,
     fontWeight: '600',
-    color: '#6b7280',
   },
-  detailValue: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#111827',
-  },
-  badge: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 16,
-  },
-  badgeDecay: {
-    backgroundColor: '#fef2f2',
-  },
-  badgeHealthy: {
-    backgroundColor: '#f0fdf4',
-  },
-  badgeOther: {
-    backgroundColor: '#fff7ed',
-  },
-  badgeText: {
-    fontSize: 13,
-    fontWeight: '600',
-  },
-  badgeTextDecay: {
-    color: '#991b1b',
-  },
-  badgeTextHealthy: {
-    color: '#15803d',
-  },
-  badgeTextOther: {
-    color: '#c2410c',
-  },
-  badgePrimary: {
-    backgroundColor: '#eff6ff',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 16,
-  },
-  badgeTextPrimary: {
-    color: '#1e40af',
-    fontSize: 13,
-    fontWeight: '600',
-  },
-  differentialContainer: {
-    marginTop: 8,
-  },
-  differentialItem: {
-    fontSize: 13,
-    color: '#374151',
-    marginTop: 4,
-    marginLeft: 8,
-  },
-  findingItem: {
-    flexDirection: 'row',
-    marginBottom: 12,
-  },
-  bullet: {
-    fontSize: 16,
-    color: '#2563eb',
-    marginRight: 8,
-    marginTop: 2,
-  },
-  findingText: {
+  exportButtonSecondary: {
     flex: 1,
+    backgroundColor: '#6b7280',
+    borderRadius: 8,
+    paddingVertical: 12,
+    alignItems: 'center',
+  },
+  exportButtonSecondaryText: {
+    color: '#ffffff',
     fontSize: 14,
-    color: '#374151',
-    lineHeight: 20,
-  },
-  recommendationItem: {
-    flexDirection: 'row',
-    marginBottom: 12,
-  },
-  checkmark: {
-    fontSize: 16,
-    color: '#15803d',
-    marginRight: 8,
-    marginTop: 2,
-  },
-  recommendationText: {
-    flex: 1,
-    fontSize: 14,
-    color: '#374151',
-    lineHeight: 20,
+    fontWeight: '600',
   },
   disclaimerCard: {
     backgroundColor: '#fffbeb',
@@ -355,3 +173,4 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
 });
+

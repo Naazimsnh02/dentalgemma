@@ -1,9 +1,10 @@
 import React from 'react';
 import {View, Text, StyleSheet, TouchableOpacity, ScrollView} from 'react-native';
-import type {SymptomResult} from '../../types';
+import Markdown from 'react-native-markdown-display';
+import type {SimpleSymptomResult} from '../../types';
 
 interface ResultsDisplayProps {
-  result: SymptomResult;
+  result: SimpleSymptomResult;
   onStartOver?: () => void;
 }
 
@@ -63,81 +64,24 @@ export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
               {urgencyConfig.label} Assessment
             </Text>
             <Text style={styles.urgencyDescription}>
-              {result.actionGuidance}
+              Review the detailed clinical report below for guidance.
             </Text>
           </View>
         </View>
       </View>
 
-      {/* Primary Assessment */}
+      {/* AI Markdown Report */}
       <View style={styles.card}>
-        <Text style={styles.cardTitle}>Preliminary Assessment</Text>
+        <Text style={styles.cardTitle}>Clinical Report</Text>
         <Text style={styles.cardDescription}>
-          Based on your reported symptoms (not a clinical examination)
+          Based on your reported symptoms (not a clinical examination). A professional dental examination is required for definitive diagnosis and treatment planning.
         </Text>
 
-        <View style={styles.primaryAssessment}>
-          <View style={styles.primaryAssessmentIcon}>
-            <Text style={styles.primaryAssessmentIconText}>✓</Text>
-          </View>
-          <View style={styles.primaryAssessmentContent}>
-            <Text style={styles.primaryAssessmentTitle}>
-              {result.possibleConditions[0]?.condition ||
-                'Dental condition requiring evaluation'}
-            </Text>
-            <Text style={styles.primaryAssessmentNote}>
-              A professional dental examination is required for definitive
-              diagnosis and treatment planning.
-            </Text>
-          </View>
+        <View style={styles.markdownContainer}>
+          <Markdown style={markdownStyles}>
+            {result.markdownReport}
+          </Markdown>
         </View>
-      </View>
-
-      {/* Home Care Recommendations */}
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>Home Care Recommendations</Text>
-        <Text style={styles.cardDescription}>
-          Steps you can take to manage your symptoms
-        </Text>
-
-        <View style={styles.list}>
-          {result.homeCareRecommendations.map((recommendation, index) => (
-            <View key={index} style={styles.listItem}>
-              <Text style={styles.listIcon}>✓</Text>
-              <Text style={styles.listText}>{recommendation}</Text>
-            </View>
-          ))}
-        </View>
-      </View>
-
-      {/* Red Flags */}
-      <View style={styles.card}>
-        <View style={styles.redFlagHeader}>
-          <Text style={styles.redFlagIcon}>⚠️</Text>
-          <Text style={styles.cardTitle}>Warning Signs to Watch For</Text>
-        </View>
-        <Text style={styles.cardDescription}>
-          Seek immediate medical attention if you experience any of these
-        </Text>
-
-        <View style={styles.list}>
-          {result.redFlags.map((flag, index) => (
-            <View key={index} style={styles.listItem}>
-              <Text style={styles.listIconMuted}>•</Text>
-              <Text style={styles.listText}>{flag}</Text>
-            </View>
-          ))}
-        </View>
-      </View>
-
-      {/* Disclaimer */}
-      <View style={styles.disclaimerCard}>
-        <Text style={styles.disclaimerText}>
-          <Text style={styles.disclaimerBold}>Disclaimer:</Text> This assessment
-          is for informational purposes only and is not a substitute for
-          professional medical advice. Always consult with a qualified dental
-          professional for proper diagnosis and treatment.
-        </Text>
       </View>
 
       {/* Action Button */}
@@ -204,91 +148,8 @@ const styles = StyleSheet.create({
     color: '#6b7280',
     marginBottom: 16,
   },
-  primaryAssessment: {
-    flexDirection: 'row',
-    padding: 16,
-    backgroundColor: '#eff6ff',
-    borderWidth: 2,
-    borderColor: '#bfdbfe',
-    borderRadius: 8,
-    marginBottom: 16,
-  },
-  primaryAssessmentIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#2563eb',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 12,
-  },
-  primaryAssessmentIconText: {
-    fontSize: 20,
-    color: '#ffffff',
-  },
-  primaryAssessmentContent: {
-    flex: 1,
-  },
-  primaryAssessmentTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#111827',
-    marginBottom: 8,
-  },
-  primaryAssessmentNote: {
-    fontSize: 13,
-    color: '#6b7280',
-    lineHeight: 18,
-  },
-  list: {
-    gap: 12,
-  },
-  listItem: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-  },
-  listIcon: {
-    fontSize: 16,
-    color: '#16a34a',
-    marginRight: 8,
-    marginTop: 2,
-  },
-  listIconMuted: {
-    fontSize: 16,
-    color: '#6b7280',
-    marginRight: 8,
-    marginTop: 2,
-  },
-  listText: {
-    flex: 1,
-    fontSize: 14,
-    color: '#374151',
-    lineHeight: 20,
-  },
-  redFlagHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    marginBottom: 4,
-  },
-  redFlagIcon: {
-    fontSize: 20,
-  },
-  disclaimerCard: {
-    backgroundColor: '#fef2f2',
-    borderWidth: 1,
-    borderColor: '#fecaca',
-    borderRadius: 8,
-    padding: 16,
-    marginBottom: 16,
-  },
-  disclaimerText: {
-    fontSize: 13,
-    color: '#991b1b',
-    lineHeight: 20,
-  },
-  disclaimerBold: {
-    fontWeight: '700',
+  markdownContainer: {
+    marginTop: 8,
   },
   primaryButton: {
     backgroundColor: '#2563eb',
@@ -304,5 +165,90 @@ const styles = StyleSheet.create({
   },
   bottomSpacer: {
     height: 20,
+  },
+});
+
+const markdownStyles = StyleSheet.create({
+  body: {
+    fontSize: 14,
+    color: '#374151',
+    lineHeight: 22,
+  },
+  heading1: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#111827',
+    marginTop: 16,
+    marginBottom: 8,
+  },
+  heading2: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#111827',
+    marginTop: 14,
+    marginBottom: 6,
+  },
+  heading3: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#111827',
+    marginTop: 12,
+    marginBottom: 6,
+  },
+  paragraph: {
+    marginTop: 0,
+    marginBottom: 12,
+    fontSize: 14,
+    color: '#374151',
+    lineHeight: 22,
+  },
+  strong: {
+    fontWeight: '700',
+    color: '#111827',
+  },
+  em: {
+    fontStyle: 'italic',
+  },
+  bullet_list: {
+    marginBottom: 12,
+  },
+  ordered_list: {
+    marginBottom: 12,
+  },
+  list_item: {
+    marginBottom: 6,
+    fontSize: 14,
+    color: '#374151',
+    lineHeight: 22,
+  },
+  code_inline: {
+    backgroundColor: '#f3f4f6',
+    color: '#1f2937',
+    paddingHorizontal: 4,
+    paddingVertical: 2,
+    borderRadius: 4,
+    fontSize: 13,
+    fontFamily: 'monospace',
+  },
+  code_block: {
+    backgroundColor: '#f3f4f6',
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 12,
+    fontSize: 13,
+    fontFamily: 'monospace',
+  },
+  blockquote: {
+    backgroundColor: '#f9fafb',
+    borderLeftWidth: 4,
+    borderLeftColor: '#d1d5db',
+    paddingLeft: 12,
+    paddingVertical: 8,
+    marginBottom: 12,
+  },
+  hr: {
+    backgroundColor: '#e5e7eb',
+    height: 1,
+    marginVertical: 16,
   },
 });

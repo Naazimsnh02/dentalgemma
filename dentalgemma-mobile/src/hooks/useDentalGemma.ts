@@ -38,57 +38,73 @@ const decodeBytes = (hexArray: string[]): string => {
 
 /**
  * Clean tokenizer artifacts from Gemma GGUF output.
- * 
- * The Gemma tokenizer in GGUF format sometimes produces byte-fallback tokens
- * like [UNK_BYTE_0x...] or <0x...> when it encounters characters it can't 
- * properly decode (like spaces or emojis). 
- * 
- * This function extracts these hex sequences and decodes them back to standard UTF-8.
+ *
+ * The quantized Gemma tokenizer produces byte-fallback tokens like
+ *   [UNK_BYTE_0xe29681▁Findings]   or   <0xHH>
+ * The content after the hex inside brackets (▁ + word) is a duplicate of
+ * the text that follows the bracket, so we decode only the hex bytes and
+ * discard the rest of the bracket content.
  */
 const cleanTokenizerArtifacts = (text: string): string => {
-  let hexBytes: string[] = [];
-  let parts: string[] = [];
-  
-  // Match either [UNK_BYTE_0xHEX] or <0xHEX>
-  const regex = /(?:\[UNK_BYTE_0x([0-9a-fA-F]+)\]|<0x([0-9a-fA-F]+)>)/gi;
-  let lastIndex = 0;
-  let match;
-  
-  while ((match = regex.exec(text)) !== null) {
-    if (match.index > lastIndex) {
-      if (hexBytes.length > 0) {
-        parts.push(decodeBytes(hexBytes));
-        hexBytes = [];
+  let cleaned = text;
+
+  // 1. [UNK_BYTE_0xHEX + optional non-hex junk + ] → decode hex to UTF-8
+  cleaned = cleaned.replace(
+    /\[UNK_BYTE_0x([0-9a-fA-F]+)[^\]]*\]/g,
+    (_match, hex) => {
+      try {
+        const pairs = (hex as string).match(/.{2}/g) || [];
+        return decodeBytes(pairs);
+      } catch {
+        return ' ';
       }
-      parts.push(text.substring(lastIndex, match.index));
+    },
+  );
+
+  // 2. <0xHH> single-byte tokens
+  cleaned = cleaned.replace(/<0x([0-9a-fA-F]{2})>/g, (_match, hex) => {
+    try {
+      return decodeBytes([hex]);
+    } catch {
+      return '';
     }
-    // match[1] is for [UNK_BYTE_...], match[2] is for <0x...>
-    hexBytes.push(match[1] || match[2]);
-    lastIndex = regex.lastIndex;
-  }
-  
-  if (hexBytes.length > 0) {
-     parts.push(decodeBytes(hexBytes));
-  }
-  if (lastIndex < text.length) {
-    parts.push(text.substring(lastIndex));
-  }
-  
-  let cleaned = parts.join('');
-  
-  // Map SentencePiece space character to standard space
-  cleaned = cleaned.replace(/\u2581/g, ' ');
-  
-  // Strip any remaining literal artifact tags that weren't decoded
-  cleaned = cleaned.replace(/\[?UNK_BYTE_0x[0-9a-fA-F]+_?\]?/gi, '');
-  cleaned = cleaned.replace(/UNK_BYTE_/gi, '');
-  
-  // Remove Unicode replacement character
-  cleaned = cleaned.replace(/\uFFFD/g, '');
-  
-  // Clean up multiple spaces
-  cleaned = cleaned.replace(/\s{2,}/g, ' ').trim();
-  
+  });
+
+  // 3. All Unicode Block Element characters (U+2580-U+259F) → space
+  //    Includes ▁ (U+2581) which SentencePiece uses as a space marker,
+  //    plus other block chars the quantized tokenizer may emit.
+  cleaned = cleaned.replace(/[\u2580-\u259F]/g, ' ');
+
+  // 4. Unicode replacement character → space (JNI bridge may produce these
+  //    when ▁ bytes can't be decoded)
+  cleaned = cleaned.replace(/\uFFFD/g, ' ');
+
+  // 5. Various Unicode whitespace / invisible chars → standard space
+  cleaned = cleaned.replace(/[\u00A0\u2000-\u200B\u202F\u205F\u3000\uFEFF]/g, ' ');
+
+  // 6. Strip leftover UNK_BYTE fragments that weren't fully bracketed
+  cleaned = cleaned.replace(/\[?UNK_BYTE[^\]\s]*\]?/gi, '');
+
+  // 7. Remove common GGUF control tokens
+  cleaned = cleaned.replace(/<\/?s>/g, '');
+  cleaned = cleaned.replace(/<pad>/gi, '');
+
+  // 8. Fix duplicate word]word patterns left by partial cleanup
+  cleaned = cleaned.replace(/(\w+)\]\1/g, '$1');
+
+  // 9. Remove orphaned ] between word chars (tokenizer artifact)
+  cleaned = cleaned.replace(/(\w)\](\w)/g, '$1 $2');
+  cleaned = cleaned.replace(/(^|[\s\n])\]/g, '$1');
+
+  // 10. Collapse runs of spaces (preserve newlines)
+  cleaned = cleaned.replace(/[^\S\n]{2,}/g, ' ');
+
+  // 11. Remove spaces before punctuation
+  cleaned = cleaned.replace(/ ([.,;:!?])/g, '$1');
+
+  // 12. Ensure space after sentence-ending punctuation before a letter
+  cleaned = cleaned.replace(/([.!?:])([A-Za-z])/g, '$1 $2');
+
   return cleaned;
 };
 
@@ -293,6 +309,11 @@ export const useDentalGemma = (): UseDentalGemmaReturn => {
         console.log('📤 Sending prompt to model (length=%d, hasImage=%s)...', prompt.length, !!imagePath);
         setStatusDetailed('Calling native completion()...');
 
+        // Accumulate raw tokens so multi-byte sequences and space tokens
+        // are cleaned in full-text context rather than individually
+        let rawAccumulated = '';
+        let lastCleanLength = 0;
+
         const result = await contextRef.current.completion(
           {
             prompt,
@@ -308,16 +329,24 @@ export const useDentalGemma = (): UseDentalGemmaReturn => {
           data => {
             if (data.token) {
               setStatusDetailed('Receiving tokens...');
-              const cleanToken = cleanTokenizerArtifacts(data.token);
-              
-              // Log each token for debugging
-              if (cleanToken.trim()) {
-                console.log('🔤 Token:', JSON.stringify(cleanToken));
-              }
-              
-              // Only send non-empty tokens
-              if (cleanToken.trim()) {
-                onToken(cleanToken);
+              rawAccumulated += data.token;
+
+              // Clean the FULL accumulated text so byte sequences spanning
+              // multiple tokens (e.g. split UNK_BYTE) are decoded properly
+              const cleanedFull = cleanTokenizerArtifacts(rawAccumulated);
+
+              // Send only the new characters since last update
+              if (cleanedFull.length > lastCleanLength) {
+                const delta = cleanedFull.substring(lastCleanLength);
+                lastCleanLength = cleanedFull.length;
+
+                if (delta.trim()) {
+                  console.log('🔤 Token:', JSON.stringify(delta));
+                }
+
+                if (delta.length > 0) {
+                  onToken(delta);
+                }
               }
             }
           },
@@ -332,8 +361,9 @@ export const useDentalGemma = (): UseDentalGemmaReturn => {
         
         setStatusDetailed('Finished generation.');
         
-        // Clean the final result text of any remaining tokenizer artifacts
-        const cleanText = cleanTokenizerArtifacts(result.text || '');
+        // Use accumulated raw tokens (preserves space markers) over result.text
+        // which may have already lost space info during llama.rn detokenization
+        const cleanText = cleanTokenizerArtifacts(rawAccumulated || result.text || '');
         
         console.log('📥 CLEANED RESPONSE:');
         console.log('─'.repeat(80));

@@ -10,7 +10,7 @@ import {
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {Questionnaire} from '../components/symptom-checker/Questionnaire';
 import {ResultsDisplay} from '../components/symptom-checker/ResultsDisplay';
-import type {SymptomData, SymptomResult} from '../types';
+import type {SymptomData, SimpleSymptomResult, UrgencyLevel} from '../types';
 
 type PageState = 'intro' | 'questionnaire' | 'analyzing' | 'results';
 
@@ -32,204 +32,46 @@ export const SymptomCheckerScreen: React.FC<SymptomCheckerScreenProps> = ({
 }) => {
   const [pageState, setPageState] = useState<PageState>('intro');
   const [symptomData, setSymptomData] = useState<SymptomData | null>(null);
-  const [result, setResult] = useState<SymptomResult | null>(null);
+  const [result, setResult] = useState<SimpleSymptomResult | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const buildSymptomPrompt = (data: SymptomData): string => {
-    return `You are a dental AI assistant. A patient has reported the following symptoms:
+    return `Please evaluate this dental patient based on reported symptoms:
 
-Location: ${data.location}
-Pain Type: ${data.painType}
-Duration: ${data.duration}
-Triggers: ${data.triggers.join(', ') || 'None reported'}
-Associated Symptoms: ${data.associatedSymptoms.join(', ') || 'None reported'}
-Medical History: ${data.medicalHistory.join(', ') || 'None reported'}
+PATIENT: Symptomatic patient evaluation
+AGE: Not specified
+SEX: Not specified
 
-Please provide:
-1. A ranked list of 3 possible dental conditions (with likelihood percentages)
-2. Urgency classification (emergency, urgent, routine, or home-care)
-3. Specific action guidance based on urgency
-4. Home care recommendations
-5. Red flag warnings to watch for
+CHIEF COMPLAINT: Patient reporting dental symptoms.
 
-Format your response clearly with these sections.`;
+HISTORY: Location: ${data.location}. Pain Type: ${data.painType}. Duration: ${data.duration}. Triggers: ${data.triggers.join(', ') || 'None'}. Associated Symptoms: ${data.associatedSymptoms.join(', ') || 'None'}.
+
+CLINICAL FINDINGS: Not clinically evaluated yet.
+
+MEDICAL HISTORY: ${data.medicalHistory.join(', ') || 'None reported'}
+
+What is your diagnosis and treatment plan?`;
   };
 
-  const parseModelResponse = (
-    response: string,
-    data: SymptomData,
-  ): SymptomResult => {
-    console.log('🔍 PARSING MODEL RESPONSE');
-    console.log('Response length:', response.length);
+  const parseSimplifiedResponse = (response: string): SimpleSymptomResult => {
+    const cleaned = response.trim();
     
-    const lines = response.split('\n').filter(line => line.trim());
-    console.log('Total lines after filtering:', lines.length);
-
-    const possibleConditions: Array<{condition: string; likelihood: number}> =
-      [];
-    let urgency: 'emergency' | 'urgent' | 'routine' | 'home-care' = 'routine';
-    let actionGuidance = '';
-    const homeCareRecommendations: string[] = [];
-    const redFlags: string[] = [];
-
-    let currentSection = '';
-
-    for (const line of lines) {
-      const lowerLine = line.toLowerCase();
-
-      if (
-        lowerLine.includes('possible condition') ||
-        lowerLine.includes('differential')
-      ) {
-        currentSection = 'conditions';
-        console.log('📋 Section: conditions');
-        continue;
-      } else if (lowerLine.includes('urgency')) {
-        currentSection = 'urgency';
-        console.log('📋 Section: urgency');
-        continue;
-      } else if (
-        lowerLine.includes('action') ||
-        lowerLine.includes('guidance')
-      ) {
-        currentSection = 'action';
-        console.log('📋 Section: action');
-        continue;
-      } else if (
-        lowerLine.includes('home care') ||
-        lowerLine.includes('recommendation')
-      ) {
-        currentSection = 'homecare';
-        console.log('📋 Section: homecare');
-        continue;
-      } else if (
-        lowerLine.includes('red flag') ||
-        lowerLine.includes('warning')
-      ) {
-        currentSection = 'redflags';
-        console.log('📋 Section: redflags');
-        continue;
-      }
-
-      if (currentSection === 'conditions') {
-        const match = line.match(/(.+?)[\s-]*(\d+)%/);
-        if (match) {
-          const condition = {
-            condition: match[1].replace(/^\d+\.\s*/, '').trim(),
-            likelihood: parseInt(match[2], 10) / 100,
-          };
-          console.log('  ✓ Condition:', condition);
-          possibleConditions.push(condition);
-        } else if (line.match(/^\d+\./)) {
-          const condition = {
-            condition: line.replace(/^\d+\.\s*/, '').trim(),
-            likelihood: 0.5,
-          };
-          console.log('  ✓ Condition (no %):', condition);
-          possibleConditions.push(condition);
-        }
-      } else if (currentSection === 'urgency') {
-        if (lowerLine.includes('emergency')) {
-          urgency = 'emergency';
-          console.log('  ⚠️ Urgency: emergency');
-        } else if (lowerLine.includes('urgent')) {
-          urgency = 'urgent';
-          console.log('  ⚠️ Urgency: urgent');
-        } else if (lowerLine.includes('routine')) {
-          urgency = 'routine';
-          console.log('  ⚠️ Urgency: routine');
-        } else if (lowerLine.includes('home') || lowerLine.includes('self-care')) {
-          urgency = 'home-care';
-          console.log('  ⚠️ Urgency: home-care');
-        }
-      } else if (currentSection === 'action') {
-        if (line.trim() && !line.match(/^\d+\./)) {
-          actionGuidance += line.trim() + ' ';
-          console.log('  → Action:', line.trim());
-        }
-      } else if (currentSection === 'homecare') {
-        const cleaned = line
-          .replace(/^[-•*]\s*/, '')
-          .replace(/^\d+\.\s*/, '')
-          .trim();
-        if (cleaned && cleaned.length > 5) {
-          console.log('  💊 Home care:', cleaned);
-          homeCareRecommendations.push(cleaned);
-        }
-      } else if (currentSection === 'redflags') {
-        const cleaned = line
-          .replace(/^[-•*]\s*/, '')
-          .replace(/^\d+\.\s*/, '')
-          .trim();
-        if (cleaned && cleaned.length > 5) {
-          console.log('  🚩 Red flag:', cleaned);
-          redFlags.push(cleaned);
-        }
-      }
-    }
-
-    console.log('📊 PARSING SUMMARY:');
-    console.log('  Conditions found:', possibleConditions.length);
-    console.log('  Urgency:', urgency);
-    console.log('  Action guidance length:', actionGuidance.length);
-    console.log('  Home care items:', homeCareRecommendations.length);
-    console.log('  Red flags:', redFlags.length);
-
-    if (possibleConditions.length === 0) {
-      console.log('⚠️ No conditions found, using default');
-      possibleConditions.push({
-        condition: 'Dental condition requiring professional evaluation',
-        likelihood: 0.6,
-      });
-    }
-
-    if (!actionGuidance) {
-      console.log('⚠️ No action guidance found, using default');
-      actionGuidance = getDefaultActionGuidance(urgency);
-    }
-
-    if (homeCareRecommendations.length === 0) {
-      console.log('⚠️ No home care found, using defaults');
-      homeCareRecommendations.push(
-        'Maintain good oral hygiene',
-        'Rinse with warm salt water',
-        'Take over-the-counter pain medication as needed',
-      );
-    }
-
-    if (redFlags.length === 0) {
-      console.log('⚠️ No red flags found, using defaults');
-      redFlags.push(
-        'Severe or worsening pain',
-        'Swelling that increases',
-        'Fever or difficulty swallowing',
-      );
+    // Extract urgency just for the banner color
+    let urgency: UrgencyLevel = 'routine';
+    const urgencyMatch = cleaned.match(/\*\*Urgency:\*\*\s*(.+?)(?:\n|$)/i);
+    
+    if (urgencyMatch) {
+      const text = urgencyMatch[1].toLowerCase();
+      if (text.includes('emergency') || text.includes('(2)')) urgency = 'emergency';
+      else if (text.includes('urgent') || text.includes('(1)')) urgency = 'urgent';
+      else if (text.includes('home')) urgency = 'home-care';
+      else urgency = 'routine';
     }
 
     return {
-      possibleConditions: possibleConditions.slice(0, 3),
       urgency,
-      actionGuidance: actionGuidance.trim(),
-      homeCareRecommendations,
-      redFlags,
+      markdownReport: cleaned
     };
-  };
-
-  const getDefaultActionGuidance = (
-    urgency: 'emergency' | 'urgent' | 'routine' | 'home-care',
-  ): string => {
-    switch (urgency) {
-      case 'emergency':
-        return 'Seek immediate emergency care. Go to the nearest emergency room or call emergency services.';
-      case 'urgent':
-        return 'Contact your dentist within 24 hours for an urgent appointment.';
-      case 'routine':
-        return 'Schedule a routine dental appointment within 1-2 weeks for evaluation.';
-      case 'home-care':
-        return 'Monitor symptoms for 24-48 hours. If symptoms persist or worsen, contact your dentist.';
-      default:
-        return 'Consult with your dentist for proper evaluation and treatment.';
-    }
   };
 
   const handleQuestionnaireComplete = useCallback(
@@ -251,7 +93,7 @@ Format your response clearly with these sections.`;
         console.log(response);
         console.log('=== END RESPONSE ===');
         
-        const diagnosis = parseModelResponse(response, data);
+        const diagnosis = parseSimplifiedResponse(response);
         
         console.log('=== PARSED DIAGNOSIS ===');
         console.log(JSON.stringify(diagnosis, null, 2));

@@ -8,9 +8,11 @@ import {
   ActivityIndicator,
   Image,
   Alert,
+  Share,
 } from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {launchCamera, launchImageLibrary} from 'react-native-image-picker';
+import RNFS from 'react-native-fs';
 import type {AnalysisType, ImageAnalysisResult} from '../types';
 import {ImageAnalysisResults} from '../components/image-analysis/ImageAnalysisResults.tsx';
 
@@ -72,6 +74,9 @@ Format your response clearly with these sections.`;
     console.log('🔍 PARSING IMAGE ANALYSIS RESPONSE');
     console.log('Response length:', response.length);
     console.log('Analysis type:', type);
+
+    // Store the full raw response
+    const rawAnalysis = response.trim();
 
     const lines = response.split('\n').filter(line => line.trim());
     console.log('Total lines after filtering:', lines.length);
@@ -240,6 +245,7 @@ Format your response clearly with these sections.`;
 
     const baseResult = {
       type,
+      rawAnalysis, // Store the full raw text
       findings,
       confidence,
       urgency,
@@ -350,6 +356,88 @@ Format your response clearly with these sections.`;
     setProgress(0);
     setPageState('intro');
   }, []);
+
+  // Helper function to strip markdown formatting
+  const stripMarkdown = (text: string): string => {
+    return text
+      .replace(/\*\*(.+?)\*\*/g, '$1')
+      .replace(/\*(.+?)\*/g, '$1')
+      .replace(/^#{1,6}\s+/gm, '')
+      .replace(/^\s*[-*+]\s+/gm, '')
+      .replace(/^\s*\d+\.\s+/gm, '')
+      .replace(/```[\s\S]*?```/g, '')
+      .replace(/`(.+?)`/g, '$1')
+      .replace(/\[(.+?)\]\(.+?\)/g, '$1')
+      .replace(/\n{3,}/g, '\n\n')
+      .trim();
+  };
+
+  const handleExportPDF = useCallback(async () => {
+    if (!result) return;
+
+    try {
+      // Get raw text and strip markdown
+      const rawText = result.rawAnalysis || result.findings.join(' ');
+      const plainText = stripMarkdown(rawText);
+
+      // Create simple text-based PDF content
+      const pdfContent = `DentalGemma Analysis Report
+Generated on ${new Date().toLocaleString()}
+─────────────────────────────
+
+Clinical Analysis
+${plainText}
+
+Disclaimer: DentalGemma is for educational and research purposes only. It is not intended for clinical diagnosis. AI-generated assessments must be validated by licensed dental professionals.`;
+
+      // Save to file
+      const path = `${RNFS.DocumentDirectoryPath}/dentalgemma-analysis-${Date.now()}.txt`;
+      await RNFS.writeFile(path, pdfContent, 'utf8');
+
+      // Share the file
+      await Share.share({
+        title: 'DentalGemma Analysis Report',
+        message: pdfContent,
+        url: `file://${path}`,
+      });
+
+      Alert.alert('Success', 'Report exported successfully');
+    } catch (error) {
+      console.error('Export PDF error:', error);
+      Alert.alert('Error', 'Failed to export report');
+    }
+  }, [result]);
+
+  const handleExportJSON = useCallback(async () => {
+    if (!result) return;
+
+    try {
+      // Create simplified export with just the raw analysis
+      const exportData = {
+        id: Date.now().toString(),
+        timestamp: new Date().toISOString(),
+        clinicalAnalysis: result.rawAnalysis || result.findings.join(' '),
+      };
+
+      const jsonContent = JSON.stringify(exportData, null, 2);
+
+      // Save to file
+      const path = `${RNFS.DocumentDirectoryPath}/dentalgemma-analysis-${Date.now()}.json`;
+      await RNFS.writeFile(path, jsonContent, 'utf8');
+
+      // Share the file
+      await Share.share({
+        title: 'DentalGemma Analysis Data',
+        message: jsonContent,
+        url: `file://${path}`,
+      });
+
+      Alert.alert('Success', 'Data exported successfully');
+    } catch (error) {
+      console.error('Export JSON error:', error);
+      Alert.alert('Error', 'Failed to export data');
+    }
+  }, [result]);
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
@@ -504,6 +592,8 @@ Format your response clearly with these sections.`;
             <ImageAnalysisResults
               result={result}
               onStartOver={handleStartOver}
+              onExportPDF={handleExportPDF}
+              onExportJSON={handleExportJSON}
             />
           </View>
         )}
