@@ -444,88 +444,27 @@ export class ModalClient {
             patient: {
               age: caseData.patient.age,
               gender: caseData.patient.gender,
+              occupation: caseData.patient.occupation || 'Not specified',
             },
             chief_complaint: caseData.chiefComplaint.description,
-            clinical_findings: `Intraoral: ${caseData.clinicalFindings.intraoral}\nExtraoral: ${caseData.clinicalFindings.extraoral}\nSoft Tissue: ${caseData.clinicalFindings.softTissue}\nPeriodontal: ${caseData.clinicalFindings.periodontal}`,
+            history: caseData.history,
+            clinical_findings: caseData.clinicalFindings.description,
             radiographic_findings: caseData.radiographicFindings.description,
-            medical_history: `Medications: ${caseData.medicalHistory.medications.join(', ')}\nAllergies: ${caseData.medicalHistory.allergies.join(', ')}\nConditions: ${caseData.medicalHistory.systemicConditions.join(', ')}`,
+            medical_history: caseData.medicalHistory.systemicConditions || 'None significant',
+            current_medications: caseData.medicalHistory.medications || 'None',
+            habits: caseData.medicalHistory.habits || 'None reported',
             max_tokens: 2048,
           }),
         }
       );
 
-      const processingTime = Math.max(Date.now() - startTime, 1); // Ensure at least 1ms
+      const processingTime = Math.max(Date.now() - startTime, 1);
 
-      // Prefer structured JSON from backend; fall back to text parsing
-      if ((response as any).case_assessment) {
-        const ca = (response as any).case_assessment;
-        const rawText = response.assessment || '';
+      // Clean the response text (remove thought traces, special tokens)
+      const cleanedAssessment = this.cleanResponseText(response.assessment);
 
-        // Normalize urgency to valid values
-        const rawUrgency = (ca.urgency || '').toLowerCase().replace(/[^a-z-]/g, '');
-        const validUrgencies = ['emergency', 'urgent', 'routine', 'home-care'] as const;
-        const urgency = validUrgencies.includes(rawUrgency as any)
-          ? (rawUrgency as typeof validUrgencies[number])
-          : this.extractUrgencyLevel(rawText);
-
-        // Extract diagnosis with fallback to raw text parsing
-        const primary = ca.diagnosis?.primary || this.extractDiagnosisFromText(rawText);
-        const differential = Array.isArray(ca.diagnosis?.differential)
-          ? ca.diagnosis.differential.filter((d: string) => d && d.length > 0)
-          : this.extractDifferential(rawText);
-
-        // Extract etiology with fallback
-        const rootCause = ca.etiology?.rootCause || ca.etiology?.root_cause || this.extractEtiologyFromText(rawText);
-
-        // Extract protocol - handle both array and string
-        let protocol: string[] = [];
-        if (Array.isArray(ca.managementPlan?.protocol)) {
-          protocol = ca.managementPlan.protocol.filter((s: string) => s && s.length > 0);
-        } else if (typeof ca.managementPlan?.protocol === 'string') {
-          protocol = [ca.managementPlan.protocol];
-        } else if (Array.isArray(ca.management_plan?.protocol)) {
-          protocol = ca.management_plan.protocol.filter((s: string) => s && s.length > 0);
-        }
-
-        // Extract antibiotics - handle variations
-        const abSection = ca.antibiotics || ca.antibiotic;
-        const antibiotics = abSection ? {
-          indicated: abSection.indicated === true || abSection.indicated === 'true' || abSection.indicated === 'yes',
-          reason: abSection.reason || abSection.rationale || 'Not specified',
-        } : undefined;
-
-        // Extract follow-up - handle variations
-        const fuSection = ca.followUp || ca.follow_up || ca.followup;
-        const monitoring = Array.isArray(fuSection?.monitoring)
-          ? fuSection.monitoring.filter((s: string) => s && s.length > 0)
-          : [];
-
-        // Extract counseling - handle variations
-        const counseling = ca.patientCounseling || ca.patient_counseling || ca.counseling;
-        const explanation = counseling?.explanation || counseling?.summary || '';
-
-        return {
-          success: true,
-          diagnosis: { primary, differential },
-          etiology: { rootCause },
-          urgency,
-          managementPlan: {
-            protocol: protocol.length > 0 ? protocol : ['Refer to clinical assessment details'],
-          },
-          antibiotics,
-          followUp: {
-            timing: fuSection?.timing || fuSection?.schedule || 'To be determined',
-            monitoring,
-          },
-          patientCounseling: {
-            explanation: explanation || 'Please consult your dentist for a detailed explanation of your condition and treatment options.',
-          },
-          processingTime,
-        };
-      }
-
-      // Fallback: parse free-form text (legacy)
-      return this.parseAssessment(response.assessment, processingTime);
+      // Parse markdown response into structured format
+      return this.parseMarkdownAssessment(cleanedAssessment, processingTime);
     } catch (error) {
       if (error instanceof ModalClientError) {
         throw error;
@@ -1052,6 +991,153 @@ export class ModalClient {
     }
     
     return items;
+  }
+
+  /**
+   * Parse markdown-formatted assessment (matches training format)
+   * Expected format:
+   * ## Patient Assessment
+   * **Diagnosis:** ...
+   * **Etiology:** ...
+   * **Urgency:** Elective (0) | Moderate (1) | Urgent (2)
+   * 
+   * ## Management Plan
+   * 1. Step 1
+   * 2. Step 2
+   * 
+   * ## Antibiotic Considerations
+   * **Antibiotics Indicated:** Yes/No
+   * **Reason:** ...
+   * 
+   * ## Follow-up Recommendations
+   * **Next Appointment:** ...
+   * **Monitoring:** ...
+   * 
+   * ## Patient Counseling
+   * 1. Point 1
+   * 2. Point 2
+   */
+  private parseMarkdownAssessment(text: string, processingTime: number): CaseAssessment {
+    // Extract diagnosis
+    const diagnosisMatch = text.match(/\*\*Diagnosis:\*\*\s*([^\n]+)/i);
+    const primaryDiagnosis = diagnosisMatch ? diagnosisMatch[1].trim() : 'Diagnosis pending';
+
+    // Extract differential diagnosis (if present)
+    const differential = this.extractDifferential(text);
+
+    // Extract etiology
+    const etiologyMatch = text.match(/\*\*Etiology:\*\*\s*([^\n]+)/i);
+    const rootCause = etiologyMatch ? etiologyMatch[1].trim() : 'To be determined';
+
+    // Extract urgency - handle both formats: "Elective (0)" or just "routine"
+    let urgency: UrgencyLevel = 'routine';
+    const urgencyMatch = text.match(/\*\*Urgency:\*\*\s*([^\n]+)/i);
+    if (urgencyMatch) {
+      const urgencyText = urgencyMatch[1].toLowerCase();
+      if (urgencyText.includes('urgent (2)') || urgencyText.includes('emergency')) {
+        urgency = 'emergency';
+      } else if (urgencyText.includes('moderate (1)') || urgencyText.includes('urgent')) {
+        urgency = 'urgent';
+      } else if (urgencyText.includes('elective (0)') || urgencyText.includes('routine')) {
+        urgency = 'routine';
+      } else if (urgencyText.includes('home-care') || urgencyText.includes('home care')) {
+        urgency = 'home-care';
+      }
+    }
+
+    // Extract management plan - look for numbered list after "## Management Plan"
+    const managementSection = text.match(/##\s*Management\s+Plan\s*\n([\s\S]*?)(?=\n##|\n\*\*|$)/i);
+    let protocol: string[] = [];
+    if (managementSection) {
+      const lines = managementSection[1].split('\n');
+      for (const line of lines) {
+        const trimmed = line.trim();
+        if (trimmed.match(/^\d+\.\s+/) || trimmed.match(/^[-*•]\s+/)) {
+          const cleaned = trimmed.replace(/^\d+\.\s+/, '').replace(/^[-*•]\s+/, '').trim();
+          if (cleaned.length > 5) {
+            protocol.push(cleaned);
+          }
+        }
+      }
+    }
+
+    // Fallback: extract any numbered/bulleted list if no management section found
+    if (protocol.length === 0) {
+      const lines = text.split('\n');
+      for (const line of lines) {
+        const trimmed = line.trim();
+        if (trimmed.match(/^\d+\.\s+/) || trimmed.match(/^[-*•]\s+/)) {
+          const cleaned = trimmed.replace(/^\d+\.\s+/, '').replace(/^[-*•]\s+/, '').trim();
+          if (cleaned.length > 10 && !cleaned.toLowerCase().includes('maintain excellent')) {
+            protocol.push(cleaned);
+            if (protocol.length >= 5) break;
+          }
+        }
+      }
+    }
+
+    // Extract antibiotics
+    const antibioticsIndicatedMatch = text.match(/\*\*Antibiotics\s+Indicated:\*\*\s*(Yes|No|Conditional)/i);
+    const antibioticsReasonMatch = text.match(/\*\*Reason:\*\*\s*([^\n]+)/i);
+    
+    let antibiotics: { indicated: boolean; reason: string } | undefined;
+    if (antibioticsIndicatedMatch) {
+      const indicated = antibioticsIndicatedMatch[1].toLowerCase();
+      antibiotics = {
+        indicated: indicated === 'yes',
+        reason: antibioticsReasonMatch ? antibioticsReasonMatch[1].trim() : (indicated === 'conditional' ? 'Only if systemic signs present' : 'Not indicated'),
+      };
+    }
+
+    // Extract follow-up
+    const nextApptMatch = text.match(/\*\*Next\s+Appointment:\*\*\s*([^\n]+)/i);
+    const monitoringMatch = text.match(/\*\*Monitoring:\*\*\s*([^\n]+)/i);
+    
+    const followUp = {
+      timing: nextApptMatch ? nextApptMatch[1].trim() : '1-2 weeks',
+      monitoring: monitoringMatch ? [monitoringMatch[1].trim()] : [],
+    };
+
+    // Extract patient counseling - look for numbered list after "## Patient Counseling"
+    const counselingSection = text.match(/##\s*Patient\s+Counseling\s*\n([\s\S]*?)(?=\n##|$)/i);
+    let counselingPoints: string[] = [];
+    if (counselingSection) {
+      const lines = counselingSection[1].split('\n');
+      for (const line of lines) {
+        const trimmed = line.trim();
+        if (trimmed.match(/^\d+\.\s+/) || trimmed.match(/^[-*•]\s+/)) {
+          const cleaned = trimmed.replace(/^\d+\.\s+/, '').replace(/^[-*•]\s+/, '').trim();
+          if (cleaned.length > 5) {
+            counselingPoints.push(cleaned);
+          }
+        }
+      }
+    }
+
+    const patientExplanation = counselingPoints.length > 0 
+      ? counselingPoints.join(' ') 
+      : 'Please consult your dentist for a detailed explanation of your condition and treatment options.';
+
+    return {
+      success: true,
+      diagnosis: {
+        primary: primaryDiagnosis,
+        differential: differential.length > 0 ? differential : [],
+      },
+      etiology: {
+        rootCause,
+      },
+      urgency,
+      managementPlan: {
+        protocol: protocol.length > 0 ? protocol : ['Refer to clinical assessment for treatment details'],
+      },
+      antibiotics,
+      followUp,
+      patientCounseling: {
+        explanation: patientExplanation,
+      },
+      processingTime,
+    };
   }
 
   private parseAssessment(text: string, processingTime: number): CaseAssessment {

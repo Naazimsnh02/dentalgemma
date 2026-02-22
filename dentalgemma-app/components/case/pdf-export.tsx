@@ -157,9 +157,9 @@ export function generateAssessmentPDF(options: PDFExportOptions): void {
     addText(`Age: ${caseData.patient.age}`, 10, false);
     yPosition -= 3; // tighter spacing
     addText(`Gender: ${caseData.patient.gender.charAt(0).toUpperCase() + caseData.patient.gender.slice(1)}`, 10, false);
-    if (caseData.patient.patientId) {
+    if (caseData.patient.occupation) {
         yPosition -= 3;
-        addText(`ID: ${caseData.patient.patientId}`, 10, false);
+        addText(`Occupation: ${caseData.patient.occupation}`, 10, false);
     }
     yPosition += 5;
   }

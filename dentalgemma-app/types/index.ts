@@ -80,41 +80,34 @@ export type XRayAnalysis = PhotoAnalysis | XRayImageAnalysis;
 export interface PatientInfo {
   age: number;
   gender: Gender;
-  patientId?: string;
+  occupation?: string;
 }
 
 export interface ChiefComplaint {
   description: string;
-  duration: string;
-  painLevel: number; // 1-10
-  triggers: string[];
 }
 
 export interface ClinicalFindings {
-  intraoral: string;
-  extraoral: string;
-  softTissue: string;
-  periodontal: string;
+  description: string;
 }
 
 export interface RadiographicFindings {
   description: string;
-  xrayImage?: string; // Base64 or URL
-  boneLoss: string;
-  periapicalStatus: string;
+  xrayImage?: string; // Base64 or URL (optional for upload)
 }
 
 export interface MedicalHistory {
-  medications: string[];
-  allergies: string[];
-  systemicConditions: string[];
-  previousTreatments: string[];
+  history: string; // Patient history/background
+  systemicConditions: string; // Medical history
+  medications: string; // Current medications
+  habits: string; // Habits
 }
 
 export interface ClinicalCase {
   id: string;
   patient: PatientInfo;
   chiefComplaint: ChiefComplaint;
+  history: string; // Separate history field
   clinicalFindings: ClinicalFindings;
   radiographicFindings: RadiographicFindings;
   medicalHistory: MedicalHistory;

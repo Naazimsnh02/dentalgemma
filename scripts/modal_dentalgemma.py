@@ -40,13 +40,17 @@ class ChatRequest(BaseModel):
 class PatientInfo(BaseModel):
     age: int
     gender: str
+    occupation: Optional[str] = "Not specified"
 
 class AssessmentRequest(BaseModel):
     patient: PatientInfo
     chief_complaint: str
+    history: str
     clinical_findings: str
     radiographic_findings: str
     medical_history: str
+    current_medications: str
+    habits: str
     max_tokens: Optional[int] = 1024
 
 class XRayRequest(BaseModel):
@@ -281,7 +285,7 @@ class DentalGemmaModel:
         Response:
         {
             "success": true,
-            "assessment": "Comprehensive clinical assessment text",
+            "assessment": "Comprehensive clinical assessment text in markdown format",
             "processing_time": 2.45,
             "model": "dentalgemma-1.5-4b-it"
         }
@@ -292,68 +296,39 @@ class DentalGemmaModel:
         start_time = time.time()
         
         try:
-            # Build structured case text using request attributes (JSON-first prompt)
-            case_text = f"""You are an expert dental AI. Your task is to analyze the patient case below and extract specific clinical data into a JSON object.
+            # Build case prompt matching training format (natural language markdown, not JSON)
+            # This matches the exact format from Wildstashdental 2.5k-instruct training data
+            case_text = f"""Please evaluate this dental patient:
 
-OUTPUT RULES:
-1. Respond ONLY with valid JSON.
-2. Do NOT use markdown code blocks (```json).
-3. Do NOT repeat the patient info or findings in chat format.
-4. Fill all fields based on clinical reasoning.
+PATIENT: {request.chief_complaint}
+AGE: {request.patient.age} years old
+SEX: {request.patient.gender}
+OCCUPATION: {request.patient.occupation}
 
-JSON SCHEMA:
-{{
-  "diagnosis": {{
-    "primary": "primary diagnosis text",
-    "differential": ["differential diagnosis 1", "differential diagnosis 2"]
-  }},
-  "etiology": {{
-    "rootCause": "root cause description"
-  }},
-  "urgency": "routine",
-  "managementPlan": {{
-    "protocol": ["treatment step 1", "treatment step 2"]
-  }},
-  "antibiotics": {{
-    "indicated": false,
-    "reason": "none"
-  }},
-  "followUp": {{
-    "timing": "1-2 weeks",
-    "monitoring": ["what to monitor"]
-  }},
-  "patientCounseling": {{
-    "explanation": "patient-friendly explanation"
-  }}
-}}
+CHIEF COMPLAINT: {request.chief_complaint}
 
-The "urgency" field must be one of: "emergency", "urgent", "routine", or "home-care".
+HISTORY: {request.history}
 
-CASE DETAILS:
-PATIENT INFORMATION:
-- Age: {request.patient.age} years old
-- Gender: {request.patient.gender}
+CLINICAL FINDINGS: {request.clinical_findings}
 
-CHIEF COMPLAINT:
-{request.chief_complaint}
+RADIOGRAPHIC FINDINGS: {request.radiographic_findings}
 
-CLINICAL FINDINGS:
-{request.clinical_findings}
+MEDICAL HISTORY: {request.medical_history}
 
-RADIOGRAPHIC FINDINGS:
-{request.radiographic_findings}
+CURRENT MEDICATIONS: {request.current_medications}
 
-MEDICAL HISTORY:
-{request.medical_history}
-"""
+HABITS: {request.habits}
+
+What is your diagnosis and treatment plan?"""
             
             max_tokens = request.max_tokens
             
-            # Prepare messages (must look like multimodal input even for text-only)
+            # Prepare messages matching training format
+            # System prompt matches the training data system message
             messages = [
                 {
                     "role": "system",
-                    "content": [{"type": "text", "text": "You are an expert dental clinician and radiologist AI assistant. Provide comprehensive, evidence-based clinical assessments following dental protocols."}]
+                    "content": [{"type": "text", "text": "You are an expert dental clinician providing comprehensive patient care. Always consider the patient's full clinical context, medical history, and provide evidence-based recommendations.\n\nKey principles:\n- Prioritize patient safety and evidence-based dentistry\n- Match urgency levels to follow-up timing (0=elective→3-6mo, 1=moderate→1-2w, 2=urgent→24-72h)\n- Use antibiotics only for systemic signs (fever, malaise, cellulitis, trismus, lymphadenitis, fascial spread)\n- Provide definitive treatment first, then adjuncts\n- Include appropriate referrals and follow-up intervals\n- Document clinical findings and rationale"}]
                 },
                 {
                     "role": "user",
@@ -384,38 +359,16 @@ MEDICAL HISTORY:
                 skip_special_tokens=True
             )
             
-            # Try to parse structured JSON from model output
-            import json
-            
-            case_assessment = None
-            try:
-                # Strip any markdown fences if present
-                clean = assessment.strip()
-                if clean.startswith("```"):
-                    clean = clean.split("\n", 1)[1] if "\n" in clean else clean[3:]
-                if clean.endswith("```"):
-                    clean = clean[:-3]
-                clean = clean.strip()
-                if clean.startswith("json"):
-                    clean = clean[4:].strip()
-                case_assessment = json.loads(clean)
-            except (json.JSONDecodeError, Exception) as parse_err:
-                print(f"⚠️ JSON parse failed, returning raw text: {parse_err}")
-            
             processing_time = time.time() - start_time
             
-            result = {
+            # Return markdown response (no JSON parsing needed - client will parse markdown)
+            return {
                 "success": True,
                 "assessment": assessment,
                 "processing_time": round(processing_time, 3),
                 "model": "dentalgemma-1.5-4b-it",
                 "type": "clinical_assessment"
             }
-            
-            if case_assessment is not None:
-                result["case_assessment"] = case_assessment
-            
-            return result
             
         except Exception as e:
             return {
