@@ -56,3 +56,21 @@ export type ImageAnalysisResult = {
   pathologyClass?: 'Healthy' | 'Caries' | 'Impacted' | 'BDC-BDR' | 'Infection' | 'Fractured';
   differentialDiagnosis?: string[];
 };
+
+export type Location = {
+  lat: number;
+  lng: number;
+};
+
+export type DentistInfo = {
+  placeId: string;
+  name: string;
+  specialty: string;
+  rating: number;
+  distance: number;
+  phone: string;
+  website: string;
+  hours: string;
+  address: string;
+  location: Location;
+};

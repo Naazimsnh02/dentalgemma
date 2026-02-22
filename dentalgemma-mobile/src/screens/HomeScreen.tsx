@@ -13,6 +13,7 @@ interface HomeScreenProps {
   onNavigateToSymptomChecker: () => void;
   onNavigateToImageAnalysis: () => void;
   onNavigateToEducation: () => void;
+  onNavigateToDentistFinder: () => void;
   onUnloadModel: () => void;
 }
 
@@ -21,6 +22,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
   onNavigateToSymptomChecker,
   onNavigateToImageAnalysis,
   onNavigateToEducation,
+  onNavigateToDentistFinder,
   onUnloadModel,
 }) => {
   return (
@@ -93,19 +95,18 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
             </Text>
           </TouchableOpacity>
 
-          {/* Coming Soon - Dentist Finder */}
-          <View style={[styles.featureCard, styles.featureCardDisabled]}>
+          {/* Dentist Finder */}
+          <TouchableOpacity
+            style={styles.featureCard}
+            onPress={onNavigateToDentistFinder}>
             <View style={styles.featureIconContainer}>
               <Text style={styles.featureIcon}>📍</Text>
             </View>
             <Text style={styles.featureTitle}>Dentist Finder</Text>
             <Text style={styles.featureDescription}>
-              Find nearby dental professionals
+              Find nearby dental professionals with maps and filters
             </Text>
-            <View style={styles.comingSoonBadge}>
-              <Text style={styles.comingSoonText}>Coming Soon</Text>
-            </View>
-          </View>
+          </TouchableOpacity>
 
           {/* Coming Soon - Research */}
           <View style={[styles.featureCard, styles.featureCardDisabled]}>

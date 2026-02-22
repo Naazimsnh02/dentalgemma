@@ -7,6 +7,7 @@ import {ChatScreen} from './screens/ChatScreen';
 import {SymptomCheckerScreen} from './screens/SymptomCheckerScreen';
 import {ImageAnalysisScreen} from './screens/ImageAnalysisScreen';
 import {EducationScreen} from './screens/EducationScreen';
+import {DentistFinderScreen} from './screens/DentistFinderScreen';
 import {HomeScreen} from './screens/HomeScreen';
 import {useDentalGemma} from './hooks/useDentalGemma';
 import type {ModelState} from './types';
@@ -17,7 +18,7 @@ addNativeLogListener((level, text) => {
   console.log(['[rnllama]', level ? `[${level}]` : '', text].filter(Boolean).join(' '));
 });
 
-type Screen = 'home' | 'chat' | 'symptom-checker' | 'image-analysis' | 'education';
+type Screen = 'home' | 'chat' | 'symptom-checker' | 'image-analysis' | 'education' | 'dentist-finder';
 
 const App: React.FC = () => {
   const [modelState, setModelState] = useState<ModelState>('checking');
@@ -68,6 +69,10 @@ const App: React.FC = () => {
     setCurrentScreen('education');
   }, []);
 
+  const handleNavigateToDentistFinder = useCallback(() => {
+    setCurrentScreen('dentist-finder');
+  }, []);
+
   const handleUnloadModel = useCallback(async () => {
     await unloadModel();
     setModelState('checking');
@@ -90,6 +95,7 @@ const App: React.FC = () => {
           onNavigateToSymptomChecker={handleNavigateToSymptomChecker}
           onNavigateToImageAnalysis={handleNavigateToImageAnalysis}
           onNavigateToEducation={handleNavigateToEducation}
+          onNavigateToDentistFinder={handleNavigateToDentistFinder}
           onUnloadModel={handleUnloadModel}
         />
       ) : currentScreen === 'chat' ? (
@@ -110,6 +116,8 @@ const App: React.FC = () => {
         />
       ) : currentScreen === 'education' ? (
         <EducationScreen onBack={handleBackToHome} />
+      ) : currentScreen === 'dentist-finder' ? (
+        <DentistFinderScreen onBack={handleBackToHome} />
       ) : (
         <ImageAnalysisScreen
           sendMessage={sendMessage}

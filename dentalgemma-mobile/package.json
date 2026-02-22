@@ -10,12 +10,17 @@
     "test": "jest"
   },
   "dependencies": {
+    "@react-native-community/geolocation": "^3.4.0",
+    "@react-native-community/slider": "^5.1.2",
+    "@react-native-picker/picker": "^2.6.1",
     "llama.rn": "^0.11.2",
     "react": "19.2.3",
     "react-native": "0.84.0",
+    "react-native-config": "^1.6.1",
     "react-native-device-info": "^15.0.1",
     "react-native-fs": "^2.20.0",
     "react-native-image-picker": "^7.1.0",
+    "react-native-maps": "^1.10.0",
     "react-native-safe-area-context": "^5.5.2"
   },
   "devDependencies": {

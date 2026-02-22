@@ -69,6 +69,10 @@ yarn-error.log
 # Model files (too large to commit)
 models/*.gguf
 
+# Environment variables
+.env
+.env.local
+
 # Yarn
 .yarn/*
 !.yarn/patches
