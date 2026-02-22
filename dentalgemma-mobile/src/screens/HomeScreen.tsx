@@ -14,6 +14,7 @@ interface HomeScreenProps {
   onNavigateToImageAnalysis: () => void;
   onNavigateToEducation: () => void;
   onNavigateToDentistFinder: () => void;
+  onNavigateToResearch: () => void;
   onUnloadModel: () => void;
 }
 
@@ -23,6 +24,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
   onNavigateToImageAnalysis,
   onNavigateToEducation,
   onNavigateToDentistFinder,
+  onNavigateToResearch,
   onUnloadModel,
 }) => {
   return (
@@ -108,19 +110,18 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
             </Text>
           </TouchableOpacity>
 
-          {/* Coming Soon - Research */}
-          <View style={[styles.featureCard, styles.featureCardDisabled]}>
+          {/* Research Dashboard */}
+          <TouchableOpacity
+            style={styles.featureCard}
+            onPress={onNavigateToResearch}>
             <View style={styles.featureIconContainer}>
               <Text style={styles.featureIcon}>🔬</Text>
             </View>
-            <Text style={styles.featureTitle}>Research</Text>
+            <Text style={styles.featureTitle}>Research Dashboard</Text>
             <Text style={styles.featureDescription}>
-              Search dental research papers
+              Search PubMed for dental research papers and save for offline reading
             </Text>
-            <View style={styles.comingSoonBadge}>
-              <Text style={styles.comingSoonText}>Coming Soon</Text>
-            </View>
-          </View>
+          </TouchableOpacity>
         </View>
 
         <View style={styles.infoCard}>

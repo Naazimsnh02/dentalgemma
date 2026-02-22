@@ -20,12 +20,14 @@ export const DentistCard: React.FC<DentistCardProps> = ({
   isSelected,
   onPress,
 }) => {
+  const hasPhone = !!dentist.phone && dentist.phone.trim() !== '';
+
   const handleCall = () => {
-    if (dentist.phone && dentist.phone !== 'Not available') {
-      const phoneNumber = dentist.phone.replace(/[^0-9]/g, '');
+    if (hasPhone) {
+      const phoneNumber = dentist.phone.replace(/[^0-9+]/g, '');
       Linking.openURL(`tel:${phoneNumber}`);
     } else {
-      Alert.alert('Phone Not Available', 'No phone number available for this dentist.');
+      Alert.alert('Phone Not Available', 'No phone number is listed for this dentist. Try visiting their website or searching online.');
     }
   };
 
@@ -89,20 +91,22 @@ export const DentistCard: React.FC<DentistCardProps> = ({
       {isSelected && (
         <View style={styles.actions}>
           <TouchableOpacity
-            style={styles.actionButton}
+            style={[styles.actionButton, !hasPhone && styles.actionButtonDisabled]}
             onPress={handleCall}>
             <Text style={styles.actionIcon}>📞</Text>
-            <Text style={styles.actionText}>Call</Text>
+            <Text style={[styles.actionText, !hasPhone && styles.actionTextDisabled]}>
+              {hasPhone ? 'Call' : 'No Phone'}
+            </Text>
           </TouchableOpacity>
 
-          {dentist.website && (
+          {dentist.website ? (
             <TouchableOpacity
               style={styles.actionButton}
               onPress={handleWebsite}>
               <Text style={styles.actionIcon}>🌐</Text>
               <Text style={styles.actionText}>Website</Text>
             </TouchableOpacity>
-          )}
+          ) : null}
 
           <TouchableOpacity
             style={[styles.actionButton, styles.actionButtonPrimary]}
@@ -240,6 +244,10 @@ const styles = StyleSheet.create({
   actionButtonPrimary: {
     backgroundColor: '#2563eb',
   },
+  actionButtonDisabled: {
+    backgroundColor: '#f3f4f6',
+    opacity: 0.6,
+  },
   actionIcon: {
     fontSize: 16,
   },
@@ -250,5 +258,8 @@ const styles = StyleSheet.create({
   },
   actionTextPrimary: {
     color: '#ffffff',
+  },
+  actionTextDisabled: {
+    color: '#9ca3af',
   },
 });

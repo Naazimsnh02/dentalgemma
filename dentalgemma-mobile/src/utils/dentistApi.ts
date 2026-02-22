@@ -1,6 +1,6 @@
 /**
  * Dentist Finder API Client
- * 
+ *
  * Calls Google Places API directly (no backend needed)
  */
 
@@ -60,6 +60,81 @@ function toRadians(degrees: number): number {
 }
 
 /**
+ * Fetch phone number and website for a specific place using Place Details API
+ */
+async function fetchPlaceDetails(
+  placeId: string,
+): Promise<{phone: string; website: string}> {
+  try {
+    const detailsUrl = `${GOOGLE_PLACES_BASE_URL}/details/json?place_id=${placeId}&fields=formatted_phone_number,website&key=${GOOGLE_PLACES_API_KEY}`;
+    const response = await fetch(detailsUrl);
+    if (!response.ok) {
+      return {phone: '', website: ''};
+    }
+    const data = await response.json();
+    if (data.status === 'OK' && data.result) {
+      return {
+        phone: data.result.formatted_phone_number || '',
+        website: data.result.website || '',
+      };
+    }
+  } catch {
+    // Silently fail — phone/website are optional
+  }
+  return {phone: '', website: ''};
+}
+
+/**
+ * Reverse geocode coordinates to a human-readable address
+ */
+export async function reverseGeocode(location: Location): Promise<string> {
+  if (!GOOGLE_PLACES_API_KEY || GOOGLE_PLACES_API_KEY === 'YOUR_GOOGLE_PLACES_API_KEY_HERE') {
+    return `${location.lat.toFixed(4)}, ${location.lng.toFixed(4)}`;
+  }
+  try {
+    const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${location.lat},${location.lng}&key=${GOOGLE_PLACES_API_KEY}`;
+    const response = await fetch(url);
+    if (!response.ok) {
+      return `${location.lat.toFixed(4)}, ${location.lng.toFixed(4)}`;
+    }
+    const data = await response.json();
+    if (data.status === 'OK' && data.results && data.results.length > 0) {
+      // Use the first result — usually the most specific address
+      return data.results[0].formatted_address || `${location.lat.toFixed(4)}, ${location.lng.toFixed(4)}`;
+    }
+  } catch {
+    // Fall back to coordinates
+  }
+  return `${location.lat.toFixed(4)}, ${location.lng.toFixed(4)}`;
+}
+
+/**
+ * Geocode a search query (address/city) to coordinates
+ */
+export async function geocodeAddress(
+  address: string,
+): Promise<Location | null> {
+  if (!GOOGLE_PLACES_API_KEY || GOOGLE_PLACES_API_KEY === 'YOUR_GOOGLE_PLACES_API_KEY_HERE') {
+    return null;
+  }
+  try {
+    const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(address)}&key=${GOOGLE_PLACES_API_KEY}`;
+    const response = await fetch(url);
+    if (!response.ok) {
+      return null;
+    }
+    const data = await response.json();
+    if (data.status === 'OK' && data.results && data.results.length > 0) {
+      const loc = data.results[0].geometry.location;
+      return {lat: loc.lat, lng: loc.lng};
+    }
+  } catch {
+    // Return null on failure
+  }
+  return null;
+}
+
+/**
  * Search for nearby dentists using Google Places API
  */
 export async function searchNearbyDentists(
@@ -93,7 +168,9 @@ export async function searchNearbyDentists(
 
     if (data.status !== 'OK' && data.status !== 'ZERO_RESULTS') {
       console.error('Places API error:', data);
-      throw new Error(`Places API error: ${data.status}${data.error_message ? ` - ${data.error_message}` : ''}`);
+      throw new Error(
+        `Places API error: ${data.status}${data.error_message ? ` - ${data.error_message}` : ''}`,
+      );
     }
 
     const results = data.results || [];
@@ -103,32 +180,47 @@ export async function searchNearbyDentists(
       ? results.filter((place: any) => place.rating >= params.rating!)
       : results;
 
-    // Convert to DentistInfo format
-    const dentists: DentistInfo[] = filteredResults.map((place: any) => {
-      // Calculate distance
-      const distance = calculateDistance(
-        params.location.lat,
-        params.location.lng,
-        place.geometry.location.lat,
-        place.geometry.location.lng,
-      );
+    // Fetch place details (phone/website) for up to 10 results to avoid too many API calls
+    const topResults = filteredResults.slice(0, 10);
+    const detailsPromises = topResults.map((place: any) =>
+      fetchPlaceDetails(place.place_id),
+    );
+    const detailsList = await Promise.all(detailsPromises);
 
-      return {
-        placeId: place.place_id,
-        name: place.name,
-        specialty: params.specialty || 'General',
-        rating: place.rating || 0,
-        distance: Math.round(distance * 10) / 10, // Round to 1 decimal
-        phone: place.formatted_phone_number || 'Not available',
-        website: place.website || '',
-        hours: place.opening_hours?.weekday_text?.join(', ') || 'Hours not available',
-        address: place.vicinity || place.formatted_address || 'Address not available',
-        location: {
-          lat: place.geometry.location.lat,
-          lng: place.geometry.location.lng,
-        },
-      };
-    });
+    // Convert to DentistInfo format
+    const dentists: DentistInfo[] = topResults.map(
+      (place: any, index: number) => {
+        const distance = calculateDistance(
+          params.location.lat,
+          params.location.lng,
+          place.geometry.location.lat,
+          place.geometry.location.lng,
+        );
+
+        const details = detailsList[index];
+
+        return {
+          placeId: place.place_id,
+          name: place.name,
+          specialty: params.specialty || 'General',
+          rating: place.rating || 0,
+          distance: Math.round(distance * 10) / 10,
+          phone: details.phone || '',
+          website: details.website || place.website || '',
+          hours:
+            place.opening_hours?.weekday_text?.join(', ') ||
+            'Hours not available',
+          address:
+            place.vicinity ||
+            place.formatted_address ||
+            'Address not available',
+          location: {
+            lat: place.geometry.location.lat,
+            lng: place.geometry.location.lng,
+          },
+        };
+      },
+    );
 
     // Sort by distance
     dentists.sort((a, b) => a.distance - b.distance);
@@ -151,4 +243,3 @@ export async function searchNearbyDentists(
     throw new Error('An unexpected error occurred during search');
   }
 }
-

@@ -4,9 +4,13 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
+  TouchableWithoutFeedback,
   ScrollView,
+  KeyboardAvoidingView,
   ActivityIndicator,
   Alert,
+  TextInput,
+  Keyboard,
   Platform,
 } from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
@@ -14,7 +18,7 @@ import Geolocation from '@react-native-community/geolocation';
 import {DentistList} from '../components/dentist/DentistList';
 import {DentistMap} from '../components/dentist/DentistMap';
 import {FilterPanel} from '../components/dentist/FilterPanel';
-import {searchNearbyDentists} from '../utils/dentistApi';
+import {searchNearbyDentists, reverseGeocode, geocodeAddress} from '../utils/dentistApi';
 
 interface DentistFinderScreenProps {
   onBack: () => void;
@@ -51,6 +55,9 @@ export const DentistFinderScreen: React.FC<DentistFinderScreenProps> = ({
   const [dentists, setDentists] = useState<DentistInfo[]>([]);
   const [selectedDentist, setSelectedDentist] = useState<string | null>(null);
   const [userLocation, setUserLocation] = useState<Location | null>(null);
+  const [locationLabel, setLocationLabel] = useState<string>('');
+  const [locationSearchText, setLocationSearchText] = useState<string>('');
+  const [isSearchingLocation, setIsSearchingLocation] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isGettingLocation, setIsGettingLocation] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
@@ -63,10 +70,17 @@ export const DentistFinderScreen: React.FC<DentistFinderScreenProps> = ({
     openNow: false,
   });
 
-  // Get user's current location on mount
   useEffect(() => {
     getCurrentLocation();
   }, []);
+
+  useEffect(() => {
+    if (userLocation) {
+      reverseGeocode(userLocation).then(label => {
+        setLocationLabel(label);
+      });
+    }
+  }, [userLocation]);
 
   const getCurrentLocation = () => {
     setIsGettingLocation(true);
@@ -79,12 +93,13 @@ export const DentistFinderScreen: React.FC<DentistFinderScreenProps> = ({
           lng: position.coords.longitude,
         };
         setUserLocation(location);
+        setLocationSearchText('');
         setIsGettingLocation(false);
       },
       err => {
         console.error('Location error:', err);
         let errorMessage = 'Unable to get your location. ';
-        
+
         if (err.code === 1) {
           errorMessage += 'Please enable location permissions in your device settings.';
         } else if (err.code === 2) {
@@ -94,21 +109,54 @@ export const DentistFinderScreen: React.FC<DentistFinderScreenProps> = ({
         } else {
           errorMessage += 'Please try again.';
         }
-        
+
         setError(errorMessage);
         setIsGettingLocation(false);
       },
       {
-        enableHighAccuracy: false, // Changed to false for faster response
-        timeout: 30000, // Increased to 30 seconds
-        maximumAge: 60000, // Allow cached location up to 1 minute old
+        enableHighAccuracy: false,
+        timeout: 30000,
+        maximumAge: 60000,
       },
     );
   };
 
+  const handleLocationSearch = async () => {
+    Keyboard.dismiss();
+    const query = locationSearchText.trim();
+    if (!query) {
+      Alert.alert('Enter Location', 'Please type a city or address to search.');
+      return;
+    }
+
+    setIsSearchingLocation(true);
+    setError(null);
+
+    try {
+      const found = await geocodeAddress(query);
+      if (found) {
+        setUserLocation(found);
+        setLocationLabel(query);
+      } else {
+        Alert.alert(
+          'Location Not Found',
+          'Could not find that location. Please try a different search.',
+        );
+      }
+    } catch (err) {
+      Alert.alert('Error', 'Failed to search for location. Please try again.');
+    } finally {
+      setIsSearchingLocation(false);
+    }
+  };
+
   const handleSearch = async () => {
+    Keyboard.dismiss();
     if (!userLocation) {
-      Alert.alert('Location Required', 'Please enable location services to search for dentists.');
+      Alert.alert(
+        'Location Required',
+        'Please enable location services or enter a location to search for dentists.',
+      );
       return;
     }
 
@@ -136,7 +184,8 @@ export const DentistFinderScreen: React.FC<DentistFinderScreenProps> = ({
       }
     } catch (err) {
       console.error('Search error:', err);
-      const errorMessage = err instanceof Error ? err.message : 'Failed to search for dentists';
+      const errorMessage =
+        err instanceof Error ? err.message : 'Failed to search for dentists';
       setError(errorMessage);
       Alert.alert('Search Error', errorMessage);
     } finally {
@@ -152,134 +201,210 @@ export const DentistFinderScreen: React.FC<DentistFinderScreenProps> = ({
     setFilters(newFilters);
   };
 
+  const renderContent = () => {
+    if (!hasSearched) {
+      return (
+        <ScrollView
+          contentContainerStyle={styles.centeredContent}
+          keyboardShouldPersistTaps="handled">
+          <Text style={styles.emptyStateIcon}>🔍</Text>
+          <Text style={styles.emptyStateTitle}>Ready to Search</Text>
+          <Text style={styles.emptyStateText}>
+            Set your location above, adjust filters, then tap "Search" to find
+            nearby dentists
+          </Text>
+        </ScrollView>
+      );
+    }
+
+    if (isLoading) {
+      return (
+        <ScrollView
+          contentContainerStyle={styles.centeredContent}
+          keyboardShouldPersistTaps="handled">
+          <ActivityIndicator size="large" color="#2563eb" />
+          <Text style={styles.loadingText}>Searching for dentists...</Text>
+        </ScrollView>
+      );
+    }
+
+    if (error) {
+      return (
+        <ScrollView
+          contentContainerStyle={styles.centeredContent}
+          keyboardShouldPersistTaps="handled">
+          <Text style={styles.errorIcon}>⚠️</Text>
+          <Text style={styles.errorTitle}>Search Error</Text>
+          <Text style={styles.errorText}>{error}</Text>
+          <TouchableOpacity style={styles.retryButton} onPress={handleSearch}>
+            <Text style={styles.retryButtonText}>Try Again</Text>
+          </TouchableOpacity>
+        </ScrollView>
+      );
+    }
+
+    if (dentists.length === 0) {
+      return (
+        <ScrollView
+          contentContainerStyle={styles.centeredContent}
+          keyboardShouldPersistTaps="handled">
+          <Text style={styles.emptyStateIcon}>🏥</Text>
+          <Text style={styles.emptyStateTitle}>No Dentists Found</Text>
+          <Text style={styles.emptyStateText}>
+            Try adjusting your search filters or expanding the search radius
+          </Text>
+        </ScrollView>
+      );
+    }
+
+    if (viewMode === 'list') {
+      return (
+        <DentistList
+          dentists={dentists}
+          selectedDentist={selectedDentist}
+          onDentistSelect={handleDentistSelect}
+        />
+      );
+    }
+
+    return (
+      <DentistMap
+        dentists={dentists}
+        userLocation={userLocation}
+        selectedDentist={selectedDentist}
+        onMarkerPress={handleDentistSelect}
+      />
+    );
+  };
+
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={onBack} style={styles.backButton}>
-          <Text style={styles.backButtonText}>← Back</Text>
-        </TouchableOpacity>
-        <Text style={styles.title}>Find a Dentist</Text>
-        <View style={styles.headerRight} />
-      </View>
+      <KeyboardAvoidingView
+        style={styles.flex}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+          {/* Outer non-scrollable fixed header area */}
+          <View style={styles.flex}>
+            {/* Header */}
+            <View style={styles.header}>
+              <TouchableOpacity onPress={onBack} style={styles.backButton}>
+                <Text style={styles.backButtonText}>← Back</Text>
+              </TouchableOpacity>
+              <Text style={styles.title}>Find a Dentist</Text>
+              <View style={styles.headerRight} />
+            </View>
 
-      {/* Location Status */}
-      <View style={styles.locationBar}>
-        {isGettingLocation ? (
-          <View style={styles.locationStatus}>
-            <ActivityIndicator size="small" color="#2563eb" />
-            <Text style={styles.locationText}>Getting your location...</Text>
-          </View>
-        ) : userLocation ? (
-          <View style={styles.locationStatus}>
-            <Text style={styles.locationIcon}>📍</Text>
-            <Text style={styles.locationText}>
-              Location: {userLocation.lat.toFixed(4)}, {userLocation.lng.toFixed(4)}
-            </Text>
-          </View>
-        ) : (
-          <TouchableOpacity
-            style={styles.locationStatus}
-            onPress={getCurrentLocation}>
-            <Text style={styles.locationIcon}>📍</Text>
-            <Text style={styles.locationTextError}>Tap to enable location</Text>
-          </TouchableOpacity>
-        )}
-      </View>
+            {/* Location Bar */}
+            <View style={styles.locationBar}>
+              {isGettingLocation ? (
+                <View style={styles.locationStatus}>
+                  <ActivityIndicator size="small" color="#2563eb" />
+                  <Text style={styles.locationText}>Getting your location...</Text>
+                </View>
+              ) : userLocation ? (
+                <View style={styles.locationStatus}>
+                  <Text style={styles.locationIcon}>📍</Text>
+                  <Text style={styles.locationText} numberOfLines={1}>
+                    {locationLabel || 'Location detected'}
+                  </Text>
+                  <TouchableOpacity
+                    onPress={getCurrentLocation}
+                    style={styles.refreshButton}>
+                    <Text style={styles.refreshButtonText}>↺</Text>
+                  </TouchableOpacity>
+                </View>
+              ) : (
+                <TouchableOpacity
+                  style={styles.locationStatus}
+                  onPress={getCurrentLocation}>
+                  <Text style={styles.locationIcon}>📍</Text>
+                  <Text style={styles.locationTextError}>
+                    Tap to use current location
+                  </Text>
+                </TouchableOpacity>
+              )}
 
-      {/* View Toggle */}
-      <View style={styles.viewToggle}>
-        <TouchableOpacity
-          style={[
-            styles.viewToggleButton,
-            viewMode === 'list' && styles.viewToggleButtonActive,
-          ]}
-          onPress={() => setViewMode('list')}>
-          <Text
-            style={[
-              styles.viewToggleText,
-              viewMode === 'list' && styles.viewToggleTextActive,
-            ]}>
-            List
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[
-            styles.viewToggleButton,
-            viewMode === 'map' && styles.viewToggleButtonActive,
-          ]}
-          onPress={() => setViewMode('map')}>
-          <Text
-            style={[
-              styles.viewToggleText,
-              viewMode === 'map' && styles.viewToggleTextActive,
-            ]}>
-            Map
-          </Text>
-        </TouchableOpacity>
-      </View>
+              {/* Location search input */}
+              <View style={styles.locationSearchRow}>
+                <TextInput
+                  style={styles.locationSearchInput}
+                  placeholder="Search by city or address..."
+                  placeholderTextColor="#9ca3af"
+                  value={locationSearchText}
+                  onChangeText={setLocationSearchText}
+                  onSubmitEditing={handleLocationSearch}
+                  returnKeyType="search"
+                />
+                <TouchableOpacity
+                  style={[
+                    styles.locationSearchButton,
+                    isSearchingLocation && styles.locationSearchButtonDisabled,
+                  ]}
+                  onPress={handleLocationSearch}
+                  disabled={isSearchingLocation}>
+                  {isSearchingLocation ? (
+                    <ActivityIndicator size="small" color="#ffffff" />
+                  ) : (
+                    <Text style={styles.locationSearchButtonText}>Go</Text>
+                  )}
+                </TouchableOpacity>
+              </View>
+            </View>
 
-      {/* Filters */}
-      <FilterPanel
-        filters={filters}
-        onFilterChange={handleFilterChange}
-        onSearch={handleSearch}
-        isLoading={isLoading}
-        disabled={!userLocation}
-      />
+            {/* View Toggle */}
+            <View style={styles.viewToggle}>
+              <TouchableOpacity
+                style={[
+                  styles.viewToggleButton,
+                  viewMode === 'list' && styles.viewToggleButtonActive,
+                ]}
+                onPress={() => setViewMode('list')}>
+                <Text
+                  style={[
+                    styles.viewToggleText,
+                    viewMode === 'list' && styles.viewToggleTextActive,
+                  ]}>
+                  List
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[
+                  styles.viewToggleButton,
+                  viewMode === 'map' && styles.viewToggleButtonActive,
+                ]}
+                onPress={() => setViewMode('map')}>
+                <Text
+                  style={[
+                    styles.viewToggleText,
+                    viewMode === 'map' && styles.viewToggleTextActive,
+                  ]}>
+                  Map
+                </Text>
+              </TouchableOpacity>
+            </View>
 
-      {/* Content */}
-      <View style={styles.content}>
-        {!hasSearched ? (
-          <View style={styles.emptyState}>
-            <Text style={styles.emptyStateIcon}>🔍</Text>
-            <Text style={styles.emptyStateTitle}>Ready to Search</Text>
-            <Text style={styles.emptyStateText}>
-              Adjust your filters and tap "Search" to find nearby dentists
-            </Text>
+            {/* Filters */}
+            <FilterPanel
+              filters={filters}
+              onFilterChange={handleFilterChange}
+              onSearch={handleSearch}
+              isLoading={isLoading}
+              disabled={!userLocation}
+            />
+
+            {/* Scrollable content area */}
+            <View style={styles.content}>{renderContent()}</View>
           </View>
-        ) : isLoading ? (
-          <View style={styles.loadingState}>
-            <ActivityIndicator size="large" color="#2563eb" />
-            <Text style={styles.loadingText}>Searching for dentists...</Text>
-          </View>
-        ) : error ? (
-          <View style={styles.errorState}>
-            <Text style={styles.errorIcon}>⚠️</Text>
-            <Text style={styles.errorTitle}>Search Error</Text>
-            <Text style={styles.errorText}>{error}</Text>
-            <TouchableOpacity style={styles.retryButton} onPress={handleSearch}>
-              <Text style={styles.retryButtonText}>Try Again</Text>
-            </TouchableOpacity>
-          </View>
-        ) : dentists.length === 0 ? (
-          <View style={styles.emptyState}>
-            <Text style={styles.emptyStateIcon}>🏥</Text>
-            <Text style={styles.emptyStateTitle}>No Dentists Found</Text>
-            <Text style={styles.emptyStateText}>
-              Try adjusting your search filters or expanding the search radius
-            </Text>
-          </View>
-        ) : viewMode === 'list' ? (
-          <DentistList
-            dentists={dentists}
-            selectedDentist={selectedDentist}
-            onDentistSelect={handleDentistSelect}
-          />
-        ) : (
-          <DentistMap
-            dentists={dentists}
-            userLocation={userLocation}
-            selectedDentist={selectedDentist}
-            onMarkerPress={handleDentistSelect}
-          />
-        )}
-      </View>
+        </TouchableWithoutFeedback>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
+  flex: {
+    flex: 1,
+  },
   container: {
     flex: 1,
     backgroundColor: '#f9fafb',
@@ -313,9 +438,11 @@ const styles = StyleSheet.create({
   locationBar: {
     backgroundColor: '#ffffff',
     paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingTop: 10,
+    paddingBottom: 12,
     borderBottomWidth: 1,
     borderBottomColor: '#e5e7eb',
+    gap: 8,
   },
   locationStatus: {
     flexDirection: 'row',
@@ -323,17 +450,61 @@ const styles = StyleSheet.create({
   },
   locationIcon: {
     fontSize: 16,
-    marginRight: 8,
+    marginRight: 6,
   },
   locationText: {
+    flex: 1,
     fontSize: 14,
     color: '#374151',
-    marginLeft: 8,
+    fontWeight: '500',
   },
   locationTextError: {
+    flex: 1,
     fontSize: 14,
-    color: '#dc2626',
-    marginLeft: 8,
+    color: '#2563eb',
+    marginLeft: 4,
+  },
+  refreshButton: {
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+  },
+  refreshButtonText: {
+    fontSize: 18,
+    color: '#2563eb',
+    fontWeight: '700',
+  },
+  locationSearchRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  locationSearchInput: {
+    flex: 1,
+    backgroundColor: '#f3f4f6',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: Platform.OS === 'ios' ? 10 : 8,
+    fontSize: 14,
+    color: '#111827',
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
+  },
+  locationSearchButton: {
+    backgroundColor: '#2563eb',
+    borderRadius: 8,
+    paddingHorizontal: 16,
+    paddingVertical: Platform.OS === 'ios' ? 10 : 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    minWidth: 50,
+  },
+  locationSearchButtonDisabled: {
+    backgroundColor: '#93c5fd',
+  },
+  locationSearchButtonText: {
+    color: '#ffffff',
+    fontSize: 14,
+    fontWeight: '700',
   },
   viewToggle: {
     flexDirection: 'row',
@@ -364,8 +535,8 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
   },
-  emptyState: {
-    flex: 1,
+  centeredContent: {
+    flexGrow: 1,
     alignItems: 'center',
     justifyContent: 'center',
     padding: 32,
@@ -379,6 +550,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#111827',
     marginBottom: 8,
+    textAlign: 'center',
   },
   emptyStateText: {
     fontSize: 14,
@@ -386,22 +558,10 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     lineHeight: 20,
   },
-  loadingState: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 32,
-  },
   loadingText: {
     fontSize: 16,
     color: '#6b7280',
     marginTop: 16,
-  },
-  errorState: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 32,
   },
   errorIcon: {
     fontSize: 64,

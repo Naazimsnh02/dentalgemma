@@ -8,6 +8,7 @@ import {SymptomCheckerScreen} from './screens/SymptomCheckerScreen';
 import {ImageAnalysisScreen} from './screens/ImageAnalysisScreen';
 import {EducationScreen} from './screens/EducationScreen';
 import {DentistFinderScreen} from './screens/DentistFinderScreen';
+import {ResearchScreen} from './screens/ResearchScreen';
 import {HomeScreen} from './screens/HomeScreen';
 import {useDentalGemma} from './hooks/useDentalGemma';
 import type {ModelState} from './types';
@@ -18,7 +19,7 @@ addNativeLogListener((level, text) => {
   console.log(['[rnllama]', level ? `[${level}]` : '', text].filter(Boolean).join(' '));
 });
 
-type Screen = 'home' | 'chat' | 'symptom-checker' | 'image-analysis' | 'education' | 'dentist-finder';
+type Screen = 'home' | 'chat' | 'symptom-checker' | 'image-analysis' | 'education' | 'dentist-finder' | 'research';
 
 const App: React.FC = () => {
   const [modelState, setModelState] = useState<ModelState>('checking');
@@ -73,6 +74,10 @@ const App: React.FC = () => {
     setCurrentScreen('dentist-finder');
   }, []);
 
+  const handleNavigateToResearch = useCallback(() => {
+    setCurrentScreen('research');
+  }, []);
+
   const handleUnloadModel = useCallback(async () => {
     await unloadModel();
     setModelState('checking');
@@ -96,6 +101,7 @@ const App: React.FC = () => {
           onNavigateToImageAnalysis={handleNavigateToImageAnalysis}
           onNavigateToEducation={handleNavigateToEducation}
           onNavigateToDentistFinder={handleNavigateToDentistFinder}
+          onNavigateToResearch={handleNavigateToResearch}
           onUnloadModel={handleUnloadModel}
         />
       ) : currentScreen === 'chat' ? (
@@ -118,6 +124,8 @@ const App: React.FC = () => {
         <EducationScreen onBack={handleBackToHome} />
       ) : currentScreen === 'dentist-finder' ? (
         <DentistFinderScreen onBack={handleBackToHome} />
+      ) : currentScreen === 'research' ? (
+        <ResearchScreen onBack={handleBackToHome} />
       ) : (
         <ImageAnalysisScreen
           sendMessage={sendMessage}

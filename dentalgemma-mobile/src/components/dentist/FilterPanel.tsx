@@ -90,12 +90,16 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
               selectedValue={filters.specialty}
               onValueChange={handleSpecialtyChange}
               style={styles.picker}
-              enabled={!disabled}>
+              itemStyle={styles.pickerItem}
+              enabled={!disabled}
+              dropdownIconColor="#374151">
               {SPECIALTIES.map(specialty => (
                 <Picker.Item
                   key={specialty}
                   label={specialty}
                   value={specialty}
+                  color="#000000"
+                  style={{backgroundColor: '#FFFFFF', fontSize: 15}}
                 />
               ))}
             </Picker>
@@ -204,6 +208,11 @@ const styles = StyleSheet.create({
   },
   picker: {
     height: 40,
+    color: '#111827',
+  },
+  pickerItem: {
+    fontSize: 14,
+    color: '#111827',
   },
   toggleButton: {
     backgroundColor: '#e5e7eb',
