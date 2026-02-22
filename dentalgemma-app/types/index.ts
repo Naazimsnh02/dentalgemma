@@ -363,6 +363,11 @@ export interface SymptomResult {
   redFlags: string[];
 }
 
+export interface SimpleSymptomResult {
+  urgency: UrgencyLevel;
+  markdownReport: string;
+}
+
 // ----------------------------------------------------------------------------
 // History Types
 // ----------------------------------------------------------------------------

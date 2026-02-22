@@ -1,6 +1,6 @@
-import type { SymptomData, SymptomResult } from '@/types';
+import type { SymptomData, SimpleSymptomResult } from '@/types';
 
-export async function diagnoseSymptoms(data: SymptomData): Promise<SymptomResult> {
+export async function diagnoseSymptoms(data: SymptomData): Promise<SimpleSymptomResult> {
   // Always use DentalGemma AI for diagnosis
   const response = await fetch('/api/symptom-check', {
     method: 'POST',

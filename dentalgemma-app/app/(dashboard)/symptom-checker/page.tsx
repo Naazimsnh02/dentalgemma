@@ -7,7 +7,7 @@ import { ResultsDisplay } from '@/components/symptom-checker/results-display';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAppStore } from '@/store/app-store';
 import { diagnoseSymptoms } from '@/lib/symptom-checker/diagnosis';
-import type { SymptomData, SymptomResult, AnalysisHistoryItem } from '@/types';
+import type { SymptomData, SimpleSymptomResult, AnalysisHistoryItem } from '@/types';
 import jsPDF from 'jspdf';
 
 type PageState = 'intro' | 'questionnaire' | 'analyzing' | 'results';
@@ -15,7 +15,7 @@ type PageState = 'intro' | 'questionnaire' | 'analyzing' | 'results';
 export default function SymptomCheckerPage() {
   const [pageState, setPageState] = useState<PageState>('intro');
   const [symptomData, setSymptomData] = useState<SymptomData | null>(null);
-  const [result, setResult] = useState<SymptomResult | null>(null);
+  const [result, setResult] = useState<SimpleSymptomResult | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const addToHistory = useAppStore((state) => state.addToHistory);
@@ -44,7 +44,7 @@ export default function SymptomCheckerPage() {
     const historyItem: AnalysisHistoryItem = {
       id: `symptom-${Date.now()}`,
       type: 'symptom',
-      summary: `Symptom check: ${result.possibleConditions[0]?.condition || 'Unknown'}`,
+      summary: `Symptom check - ${result.urgency.charAt(0).toUpperCase() + result.urgency.slice(1)} Urgency`,
       urgency: result.urgency,
       data: {
         symptomData,
@@ -117,77 +117,54 @@ export default function SymptomCheckerPage() {
     // Urgency
     doc.setFontSize(14);
     doc.setFont('helvetica', 'bold');
-    doc.text('Assessment', margin, yPos);
+    doc.text('Preliminary Assessment', margin, yPos);
     yPos += 8;
 
     doc.setFontSize(11);
     doc.setFont('helvetica', 'bold');
     doc.text(`Urgency Level: ${result.urgency.toUpperCase()}`, margin, yPos);
-    yPos += 8;
+    yPos += 12;
 
-    doc.setFontSize(10);
-    doc.setFont('helvetica', 'normal');
-    const actionLines = doc.splitTextToSize(result.actionGuidance, pageWidth - 2 * margin);
-    doc.text(actionLines, margin, yPos);
-    yPos += actionLines.length * 5 + 10;
-
-    // Possible Conditions
+    // Clinical Report
     doc.setFontSize(12);
     doc.setFont('helvetica', 'bold');
-    doc.text('Possible Conditions', margin, yPos);
+    doc.text('Clinical Report', margin, yPos);
     yPos += 8;
 
     doc.setFontSize(10);
     doc.setFont('helvetica', 'normal');
-    result.possibleConditions.forEach((condition, index) => {
-      doc.text(
-        `${index + 1}. ${condition.condition} (${Math.round(condition.likelihood * 100)}%)`,
-        margin,
-        yPos
-      );
-      yPos += 6;
-    });
-    yPos += 6;
+    
+    // Clean markdown characters for basic PDF text rendering
+    const cleanText = result.markdownReport
+      .replace(/\*\*/g, '')
+      .replace(/#/g, '')
+      .trim();
 
-    // Home Care Recommendations
+    const reportLines = doc.splitTextToSize(cleanText, pageWidth - 2 * margin);
+    
+    // Simple pagination for the report
+    for (let i = 0; i < reportLines.length; i++) {
+        if (yPos > 280) {
+            doc.addPage();
+            yPos = 20;
+        }
+        doc.text(reportLines[i], margin, yPos);
+        yPos += 5;
+    }
+    
+    yPos += 10;
+
     if (yPos > 250) {
-      doc.addPage();
-      yPos = 20;
+        doc.addPage();
+        yPos = 20;
     }
 
-    doc.setFontSize(12);
-    doc.setFont('helvetica', 'bold');
-    doc.text('Home Care Recommendations', margin, yPos);
-    yPos += 8;
-
-    doc.setFontSize(10);
-    doc.setFont('helvetica', 'normal');
-    result.homeCareRecommendations.forEach((rec, index) => {
-      const recLines = doc.splitTextToSize(`• ${rec}`, pageWidth - 2 * margin - 5);
-      doc.text(recLines, margin, yPos);
-      yPos += recLines.length * 5 + 2;
-    });
-    yPos += 6;
-
-    // Red Flags
-    if (yPos > 250) {
-      doc.addPage();
-      yPos = 20;
-    }
-
-    doc.setFontSize(12);
-    doc.setFont('helvetica', 'bold');
-    doc.setTextColor(200, 0, 0);
-    doc.text('Warning Signs - Seek Immediate Care If:', margin, yPos);
-    yPos += 8;
-
-    doc.setFontSize(10);
-    doc.setFont('helvetica', 'normal');
-    result.redFlags.forEach((flag, index) => {
-      const flagLines = doc.splitTextToSize(`• ${flag}`, pageWidth - 2 * margin - 5);
-      doc.text(flagLines, margin, yPos);
-      yPos += flagLines.length * 5 + 2;
-    });
+    doc.setFontSize(9);
+    doc.setTextColor(100, 100, 100);
+    const disclaimerNote = 'Note: This is a preliminary assessment based on self-reported symptoms only, without clinical examination or diagnostic imaging. Professional evaluation is essential for accurate diagnosis.';
+    const disclaimerNoteLines = doc.splitTextToSize(disclaimerNote, pageWidth - 2 * margin);
+    doc.text(disclaimerNoteLines, margin, yPos);
+    doc.setTextColor(0, 0, 0);
 
     // Save PDF
     doc.save(`symptom-assessment-${new Date().toISOString().split('T')[0]}.pdf`);

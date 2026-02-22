@@ -69,47 +69,27 @@ export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
         </View>
       </View>
 
-      {/* Possible Conditions */}
+      {/* Primary Assessment */}
       <View style={styles.card}>
-        <Text style={styles.cardTitle}>Possible Conditions</Text>
+        <Text style={styles.cardTitle}>Preliminary Assessment</Text>
         <Text style={styles.cardDescription}>
-          Ranked by likelihood based on your symptoms
+          Based on your reported symptoms (not a clinical examination)
         </Text>
 
-        <View style={styles.conditionsList}>
-          {result.possibleConditions.map((condition, index) => (
-            <View key={index} style={styles.conditionItem}>
-              <View style={styles.conditionHeader}>
-                <View
-                  style={[
-                    styles.conditionRank,
-                    index === 0 && styles.conditionRankPrimary,
-                  ]}>
-                  <Text
-                    style={[
-                      styles.conditionRankText,
-                      index === 0 && styles.conditionRankTextPrimary,
-                    ]}>
-                    {index + 1}
-                  </Text>
-                </View>
-                <View style={styles.conditionInfo}>
-                  <Text style={styles.conditionName}>{condition.condition}</Text>
-                  <Text style={styles.conditionLikelihood}>
-                    Likelihood: {Math.round(condition.likelihood * 100)}%
-                  </Text>
-                </View>
-              </View>
-              <View style={styles.progressBarContainer}>
-                <View
-                  style={[
-                    styles.progressBarFill,
-                    {width: `${condition.likelihood * 100}%`},
-                  ]}
-                />
-              </View>
-            </View>
-          ))}
+        <View style={styles.primaryAssessment}>
+          <View style={styles.primaryAssessmentIcon}>
+            <Text style={styles.primaryAssessmentIconText}>✓</Text>
+          </View>
+          <View style={styles.primaryAssessmentContent}>
+            <Text style={styles.primaryAssessmentTitle}>
+              {result.possibleConditions[0]?.condition ||
+                'Dental condition requiring evaluation'}
+            </Text>
+            <Text style={styles.primaryAssessmentNote}>
+              A professional dental examination is required for definitive
+              diagnosis and treatment planning.
+            </Text>
+          </View>
         </View>
       </View>
 
@@ -224,62 +204,41 @@ const styles = StyleSheet.create({
     color: '#6b7280',
     marginBottom: 16,
   },
-  conditionsList: {
-    gap: 12,
-  },
-  conditionItem: {
-    borderWidth: 1,
-    borderColor: '#e5e7eb',
-    borderRadius: 8,
-    padding: 16,
-  },
-  conditionHeader: {
+  primaryAssessment: {
     flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 12,
+    padding: 16,
+    backgroundColor: '#eff6ff',
+    borderWidth: 2,
+    borderColor: '#bfdbfe',
+    borderRadius: 8,
+    marginBottom: 16,
   },
-  conditionRank: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: '#f3f4f6',
+  primaryAssessmentIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#2563eb',
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 12,
   },
-  conditionRankPrimary: {
-    backgroundColor: '#2563eb',
-  },
-  conditionRankText: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: '#6b7280',
-  },
-  conditionRankTextPrimary: {
+  primaryAssessmentIconText: {
+    fontSize: 20,
     color: '#ffffff',
   },
-  conditionInfo: {
+  primaryAssessmentContent: {
     flex: 1,
   },
-  conditionName: {
-    fontSize: 15,
-    fontWeight: '600',
+  primaryAssessmentTitle: {
+    fontSize: 16,
+    fontWeight: '700',
     color: '#111827',
-    marginBottom: 4,
+    marginBottom: 8,
   },
-  conditionLikelihood: {
+  primaryAssessmentNote: {
     fontSize: 13,
     color: '#6b7280',
-  },
-  progressBarContainer: {
-    height: 8,
-    backgroundColor: '#f3f4f6',
-    borderRadius: 4,
-    overflow: 'hidden',
-  },
-  progressBarFill: {
-    height: '100%',
-    backgroundColor: '#2563eb',
+    lineHeight: 18,
   },
   list: {
     gap: 12,
