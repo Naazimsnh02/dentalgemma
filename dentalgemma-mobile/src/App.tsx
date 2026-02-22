@@ -5,6 +5,8 @@ import {toggleNativeLog, addNativeLogListener} from 'llama.rn';
 import {ModelSetupScreen} from './screens/ModelSetupScreen';
 import {ChatScreen} from './screens/ChatScreen';
 import {SymptomCheckerScreen} from './screens/SymptomCheckerScreen';
+import {ImageAnalysisScreen} from './screens/ImageAnalysisScreen';
+import {EducationScreen} from './screens/EducationScreen';
 import {HomeScreen} from './screens/HomeScreen';
 import {useDentalGemma} from './hooks/useDentalGemma';
 import type {ModelState} from './types';
@@ -15,7 +17,7 @@ addNativeLogListener((level, text) => {
   console.log(['[rnllama]', level ? `[${level}]` : '', text].filter(Boolean).join(' '));
 });
 
-type Screen = 'home' | 'chat' | 'symptom-checker';
+type Screen = 'home' | 'chat' | 'symptom-checker' | 'image-analysis' | 'education';
 
 const App: React.FC = () => {
   const [modelState, setModelState] = useState<ModelState>('checking');
@@ -58,6 +60,14 @@ const App: React.FC = () => {
     setCurrentScreen('symptom-checker');
   }, []);
 
+  const handleNavigateToImageAnalysis = useCallback(() => {
+    setCurrentScreen('image-analysis');
+  }, []);
+
+  const handleNavigateToEducation = useCallback(() => {
+    setCurrentScreen('education');
+  }, []);
+
   const handleUnloadModel = useCallback(async () => {
     await unloadModel();
     setModelState('checking');
@@ -78,6 +88,8 @@ const App: React.FC = () => {
         <HomeScreen
           onNavigateToChat={handleNavigateToChat}
           onNavigateToSymptomChecker={handleNavigateToSymptomChecker}
+          onNavigateToImageAnalysis={handleNavigateToImageAnalysis}
+          onNavigateToEducation={handleNavigateToEducation}
           onUnloadModel={handleUnloadModel}
         />
       ) : currentScreen === 'chat' ? (
@@ -90,8 +102,16 @@ const App: React.FC = () => {
           statusDetailed={statusDetailed}
           onBack={handleBackToHome}
         />
-      ) : (
+      ) : currentScreen === 'symptom-checker' ? (
         <SymptomCheckerScreen
+          sendMessage={sendMessage}
+          isGenerating={isGenerating}
+          onBack={handleBackToHome}
+        />
+      ) : currentScreen === 'education' ? (
+        <EducationScreen onBack={handleBackToHome} />
+      ) : (
+        <ImageAnalysisScreen
           sendMessage={sendMessage}
           isGenerating={isGenerating}
           onBack={handleBackToHome}

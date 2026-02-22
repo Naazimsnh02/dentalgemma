@@ -41,3 +41,18 @@ export type SymptomResult = {
   homeCareRecommendations: string[];
   redFlags: string[];
 };
+
+export type AnalysisType = 'photo' | 'xray';
+export type UrgencyLevel = 'emergency' | 'urgent' | 'routine' | 'home-care';
+
+export type ImageAnalysisResult = {
+  type: AnalysisType;
+  findings: string[];
+  confidence: number;
+  urgency: UrgencyLevel;
+  recommendations: string[];
+  condition?: 'healthy' | 'decay' | 'other';
+  severity?: 'mild' | 'moderate' | 'severe';
+  pathologyClass?: 'Healthy' | 'Caries' | 'Impacted' | 'BDC-BDR' | 'Infection' | 'Fractured';
+  differentialDiagnosis?: string[];
+};

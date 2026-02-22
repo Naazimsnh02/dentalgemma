@@ -11,12 +11,16 @@ import {SafeAreaView} from 'react-native-safe-area-context';
 interface HomeScreenProps {
   onNavigateToChat: () => void;
   onNavigateToSymptomChecker: () => void;
+  onNavigateToImageAnalysis: () => void;
+  onNavigateToEducation: () => void;
   onUnloadModel: () => void;
 }
 
 export const HomeScreen: React.FC<HomeScreenProps> = ({
   onNavigateToChat,
   onNavigateToSymptomChecker,
+  onNavigateToImageAnalysis,
+  onNavigateToEducation,
   onUnloadModel,
 }) => {
   return (
@@ -63,33 +67,31 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
             </Text>
           </TouchableOpacity>
 
-          {/* Coming Soon - Image Analysis */}
-          <View style={[styles.featureCard, styles.featureCardDisabled]}>
+          {/* Image Analysis Feature */}
+          <TouchableOpacity
+            style={styles.featureCard}
+            onPress={onNavigateToImageAnalysis}>
             <View style={styles.featureIconContainer}>
               <Text style={styles.featureIcon}>📸</Text>
             </View>
             <Text style={styles.featureTitle}>Image Analysis</Text>
             <Text style={styles.featureDescription}>
-              Analyze dental X-rays and photos
+              Analyze dental X-rays and photos with AI
             </Text>
-            <View style={styles.comingSoonBadge}>
-              <Text style={styles.comingSoonText}>Coming Soon</Text>
-            </View>
-          </View>
+          </TouchableOpacity>
 
-          {/* Coming Soon - Education Portal */}
-          <View style={[styles.featureCard, styles.featureCardDisabled]}>
+          {/* Education Portal */}
+          <TouchableOpacity
+            style={styles.featureCard}
+            onPress={onNavigateToEducation}>
             <View style={styles.featureIconContainer}>
               <Text style={styles.featureIcon}>📚</Text>
             </View>
             <Text style={styles.featureTitle}>Education Portal</Text>
             <Text style={styles.featureDescription}>
-              Browse dental conditions and learn about oral health
+              Browse 98 dental conditions and learn about oral health
             </Text>
-            <View style={styles.comingSoonBadge}>
-              <Text style={styles.comingSoonText}>Coming Soon</Text>
-            </View>
-          </View>
+          </TouchableOpacity>
 
           {/* Coming Soon - Dentist Finder */}
           <View style={[styles.featureCard, styles.featureCardDisabled]}>
