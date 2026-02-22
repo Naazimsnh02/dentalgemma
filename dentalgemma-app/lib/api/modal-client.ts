@@ -301,8 +301,8 @@ export class ModalClient {
 
       // Determine the question based on analysis type
       const questions: Record<AnalysisType, string> = {
-        photo: 'Analyze this clinical dental photograph. Describe the condition of the teeth and gums visible. Note any signs of decay, discoloration, or other abnormalities. Assess the severity and recommend follow-up actions.',
-        xray: 'Analyze this dental radiograph. Describe any pathological findings and their locations. Provide your assessment of the condition, possible differential diagnoses, and clinical recommendations.',
+        photo: 'Analyze this clinical dental photograph. Describe the condition of the teeth and gums visible. Note any signs of decay, discoloration, or other abnormalities. Assess the severity and recommend follow-up actions. Provide a clear, professional clinical description.',
+        xray: 'Analyze this dental radiograph. Describe any pathological findings and their locations using dental region terminology (e.g., "right mandibular region", "anterior maxillary region"). Provide your assessment of the condition, possible differential diagnoses, and clinical recommendations.',
       };
 
       const question = questions[analysisType];
@@ -321,37 +321,40 @@ export class ModalClient {
         }
       );
 
-      // Parse response into structured format
-      const processingTime = Math.max(Date.now() - startTime, 1); // Ensure at least 1ms
+      const processingTime = Math.max(Date.now() - startTime, 1);
 
-      // Check if we have structured JSON response from backend (direct object)
-      if ((response as any).xray_analysis) {
-        const xrayData = (response as any).xray_analysis;
-        return this.createAnalysisFromData(analysisType, xrayData, response.analysis, processingTime);
-      }
+      // Clean the response text (remove thought traces, special tokens)
+      const cleanedAnalysis = this.cleanResponseText(response.analysis);
 
-      // Try to parse JSON from the analysis string (which might contain thought traces)
-      const parsedJSON = this.cleanAndParseResponse(response.analysis);
-
-      if (parsedJSON) {
-        console.log('Using parsed JSON data for X-Ray analysis');
-        return this.createAnalysisFromData(analysisType, parsedJSON, response.analysis, processingTime);
-      }
-
-      // Fallback: Parse plain text response (legacy)
+      // Build base analysis object
       const baseAnalysis = {
         id: crypto.randomUUID(),
         imageId: crypto.randomUUID(),
-        findings: this.extractFindings(response.analysis),
-        confidence: this.extractConfidence(response.analysis),
-        urgency: this.determineUrgency(response.analysis, analysisType),
-        recommendations: this.extractRecommendations(response.analysis),
+        rawAnalysis: cleanedAnalysis,
+        findings: this.extractFindings(cleanedAnalysis),
+        confidence: this.extractConfidence(cleanedAnalysis),
+        urgency: this.determineUrgency(cleanedAnalysis, analysisType),
+        recommendations: this.extractRecommendations(cleanedAnalysis),
         processingTime,
         timestamp: new Date(),
       };
 
       // Return type-specific analysis
-      return this.createTypedAnalysis(analysisType, baseAnalysis, response.analysis);
+      if (analysisType === 'photo') {
+        return {
+          ...baseAnalysis,
+          type: 'photo' as const,
+          condition: this.extractPhotoConditionFromText(cleanedAnalysis),
+          severity: this.extractSeverityFromText(cleanedAnalysis),
+        };
+      } else {
+        return {
+          ...baseAnalysis,
+          type: 'xray' as const,
+          pathologyClass: this.extractOPGClass(cleanedAnalysis),
+          differentialDiagnosis: this.extractDifferentialDiagnosis(cleanedAnalysis),
+        };
+      }
     } catch (error) {
       if (error instanceof ModalClientError) {
         throw error;
@@ -711,11 +714,62 @@ export class ModalClient {
   }
 
   private extractFindings(text: string): string[] {
-    const prefixKeywords = "Findings|Recommendations|Analysis|Diagnosis|Conclusion|Clinical|Key|Priority|Assessment";
-    // Stop keywords: Exclude "Findings" to avoid self-stop on repeated headers. Include "Differential".
-    const stopKeywords = "Recommendations|Analysis|Diagnosis|Differential|Conclusion|Clinical|Key|Priority|Assessment|Plan";
+    // The model outputs natural language, not structured lists
+    // Extract sentences that describe findings
+    const findings: string[] = [];
+    const seen = new Set<string>();
     
-    return this.extractSectionList(text, `(?:(?:${prefixKeywords})\\s+)?Findings?(?:Details)?`, stopKeywords);
+    // Split into sentences
+    const sentences = text
+      .split(/[.!?]+/)
+      .map(s => s.trim())
+      .filter(s => s.length > 20); // Meaningful sentences only
+    
+    // Look for sentences that describe findings (contain dental terminology)
+    const findingKeywords = /\b(caries|decay|cavity|cavitation|impacted|infection|abscess|fracture|radiolucency|radiopacity|periapical|tooth|teeth|molar|incisor|canine|premolar|mandibular|maxillary|anterior|posterior|enamel|dentin|pulp|crown|root|gingiva|periodontal)\b/i;
+    
+    for (const sentence of sentences) {
+      if (findingKeywords.test(sentence)) {
+        const normalized = sentence.toLowerCase().replace(/[^\w\s]/g, ' ').replace(/\s+/g, ' ').trim();
+        if (!seen.has(normalized) && sentence.length > 30) {
+          findings.push(sentence);
+          seen.add(normalized);
+          if (findings.length >= 5) break; // Limit to 5 key findings
+        }
+      }
+    }
+    
+    // Fallback: if no findings extracted, use first few meaningful sentences
+    if (findings.length === 0) {
+      return sentences.slice(0, 3).filter(s => s.length > 30);
+    }
+    
+    return findings;
+  }
+
+  /**
+   * Deduplicate items by normalizing and comparing content
+   */
+  private deduplicateItems(items: string[]): string[] {
+    const seen = new Set<string>();
+    const result: string[] = [];
+    
+    for (const item of items) {
+      // Normalize: lowercase, remove extra whitespace, remove punctuation
+      const normalized = item
+        .toLowerCase()
+        .replace(/[^\w\s]/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+      
+      // Skip if we've seen this content before
+      if (!seen.has(normalized) && normalized.length > 0) {
+        seen.add(normalized);
+        result.push(item);
+      }
+    }
+    
+    return result;
   }
 
   private extractConfidence(text: string): number {
@@ -802,40 +856,36 @@ export class ModalClient {
   }
 
   private extractRecommendations(text: string): string[] {
-    // 1. Try to isolate the "Recommendations" section
-    // Matches "## Recommendations" or "**Recommendations**", optionally with "Clinical" or "Priority" prefix
-    const sectionMatch = text.match(/(?:##|\*\*)\s*(?:(?:Clinical|Priority)\s+)?Recommendations?\s*(?:Details)?(?:\*\*)?[:\s]*\n([\s\S]*?)(?=\n(?:##|\*\*)|$)/i);
-    
-    let targetText = '';
-    if (sectionMatch) {
-      targetText = sectionMatch[1].trim();
-    } else {
-      // Look for any part starting with "Recommendations" even without fancy headers
-      const match = text.match(/Recommendations?[:\s]*\n([\s\S]*)/i);
-      if (match) {
-        targetText = match[1].trim();
-      }
-    }
-
-    if (!targetText) return [];
-
+    // Extract recommendation sentences from natural language
     const recommendations: string[] = [];
-    const lines = targetText.split('\n');
+    const seen = new Set<string>();
     
-    for (const line of lines) {
-      const trimmed = line.trim();
-      // Match bullet points, numbered lists
-      if (trimmed.match(/^[-*•]\s+/) || trimmed.match(/^\d+\.\s+/)) {
-        const cleaned = trimmed.replace(/^[-*•]\s+/, '').replace(/^\d+\.\s+/, '');
-        if (cleaned.length > 5 && !cleaned.startsWith('**') && !cleaned.endsWith(':')) {
-          recommendations.push(cleaned);
+    // Split into sentences
+    const sentences = text
+      .split(/[.!?]+/)
+      .map(s => s.trim())
+      .filter(s => s.length > 20);
+    
+    // Look for sentences with recommendation keywords
+    const recKeywords = /\b(recommend|advised|should|suggested|consultation|treatment|follow-up|evaluation|referral|intervention|therapy|restoration|extraction|monitoring)\b/i;
+    
+    for (const sentence of sentences) {
+      if (recKeywords.test(sentence)) {
+        const normalized = sentence.toLowerCase().replace(/[^\w\s]/g, ' ').replace(/\s+/g, ' ').trim();
+        if (!seen.has(normalized) && sentence.length > 30) {
+          recommendations.push(sentence);
+          seen.add(normalized);
+          if (recommendations.length >= 4) break; // Limit to 4 recommendations
         }
       }
     }
     
-    return recommendations.length > 0 ? recommendations : ['Consult with a dental professional for proper diagnosis and treatment.'];
-
-    return recommendations.length > 0 ? recommendations : ['Consult with a dental professional for proper diagnosis and treatment.'];
+    // Fallback
+    if (recommendations.length === 0) {
+      return ['Consult with a dental professional for proper diagnosis and treatment.'];
+    }
+    
+    return recommendations;
   }
 
   private createTypedAnalysis(

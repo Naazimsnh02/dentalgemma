@@ -158,70 +158,35 @@ export default function XRayAnalysisPage() {
       doc.line(margin, y, pageWidth - margin, y);
       y += 15;
 
-      // Analysis Summary
-      doc.setFontSize(16);
+      // Clinical Analysis - Raw Text
+      doc.setFontSize(14);
       doc.setTextColor(0);
-      doc.text('Analysis Summary', margin, y);
-      y += 10;
-
-      doc.setFontSize(11);
-      doc.text(`Type: ${analysis.type === 'photo' ? 'Clinical Photo' : 'X-Ray Analysis'}`, margin, y);
-      y += 7;
-      doc.text(`Urgency: ${analysis.urgency.toUpperCase()}`, margin, y);
-      y += 15;
-
-      if (analysis.type === 'photo') {
-        doc.text(`Condition: ${analysis.condition.toUpperCase()}`, margin, y);
-        y += 7;
-        if (analysis.severity) {
-          doc.text(`Severity: ${analysis.severity.toUpperCase()}`, margin, y);
-          y += 7;
+      doc.text('Clinical Analysis', margin, y);
+      y += 8;
+      
+      doc.setFontSize(10);
+      doc.setTextColor(50);
+      
+      // Get raw text and strip markdown
+      const rawText = analysis.rawAnalysis || analysis.findings.join(' ');
+      const plainText = rawText
+        .replace(/\*\*(.+?)\*\*/g, '$1')
+        .replace(/\*(.+?)\*/g, '$1')
+        .replace(/^#{1,6}\s+/gm, '')
+        .replace(/^\s*[-*+]\s+/gm, '')
+        .replace(/^\s*\d+\.\s+/gm, '')
+        .trim();
+      
+      const lines = doc.splitTextToSize(plainText, pageWidth - (margin * 2));
+      
+      lines.forEach((line: string) => {
+        if (y > 270) {
+          doc.addPage();
+          y = 20;
         }
-      } else if (analysis.type === 'xray') {
-        if (analysis.pathologyClass) {
-          doc.text(`Primary Pathology: ${analysis.pathologyClass}`, margin, y);
-          y += 7;
-        }
-      }
-      y += 10;
-
-      // Findings
-      const filteredFindings = analysis.findings.filter(f => !f.toLowerCase().includes('recommendation:'));
-      if (filteredFindings.length > 0) {
-        doc.setFontSize(14);
-        doc.text('Findings', margin, y);
-        y += 8;
-        doc.setFontSize(10);
-        filteredFindings.forEach((finding) => {
-          const lines = doc.splitTextToSize(`• ${finding.replace(/[#*]/g, '')}`, pageWidth - (margin * 2));
-          doc.text(lines, margin, y);
-          y += (lines.length * 5) + 2;
-          
-          if (y > 270) {
-            doc.addPage();
-            y = 20;
-          }
-        });
+        doc.text(line, margin, y);
         y += 5;
-      }
-
-      // Recommendations
-      if (analysis.recommendations.length > 0) {
-        doc.setFontSize(14);
-        doc.text('Recommendations', margin, y);
-        y += 8;
-        doc.setFontSize(10);
-        analysis.recommendations.forEach((rec) => {
-          const lines = doc.splitTextToSize(`• ${rec.replace(/[#*]/g, '')}`, pageWidth - (margin * 2));
-          doc.text(lines, margin, y);
-          y += (lines.length * 5) + 2;
-
-          if (y > 270) {
-            doc.addPage();
-            y = 20;
-          }
-        });
-      }
+      });
 
       // Disclaimer
       if (y > 250) {
@@ -246,12 +211,19 @@ export default function XRayAnalysisPage() {
   const handleExportJSON = useCallback(() => {
     if (!analysis) return;
 
-    const dataStr = JSON.stringify(analysis, null, 2);
+    // Create simplified export with just the raw analysis
+    const exportData = {
+      id: analysis.id,
+      timestamp: analysis.timestamp,
+      clinicalAnalysis: analysis.rawAnalysis || analysis.findings.join(' '),
+    };
+
+    const dataStr = JSON.stringify(exportData, null, 2);
     const dataBlob = new Blob([dataStr], { type: 'application/json' });
     const url = URL.createObjectURL(dataBlob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `xray-analysis-${Date.now()}.json`;
+    link.download = `dentalgemma-analysis-${Date.now()}.json`;
     link.click();
     URL.revokeObjectURL(url);
   }, [analysis]);

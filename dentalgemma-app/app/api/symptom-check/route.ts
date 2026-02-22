@@ -1,5 +1,15 @@
+/**
+ * Symptom Check API Route
+ *
+ * Accepts symptom data, forwards to Modal.com DentalGemma model, returns structured diagnosis.
+ */
+
 import { NextRequest, NextResponse } from 'next/server';
+import { modalClient } from '@/lib/api/modal-client';
 import type { SymptomData, SymptomResult, UrgencyLevel } from '@/types';
+
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 
 export async function POST(request: NextRequest) {
   try {
@@ -15,37 +25,17 @@ export async function POST(request: NextRequest) {
     // Build prompt for DentalGemma
     const prompt = buildSymptomPrompt(symptomData);
 
-    // Call Modal.com backend
-    const modalUrl = process.env.MODAL_ENDPOINT_URL;
-    if (!modalUrl) {
-      throw new Error('Modal endpoint not configured');
-    }
+    // Call Modal.com via the shared modal client (uses NEXT_PUBLIC_MODAL_BASE_URL)
+    const aiMessage = await modalClient.chat(prompt, []);
 
-    const response = await fetch(`${modalUrl}/chat`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        message: prompt,
-        history: [],
-      }),
-    });
-
-    if (!response.ok) {
-      throw new Error('Failed to get diagnosis from model');
-    }
-
-    const data = await response.json();
-    
     // Parse the model response into structured format
-    const diagnosis = parseModelResponse(data.message, symptomData);
+    const diagnosis = parseModelResponse(aiMessage, symptomData);
 
     return NextResponse.json({
       success: true,
       diagnosis,
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error in symptom check:', error);
     return NextResponse.json(
       {
@@ -67,14 +57,29 @@ Triggers: ${data.triggers.join(', ') || 'None reported'}
 Associated Symptoms: ${data.associatedSymptoms.join(', ') || 'None reported'}
 Medical History: ${data.medicalHistory.join(', ') || 'None reported'}
 
-Please provide:
-1. A ranked list of 3 possible dental conditions (with likelihood percentages)
-2. Urgency classification (emergency, urgent, routine, or home-care)
-3. Specific action guidance based on urgency
-4. Home care recommendations
-5. Red flag warnings to watch for
+Provide a concise analysis with these sections (use exact headers):
 
-Format your response clearly with these sections.`;
+**1. Possible Dental Conditions:**
+1. [Condition name] - [XX]%
+2. [Condition name] - [XX]%
+3. [Condition name] - [XX]%
+
+**2. Urgency Classification:** [emergency/urgent/routine/home-care]
+
+**3. Action Guidance:**
+[Specific actions based on urgency - 1-2 sentences]
+
+**4. Home Care Recommendations:**
+- [Recommendation 1]
+- [Recommendation 2]
+- [Recommendation 3]
+
+**5. Red Flag Warnings:**
+- [Warning 1]
+- [Warning 2]
+- [Warning 3]
+
+Be concise. List each item once. Avoid repeating content.`;
 }
 
 function parseModelResponse(response: string, symptomData: SymptomData): SymptomResult {
@@ -90,58 +95,73 @@ function parseModelResponse(response: string, symptomData: SymptomData): Symptom
   let currentSection = '';
 
   for (const line of lines) {
-    const lowerLine = line.toLowerCase();
+    const trimmed = line.trim();
+    const lowerLine = trimmed.toLowerCase();
 
-    // Detect sections
-    if (lowerLine.includes('possible condition') || lowerLine.includes('differential')) {
+    // Detect sections using numbered headers
+    if (lowerLine.match(/^\*\*\d+\.\s*possible.*conditions?/i) || lowerLine.includes('differential')) {
       currentSection = 'conditions';
       continue;
-    } else if (lowerLine.includes('urgency')) {
+    } else if (lowerLine.match(/^\*\*\d+\.\s*urgency/i)) {
       currentSection = 'urgency';
+      // Try to extract urgency from the same line
+      if (lowerLine.includes('emergency')) urgency = 'emergency';
+      else if (lowerLine.includes('urgent') && !lowerLine.includes('non-urgent')) urgency = 'urgent';
+      else if (lowerLine.includes('routine')) urgency = 'routine';
+      else if (lowerLine.includes('home') || lowerLine.includes('self-care')) urgency = 'home-care';
       continue;
-    } else if (lowerLine.includes('action') || lowerLine.includes('guidance')) {
+    } else if (lowerLine.match(/^\*\*\d+\.\s*action/i) || lowerLine.includes('guidance')) {
       currentSection = 'action';
       continue;
-    } else if (lowerLine.includes('home care') || lowerLine.includes('recommendation')) {
+    } else if (lowerLine.match(/^\*\*\d+\.\s*home\s*care/i) || lowerLine.match(/^\*\*\d+\.\s*recommendation/i)) {
       currentSection = 'homecare';
       continue;
-    } else if (lowerLine.includes('red flag') || lowerLine.includes('warning')) {
+    } else if (lowerLine.match(/^\*\*\d+\.\s*red\s*flag/i) || lowerLine.includes('warning')) {
       currentSection = 'redflags';
+      continue;
+    }
+
+    // Skip empty lines and section headers
+    if (!trimmed || trimmed.startsWith('**') || trimmed.startsWith('##')) {
       continue;
     }
 
     // Parse content based on current section
     if (currentSection === 'conditions') {
-      // Try to extract condition and likelihood
-      const match = line.match(/(.+?)[\s-]*(\d+)%/);
+      const match = trimmed.match(/^\d+\.\s*(.+?)[\s\-\(]*(\d+)%/);
       if (match) {
+        const condition = match[1].trim().replace(/\*\*/g, '');
         possibleConditions.push({
-          condition: match[1].replace(/^\d+\.\s*/, '').trim(),
+          condition,
           likelihood: parseInt(match[2]) / 100,
         });
-      } else if (line.match(/^\d+\./)) {
-        possibleConditions.push({
-          condition: line.replace(/^\d+\.\s*/, '').trim(),
-          likelihood: 0.5,
-        });
+      } else if (trimmed.match(/^\d+\./)) {
+        const condition = trimmed.replace(/^\d+\.\s*/, '').trim().replace(/\*\*/g, '');
+        if (condition.length > 3) {
+          possibleConditions.push({
+            condition,
+            likelihood: 0.5,
+          });
+        }
       }
     } else if (currentSection === 'urgency') {
       if (lowerLine.includes('emergency')) urgency = 'emergency';
-      else if (lowerLine.includes('urgent')) urgency = 'urgent';
+      else if (lowerLine.includes('urgent') && !lowerLine.includes('non-urgent')) urgency = 'urgent';
       else if (lowerLine.includes('routine')) urgency = 'routine';
       else if (lowerLine.includes('home') || lowerLine.includes('self-care')) urgency = 'home-care';
     } else if (currentSection === 'action') {
-      if (line.trim() && !line.match(/^\d+\./)) {
-        actionGuidance += line.trim() + ' ';
+      const cleaned = trimmed.replace(/^[-•*]\s*/, '').replace(/^\d+\.\s*/, '').replace(/\*\*/g, '').trim();
+      if (cleaned && cleaned.length > 5 && !cleaned.match(/^\d+\.\s*action/i)) {
+        actionGuidance += cleaned + ' ';
       }
     } else if (currentSection === 'homecare') {
-      const cleaned = line.replace(/^[-•*]\s*/, '').replace(/^\d+\.\s*/, '').trim();
-      if (cleaned && cleaned.length > 5) {
+      const cleaned = trimmed.replace(/^[-•*]\s*/, '').replace(/^\d+\.\s*/, '').replace(/\*\*/g, '').trim();
+      if (cleaned && cleaned.length > 5 && !cleaned.match(/home\s*care.*recommendation/i)) {
         homeCareRecommendations.push(cleaned);
       }
     } else if (currentSection === 'redflags') {
-      const cleaned = line.replace(/^[-•*]\s*/, '').replace(/^\d+\.\s*/, '').trim();
-      if (cleaned && cleaned.length > 5) {
+      const cleaned = trimmed.replace(/^[-•*]\s*/, '').replace(/^\d+\.\s*/, '').replace(/\*\*/g, '').trim();
+      if (cleaned && cleaned.length > 5 && !cleaned.match(/red\s*flag.*warning/i) && cleaned.startsWith('**') === false) {
         redFlags.push(cleaned);
       }
     }
@@ -156,7 +176,7 @@ function parseModelResponse(response: string, symptomData: SymptomData): Symptom
   }
 
   // Ensure we have action guidance
-  if (!actionGuidance) {
+  if (!actionGuidance.trim()) {
     actionGuidance = getDefaultActionGuidance(urgency);
   }
 
@@ -169,6 +189,11 @@ function parseModelResponse(response: string, symptomData: SymptomData): Symptom
     );
   }
 
+  // Deduplicate home care recommendations
+  const uniqueHomeCare = Array.from(new Set(homeCareRecommendations.map(r => r.toLowerCase().trim())))
+    .map(normalized => homeCareRecommendations.find(r => r.toLowerCase().trim() === normalized)!)
+    .filter(Boolean);
+
   // Ensure we have red flags
   if (redFlags.length === 0) {
     redFlags.push(
@@ -178,12 +203,17 @@ function parseModelResponse(response: string, symptomData: SymptomData): Symptom
     );
   }
 
+  // Deduplicate red flags
+  const uniqueRedFlags = Array.from(new Set(redFlags.map(r => r.toLowerCase().trim())))
+    .map(normalized => redFlags.find(r => r.toLowerCase().trim() === normalized)!)
+    .filter(Boolean);
+
   return {
     possibleConditions: possibleConditions.slice(0, 3),
     urgency,
     actionGuidance: actionGuidance.trim(),
-    homeCareRecommendations,
-    redFlags,
+    homeCareRecommendations: uniqueHomeCare,
+    redFlags: uniqueRedFlags,
   };
 }
 

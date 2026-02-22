@@ -363,15 +363,18 @@ def test_image_analysis_nextjs(image_path, analysis_type='xray'):
     
     try:
         with open(image_path, "rb") as image_file:
-            encoded_string = base64.b64encode(image_file.read()).decode('utf-8')
+            image_data = image_file.read()
+            # Create proper data URL format that the UI sends
+            encoded_string = f"data:image/jpeg;base64,{base64.b64encode(image_data).decode('utf-8')}"
         
-        # The UI sends { image (base64), analysisType }
+        # The UI sends { image (data URL), analysisType }
         payload = {
             "image": encoded_string,
             "analysisType": analysis_type
         }
         
         print(f"Analysis type: {analysis_type}")
+        print(f"Image format: data URL with {len(encoded_string)} chars")
         
         response = requests.post(f"{NEXTJS_BASE}/analyze-xray", json=payload)
         print_result(f"{type_label} (Next.js)", response)

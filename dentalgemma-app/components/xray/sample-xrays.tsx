@@ -42,10 +42,10 @@ const SAMPLE_XRAYS: SampleXRay[] = [
   },
   {
     id: 'xray-1',
-    name: 'X-Ray - Healthy Dentition',
-    imageUrl: '/analysis/x-ray-healthy.jpg',
+    name: 'X-Ray - Mixed Pathology',
+    imageUrl: '/analysis/xray-mixed_pathology.jpg',
     analysisType: 'xray',
-    thumbnail: '/analysis/x-ray-healthy.jpg',
+    thumbnail: '/analysis/xray-mixed_pathology.jpg',
   },
   {
     id: 'xray-2',
@@ -170,12 +170,6 @@ export function SampleXRays({ onSelectSample, className = '' }: SampleXRaysProps
 
             {/* Content */}
             <div className="p-3 space-y-2">
-              <div className="flex items-start justify-between">
-                <h4 className="text-sm font-semibold text-card-foreground line-clamp-1">
-                  {sample.name}
-                </h4>
-              </div>
-              
               {/* Description removed */}
 
               <div>

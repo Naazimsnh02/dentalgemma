@@ -49,6 +49,7 @@ export interface BoundingBox {
 export interface XRayAnalysisBase {
   id: string;
   imageId: string;
+  rawAnalysis?: string; // Full raw text from model
   findings: string[];
   confidence: number;
   urgency: UrgencyLevel;

@@ -154,36 +154,21 @@ class DentalGemmaModel:
             if "photograph" in question.lower() or "clinical photo" in question.lower():
                 analysis_type = "photo"
             
-            # Build structured prompts based on analysis type
+            # Build prompts matching training format (natural language, not templates)
             structured_prompts = {
-                "photo": """Analyze this clinical dental photograph. Describe the condition of the teeth and gums visible. Note any signs of decay, discoloration, or other abnormalities. Assess the severity and recommend follow-up actions.
+                "photo": """Analyze this clinical dental photograph. Describe the condition of the teeth and gums visible. Note any signs of decay, discoloration, or other abnormalities. Assess the severity and recommend follow-up actions. Provide a clear, professional clinical description. Avoid repeating the same information.""",
 
-Provide a detailed clinical description including:
-- Overall oral health condition
-- Any visible decay, discoloration, or abnormalities
-- Severity assessment (mild, moderate, severe)
-- Recommended follow-up actions
-
-Structure your response with clear findings and recommendations.""",
-
-                "xray": """Analyze this dental radiograph in detail. Identify and describe any pathological findings and their approximate locations (e.g., left/right, upper/lower jaw, anterior/posterior). Provide your primary assessment, possible differential diagnoses, and clinical recommendations. Comment on the urgency of any findings.
-
-Structure your response with:
-- Clear findings with anatomical locations
-- Primary pathology assessment
-- Differential diagnoses if applicable
-- Clinical recommendations
-- Urgency level"""
+                "xray": """Analyze this dental radiograph. Describe any pathological findings and their locations using dental region terminology (e.g., "right mandibular region", "anterior maxillary region"). Provide your assessment of the condition, possible differential diagnoses, and clinical recommendations. Avoid repeating the same findings."""
             }
             
             # Get the appropriate structured prompt
             structured_question = structured_prompts.get(analysis_type, structured_prompts["xray"])
             
-            # Prepare messages in chat format
+            # Prepare messages in chat format (matching training format)
             messages = [
                 {
                     "role": "system",
-                    "content": [{"type": "text", "text": "You are an expert dental clinician and radiologist AI assistant. Provide detailed, clinically accurate analyses using proper dental terminology. Structure your response with clear findings, assessment, and recommendations."}]
+                    "content": [{"type": "text", "text": "You are an expert dental clinician and radiologist AI assistant. Analyze dental images and clinical information to provide accurate, evidence-based assessments. Always recommend clinical correlation and professional evaluation for definitive diagnosis."}]
                 },
                 {
                     "role": "user",
