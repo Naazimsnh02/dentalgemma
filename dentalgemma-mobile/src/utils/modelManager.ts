@@ -1,7 +1,11 @@
 import RNFS from 'react-native-fs';
 import {Platform} from 'react-native';
-import {MODEL_FILENAME, MMPROJ_FILENAME} from '../constants/prompts';
 import type {ModelFiles} from '../types';
+import {
+  ensureModelsDirectory,
+  checkModelFile,
+  MODEL_FILES,
+} from './modelDownloader';
 
 const getModelsDir = (): string => {
   const baseDir =
@@ -14,36 +18,33 @@ const getModelsDir = (): string => {
 export const getModelPaths = (): {modelPath: string; mmprojPath: string} => {
   const dir = getModelsDir();
   return {
-    modelPath: `${dir}/${MODEL_FILENAME}`,
-    mmprojPath: `${dir}/${MMPROJ_FILENAME}`,
+    modelPath: `${dir}/${MODEL_FILES.model.filename}`,
+    mmprojPath: `${dir}/${MODEL_FILES.mmproj.filename}`,
   };
 };
 
 export const checkModelFiles = async (): Promise<ModelFiles> => {
+  const modelsDir = await ensureModelsDirectory();
   const {modelPath, mmprojPath} = getModelPaths();
 
-  const modelsDir = getModelsDir();
   console.log('🔍 Checking models directory:', modelsDir);
   console.log('🔍 Model path:', modelPath);
   console.log('🔍 MMProj path:', mmprojPath);
-  
-  const dirExists = await RNFS.exists(modelsDir);
-  console.log('📁 Models directory exists:', dirExists);
-  
-  if (!dirExists) {
-    console.log('📁 Creating models directory...');
-    await RNFS.mkdir(modelsDir);
-  }
 
-  const [modelExists, mmprojExists] = await Promise.all([
-    RNFS.exists(modelPath),
-    RNFS.exists(mmprojPath),
+  const [modelCheck, mmprojCheck] = await Promise.all([
+    checkModelFile(modelPath),
+    checkModelFile(mmprojPath),
   ]);
-  
-  console.log('✅ Model file exists:', modelExists);
-  console.log('✅ MMProj file exists:', mmprojExists);
 
-  return {modelPath, mmprojPath, modelExists, mmprojExists};
+  console.log('✅ Model file exists:', modelCheck.exists);
+  console.log('✅ MMProj file exists:', mmprojCheck.exists);
+
+  return {
+    modelPath,
+    mmprojPath,
+    modelExists: modelCheck.exists,
+    mmprojExists: mmprojCheck.exists,
+  };
 };
 
 export const getModelFileSize = async (
@@ -66,17 +67,20 @@ export const getSetupInstructions = (): string => {
   const dir = getModelsDir();
 
   if (Platform.OS === 'android') {
-    return `Push model files to your device using ADB:
+    return `Models will be downloaded automatically from Hugging Face.
 
-adb push ${MODEL_FILENAME} ${dir}/
-adb push ${MMPROJ_FILENAME} ${dir}/
+Alternatively, push model files using ADB:
 
-Or copy the files manually to:
+adb push ${MODEL_FILES.model.filename} ${dir}/
+adb push ${MODEL_FILES.mmproj.filename} ${dir}/
+
+Or copy files manually to:
 ${dir}/`;
   }
 
-  return `Copy model files to the app's Documents directory:
+  return `Models will be downloaded automatically from Hugging Face.
 
-${dir}/${MODEL_FILENAME}
-${dir}/${MMPROJ_FILENAME}`;
+Alternatively, copy files to:
+${dir}/${MODEL_FILES.model.filename}
+${dir}/${MODEL_FILES.mmproj.filename}`;
 };

@@ -4,6 +4,7 @@ Offline dental AI assistant running the fine-tuned DentalGemma 1.5 4B IT model e
 
 ## Features
 
+- **Automatic Model Download** — Download models directly from Hugging Face on first launch
 - **Chat** — Multi-turn dental AI conversation with streaming responses
 - **X-ray Analysis** — Pick dental X-rays from camera/gallery for AI analysis
 - **Fully Offline** — All inference runs on-device, no internet required after model download
@@ -27,42 +28,56 @@ npm install
 
 ### 2. Get Model Files
 
-You need two GGUF files in the `models/` directory (for development reference):
+**Option A: Automatic Download (Recommended)**
+
+The app will automatically download model files from Hugging Face on first launch:
+- Tap "Download from Hugging Face" button in the app
+- Wait for ~3.4 GB download to complete
+- Models are cached for offline use
+
+**Option B: Manual Installation**
+
+You can also manually push model files using ADB (see step 4 below).
+
+Required files:
 
 | File | Size | Purpose |
 |------|------|---------|
 | `dentalgemma-4b-Q4_K_M.gguf` | ~2.5 GB | Quantized text/chat model |
-| `mmproj-Dentalgemma-Model-BF16.gguf` | ~860 MB | SigLIP vision encoder |
+| `dentalgemma-mmproj-f16.gguf` | ~860 MB | SigLIP vision encoder |
 
-These are converted from [naazimsnh02/dentalgemma-1.5-4b-it](https://huggingface.co/naazimsnh02/dentalgemma-1.5-4b-it) using the notebook at `scripts/convert_dentalgemma_to_gguf.ipynb`.
+Download from: [naazimsnh02/dentalgemma-1.5-4b-it-GGUF](https://huggingface.co/naazimsnh02/dentalgemma-1.5-4b-it-GGUF)
 
-### 3. Build & Run the App (First Time)
+### 3. Build & Run the App
 
 ```bash
-# Android - build and install the app first
+# Android - build and install the app
 npm run android
 ```
 
-The app will launch and show the model setup screen indicating files are missing.
+The app will launch and show the model setup screen.
 
-### 4. Push Models to Device
+### 4. Download or Push Models
+
+**Option A: Use In-App Download**
+1. Tap "Download from Hugging Face" button
+2. Wait for download to complete (~5-20 minutes depending on connection)
+3. Tap "Load Model & Start Chat"
+
+**Option B: Manual ADB Push (for offline scenarios)**
 
 After the app has run once, push the model files:
 
 ```bash
 # Push model files to device
-adb push models/dentalgemma-4b-Q4_K_M.gguf /storage/emulated/0/Android/data/com.dentalgemmamobile/files/models/
-adb push models/mmproj-Dentalgemma-Model-BF16.gguf /storage/emulated/0/Android/data/com.dentalgemmamobile/files/models/
+adb push dentalgemma-4b-Q4_K_M.gguf /sdcard/Android/data/com.dentalgemmamobile/files/models/
+adb push dentalgemma-mmproj-f16.gguf /sdcard/Android/data/com.dentalgemmamobile/files/models/
 
 # Fix file permissions
 adb shell chmod 666 /storage/emulated/0/Android/data/com.dentalgemmamobile/files/models/*.gguf
 ```
 
-> **Note:** The file transfer will take several minutes due to the large file sizes (~3.4 GB total).
-
-### 5. Restart & Load Model
-
-Restart the app or tap the "🔄 Refresh" button on the model setup screen. Once both files show as "Ready", tap "Load Model & Start Chat" to begin using the app.
+> **Note:** File transfer takes several minutes due to large file sizes (~3.4 GB total).
 
 ## Troubleshooting
 

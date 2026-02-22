@@ -6,6 +6,7 @@ import {
   StyleSheet,
   ScrollView,
   ActivityIndicator,
+  Alert,
 } from 'react-native';
 import {ModelStatus} from '../components/ModelStatus';
 import {
@@ -13,6 +14,12 @@ import {
   getModelFileSize,
   getSetupInstructions,
 } from '../utils/modelManager';
+import {
+  downloadModelsIfNeeded,
+  getRequiredDownloadSize,
+  formatBytes,
+  type DownloadProgress,
+} from '../utils/modelDownloader';
 import type {ModelFiles, ModelState} from '../types';
 
 type ModelSetupScreenProps = {
@@ -31,6 +38,17 @@ export const ModelSetupScreen: React.FC<ModelSetupScreenProps> = ({
   const [files, setFiles] = useState<ModelFiles | null>(null);
   const [modelSize, setModelSize] = useState<string | null>(null);
   const [mmprojSize, setMmprojSize] = useState<string | null>(null);
+  const [isDownloading, setIsDownloading] = useState(false);
+  const [downloadError, setDownloadError] = useState<string | null>(null);
+  const [modelDownloadProgress, setModelDownloadProgress] =
+    useState<DownloadProgress | null>(null);
+  const [mmprojDownloadProgress, setMmprojDownloadProgress] =
+    useState<DownloadProgress | null>(null);
+  const [requiredSize, setRequiredSize] = useState<{
+    modelSize: number;
+    mmprojSize: number;
+    totalSize: number;
+  } | null>(null);
 
   const checkFiles = async () => {
     const result = await checkModelFiles();
@@ -44,20 +62,116 @@ export const ModelSetupScreen: React.FC<ModelSetupScreenProps> = ({
       const size = await getModelFileSize(result.mmprojPath);
       setMmprojSize(size);
     }
+
+    // Check required download size
+    const downloadSize = await getRequiredDownloadSize();
+    setRequiredSize(downloadSize);
   };
 
   useEffect(() => {
     checkFiles();
   }, []);
 
+  const handleDownload = async () => {
+    if (!requiredSize || requiredSize.totalSize === 0) {
+      return;
+    }
+
+    // Confirm download with user
+    Alert.alert(
+      'Download Model Files',
+      `This will download ${formatBytes(requiredSize.totalSize)} from Hugging Face. Make sure you have a stable internet connection and sufficient storage space.\n\nContinue?`,
+      [
+        {text: 'Cancel', style: 'cancel'},
+        {
+          text: 'Download',
+          onPress: async () => {
+            setIsDownloading(true);
+            setDownloadError(null);
+            setModelDownloadProgress(null);
+            setMmprojDownloadProgress(null);
+
+            try {
+              await downloadModelsIfNeeded(
+                progress => setModelDownloadProgress(progress),
+                progress => setMmprojDownloadProgress(progress),
+              );
+
+              // Refresh file list after download
+              await checkFiles();
+              setIsDownloading(false);
+
+              Alert.alert(
+                'Download Complete',
+                'Model files downloaded successfully. You can now load the model.',
+              );
+            } catch (err) {
+              const message =
+                err instanceof Error
+                  ? err.message
+                  : 'Failed to download models';
+              console.error('❌ Download error:', message);
+              setDownloadError(message);
+              setIsDownloading(false);
+
+              Alert.alert('Download Failed', message);
+            }
+          },
+        },
+      ],
+    );
+  };
+
   const bothFilesReady = files?.modelExists && files?.mmprojExists;
   const isLoading = modelState === 'loading';
+  const needsDownload = requiredSize && requiredSize.totalSize > 0;
 
   const handleLoad = async () => {
     if (!files) {
       return;
     }
     await onLoadModel(files.modelPath, files.mmprojPath);
+  };
+
+  const getDownloadStatusText = (): string => {
+    if (!modelDownloadProgress && !mmprojDownloadProgress) {
+      return 'Preparing download...';
+    }
+
+    if (modelDownloadProgress && modelDownloadProgress.progress < 1) {
+      return `Downloading text model: ${formatBytes(modelDownloadProgress.bytesWritten)} / ${formatBytes(modelDownloadProgress.contentLength)} (${Math.round(modelDownloadProgress.progress * 100)}%)`;
+    }
+
+    if (mmprojDownloadProgress && mmprojDownloadProgress.progress < 1) {
+      return `Downloading vision encoder: ${formatBytes(mmprojDownloadProgress.bytesWritten)} / ${formatBytes(mmprojDownloadProgress.contentLength)} (${Math.round(mmprojDownloadProgress.progress * 100)}%)`;
+    }
+
+    return 'Finalizing download...';
+  };
+
+  const getOverallDownloadProgress = (): number => {
+    if (!requiredSize) {
+      return 0;
+    }
+
+    let totalDownloaded = 0;
+    const totalSize = requiredSize.totalSize;
+
+    if (requiredSize.modelSize > 0 && modelDownloadProgress) {
+      totalDownloaded += modelDownloadProgress.bytesWritten;
+    } else if (requiredSize.modelSize === 0) {
+      // Model already exists
+      totalDownloaded += requiredSize.modelSize;
+    }
+
+    if (requiredSize.mmprojSize > 0 && mmprojDownloadProgress) {
+      totalDownloaded += mmprojDownloadProgress.bytesWritten;
+    } else if (requiredSize.mmprojSize === 0) {
+      // MMProj already exists
+      totalDownloaded += requiredSize.mmprojSize;
+    }
+
+    return totalSize > 0 ? totalDownloaded / totalSize : 0;
   };
 
   return (
@@ -106,21 +220,53 @@ export const ModelSetupScreen: React.FC<ModelSetupScreenProps> = ({
         {!bothFilesReady && (
           <>
             <View style={styles.divider} />
+            {needsDownload && (
+              <View style={styles.downloadSection}>
+                <Text style={styles.downloadInfo}>
+                  📥 Download required: {formatBytes(requiredSize!.totalSize)}
+                </Text>
+                <TouchableOpacity
+                  style={[
+                    styles.downloadButton,
+                    isDownloading && styles.downloadButtonDisabled,
+                  ]}
+                  onPress={handleDownload}
+                  disabled={isDownloading}>
+                  {isDownloading ? (
+                    <ActivityIndicator color="#FFFFFF" size="small" />
+                  ) : (
+                    <Text style={styles.downloadButtonText}>
+                      Download from Hugging Face
+                    </Text>
+                  )}
+                </TouchableOpacity>
+              </View>
+            )}
             <Text style={styles.instructions}>{getSetupInstructions()}</Text>
-            <TouchableOpacity style={styles.refreshButton} onPress={checkFiles}>
+            <TouchableOpacity
+              style={styles.refreshButton}
+              onPress={checkFiles}
+              disabled={isDownloading}>
               <Text style={styles.refreshText}>🔄 Refresh</Text>
             </TouchableOpacity>
           </>
         )}
       </View>
 
+      {isDownloading && (
+        <ModelStatus
+          progress={getOverallDownloadProgress()}
+          label={getDownloadStatusText()}
+        />
+      )}
+
       {isLoading && (
         <ModelStatus progress={loadProgress} label="Loading model into RAM…" />
       )}
 
-      {error && (
+      {(error || downloadError) && (
         <View style={styles.errorCard}>
-          <Text style={styles.errorText}>⚠️ {error}</Text>
+          <Text style={styles.errorText}>⚠️ {error || downloadError}</Text>
         </View>
       )}
 
@@ -233,6 +379,39 @@ const styles = StyleSheet.create({
     color: '#616161',
     fontFamily: 'monospace',
     lineHeight: 20,
+  },
+  downloadSection: {
+    marginBottom: 16,
+    alignItems: 'center',
+  },
+  downloadInfo: {
+    fontSize: 14,
+    color: '#1565C0',
+    fontWeight: '500',
+    marginBottom: 12,
+  },
+  downloadButton: {
+    backgroundColor: '#4CAF50',
+    borderRadius: 12,
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    elevation: 2,
+    shadowColor: '#4CAF50',
+    shadowOffset: {width: 0, height: 2},
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    minWidth: 200,
+    alignItems: 'center',
+  },
+  downloadButtonDisabled: {
+    backgroundColor: '#BDBDBD',
+    elevation: 0,
+    shadowOpacity: 0,
+  },
+  downloadButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#FFFFFF',
   },
   refreshButton: {
     alignSelf: 'center',

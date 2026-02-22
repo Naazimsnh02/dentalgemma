@@ -21,4 +21,4 @@ export const STOP_WORDS = [
 ];
 
 export const MODEL_FILENAME = 'dentalgemma-4b-Q4_K_M.gguf';
-export const MMPROJ_FILENAME = 'mmproj-Dentalgemma-Model-BF16.gguf';
+export const MMPROJ_FILENAME = 'dentalgemma-mmproj-f16.gguf';
