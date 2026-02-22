@@ -224,10 +224,11 @@ describe('Checkpoint 12: Core AI Features Complete', () => {
       const caseData: ClinicalCase = {
         id: 'test-1',
         patient: { age: 30, gender: 'male' },
-        chiefComplaint: { description: 'Toothache', duration: '2 days', painLevel: 5, triggers: [] },
-        clinicalFindings: { intraoral: 'Caries', extraoral: 'Normal', softTissue: 'Healthy', periodontal: 'Normal' },
-        radiographicFindings: { description: 'Periapical radiolucency', boneLoss: 'None', periapicalStatus: 'Abnormal' },
-        medicalHistory: { medications: [], allergies: [], systemicConditions: [], previousTreatments: [] },
+        chiefComplaint: { description: 'Toothache' },
+        history: 'Pain started 2 days ago. Pain level 5.',
+        clinicalFindings: { description: 'Caries on tooth 36' },
+        radiographicFindings: { description: 'Periapical radiolucency' },
+        medicalHistory: { history: 'None', medications: 'None', systemicConditions: 'None', habits: 'None' },
         createdAt: new Date(),
         updatedAt: new Date(),
       };
@@ -464,16 +465,17 @@ describe('Checkpoint 12: Core AI Features Complete', () => {
       const clinicalCase: ClinicalCase = {
         id: 'case-1',
         patient: { age: 25, gender: 'female' },
-        chiefComplaint: { description: 'Pain', duration: '1 week', painLevel: 7, triggers: ['cold'] },
-        clinicalFindings: { intraoral: 'Caries', extraoral: 'Normal', softTissue: 'Inflamed', periodontal: 'Normal' },
-        radiographicFindings: { description: 'Shadow', boneLoss: 'None', periapicalStatus: 'Normal' },
-        medicalHistory: { medications: [], allergies: ['Penicillin'], systemicConditions: [], previousTreatments: [] },
+        chiefComplaint: { description: 'Pain' },
+        history: 'Pain started 1 week ago.',
+        clinicalFindings: { description: 'Caries' },
+        radiographicFindings: { description: 'Shadow' },
+        medicalHistory: { history: 'None', medications: 'None', systemicConditions: 'None', habits: 'None' },
         createdAt: new Date(),
         updatedAt: new Date(),
       };
 
       expect(clinicalCase.patient.age).toBe(25);
-      expect(clinicalCase.medicalHistory.allergies).toContain('Penicillin');
+      expect(clinicalCase.medicalHistory.medications).toContain('None');
     });
 
     test('CaseAssessment shape is correct', () => {

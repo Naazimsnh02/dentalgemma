@@ -182,36 +182,29 @@ describe('Modal Client Property-Based Tests', () => {
 
     const chiefComplaintArb = fc.record({
       description: fc.string({ minLength: 10, maxLength: 200 }),
-      duration: fc.string({ minLength: 5, maxLength: 50 }),
-      painLevel: fc.integer({ min: 1, max: 10 }),
-      triggers: fc.array(fc.string(), { minLength: 0, maxLength: 5 }),
     });
 
     const clinicalFindingsArb = fc.record({
-      intraoral: fc.string({ minLength: 10, maxLength: 200 }),
-      extraoral: fc.string({ minLength: 10, maxLength: 200 }),
-      softTissue: fc.string({ minLength: 10, maxLength: 200 }),
-      periodontal: fc.string({ minLength: 10, maxLength: 200 }),
+      description: fc.string({ minLength: 10, maxLength: 200 }),
     });
 
     const radiographicFindingsArb = fc.record({
       description: fc.string({ minLength: 10, maxLength: 200 }),
       xrayImage: fc.option(fc.string(), { nil: undefined }),
-      boneLoss: fc.string({ minLength: 5, maxLength: 100 }),
-      periapicalStatus: fc.string({ minLength: 5, maxLength: 100 }),
     });
 
     const medicalHistoryArb = fc.record({
-      medications: fc.array(fc.string(), { minLength: 0, maxLength: 5 }),
-      allergies: fc.array(fc.string(), { minLength: 0, maxLength: 5 }),
-      systemicConditions: fc.array(fc.string(), { minLength: 0, maxLength: 5 }),
-      previousTreatments: fc.array(fc.string(), { minLength: 0, maxLength: 5 }),
+      history: fc.string({ minLength: 0, maxLength: 200 }),
+      medications: fc.string({ minLength: 0, maxLength: 200 }),
+      systemicConditions: fc.string({ minLength: 0, maxLength: 200 }),
+      habits: fc.string({ minLength: 0, maxLength: 200 }),
     });
 
     const clinicalCaseArb = fc.record({
       id: fc.uuid(),
       patient: patientInfoArb,
       chiefComplaint: chiefComplaintArb,
+      history: fc.string({ minLength: 10, maxLength: 500 }),
       clinicalFindings: clinicalFindingsArb,
       radiographicFindings: radiographicFindingsArb,
       medicalHistory: medicalHistoryArb,

@@ -434,6 +434,14 @@ export class ModalClient {
     const startTime = Date.now();
 
     try {
+      // Helper to ensure values are strings (handles arrays from old data shapes)
+      const ensureString = (val: any, fallback = 'None specified'): string => {
+        if (!val || val.length === 0) return fallback;
+        if (Array.isArray(val)) return val.join(', ') || fallback;
+        if (typeof val === 'object') return JSON.stringify(val);
+        return String(val);
+      };
+
       // Make API request
       // Modal creates separate URLs for each function: baseUrl-functionname.modal.run
       const response = await fetchWithRetry<AssessCaseResponse>(
@@ -442,17 +450,17 @@ export class ModalClient {
           method: 'POST',
           body: JSON.stringify({
             patient: {
-              age: caseData.patient.age,
-              gender: caseData.patient.gender,
-              occupation: caseData.patient.occupation || 'Not specified',
+              age: Number(caseData.patient?.age) || 30,
+              gender: String(caseData.patient?.gender || 'other'),
+              occupation: caseData.patient?.occupation ? String(caseData.patient.occupation) : 'Not specified',
             },
-            chief_complaint: caseData.chiefComplaint.description,
-            history: caseData.history,
-            clinical_findings: caseData.clinicalFindings.description,
-            radiographic_findings: caseData.radiographicFindings.description,
-            medical_history: caseData.medicalHistory.systemicConditions || 'None significant',
-            current_medications: caseData.medicalHistory.medications || 'None',
-            habits: caseData.medicalHistory.habits || 'None reported',
+            chief_complaint: ensureString(caseData.chiefComplaint?.description),
+            history: ensureString(caseData.history),
+            clinical_findings: ensureString(caseData.clinicalFindings?.description),
+            radiographic_findings: ensureString(caseData.radiographicFindings?.description),
+            medical_history: ensureString(caseData.medicalHistory?.systemicConditions, 'None significant'),
+            current_medications: ensureString(caseData.medicalHistory?.medications, 'None'),
+            habits: ensureString(caseData.medicalHistory?.habits, 'None reported'),
             max_tokens: 2048,
           }),
         }

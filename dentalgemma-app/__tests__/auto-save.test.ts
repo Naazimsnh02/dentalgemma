@@ -50,31 +50,24 @@ const clinicalCaseArbitrary = fc.record({
   patient: fc.record({
     age: fc.integer({ min: 1, max: 120 }),
     gender: fc.constantFrom('male', 'female', 'other'),
-    patientId: fc.option(fc.string({ minLength: 1, maxLength: 50 }), { nil: undefined }),
+    occupation: fc.option(fc.string({ minLength: 1, maxLength: 50 }), { nil: undefined }),
   }),
   chiefComplaint: fc.record({
     description: fc.string({ minLength: 1, maxLength: 500 }),
-    duration: fc.string({ minLength: 1, maxLength: 100 }),
-    painLevel: fc.integer({ min: 1, max: 10 }),
-    triggers: fc.array(fc.string({ maxLength: 100 }), { maxLength: 10 }),
   }),
+  history: fc.string({ minLength: 1, maxLength: 1000 }),
   clinicalFindings: fc.record({
-    intraoral: fc.string({ maxLength: 500 }),
-    extraoral: fc.string({ maxLength: 500 }),
-    softTissue: fc.string({ maxLength: 500 }),
-    periodontal: fc.string({ maxLength: 500 }),
+    description: fc.string({ maxLength: 500 }),
   }),
   radiographicFindings: fc.record({
     description: fc.string({ maxLength: 500 }),
     xrayImage: fc.option(fc.string({ maxLength: 100 }), { nil: undefined }),
-    boneLoss: fc.string({ maxLength: 200 }),
-    periapicalStatus: fc.string({ maxLength: 200 }),
   }),
   medicalHistory: fc.record({
-    medications: fc.array(fc.string({ maxLength: 100 }), { maxLength: 20 }),
-    allergies: fc.array(fc.string({ maxLength: 100 }), { maxLength: 20 }),
-    systemicConditions: fc.array(fc.string({ maxLength: 100 }), { maxLength: 20 }),
-    previousTreatments: fc.array(fc.string({ maxLength: 100 }), { maxLength: 20 }),
+    history: fc.string({ maxLength: 500 }),
+    medications: fc.string({ maxLength: 500 }),
+    systemicConditions: fc.string({ maxLength: 500 }),
+    habits: fc.string({ maxLength: 500 }),
   }),
   createdAt: fc.date(),
   updatedAt: fc.date(),
@@ -183,27 +176,20 @@ describe('Property 30: Form Auto-Save', () => {
           }),
           chiefComplaint: fc.record({
             description: fc.string({ minLength: 1, maxLength: 500 }),
-            duration: fc.string({ minLength: 1, maxLength: 100 }),
-            painLevel: fc.integer({ min: 1, max: 10 }),
-            triggers: fc.array(fc.string({ maxLength: 100 }), { maxLength: 5 }),
           }),
+          history: fc.string({ minLength: 1, maxLength: 1000 }),
           // Minimal other fields
           clinicalFindings: fc.record({
-            intraoral: fc.string({ maxLength: 100 }),
-            extraoral: fc.constant(''),
-            softTissue: fc.constant(''),
-            periodontal: fc.constant(''),
+            description: fc.string({ maxLength: 100 }),
           }),
           radiographicFindings: fc.record({
             description: fc.constant(''),
-            boneLoss: fc.constant(''),
-            periapicalStatus: fc.constant(''),
           }),
           medicalHistory: fc.record({
-            medications: fc.constant([]),
-            allergies: fc.constant([]),
-            systemicConditions: fc.constant([]),
-            previousTreatments: fc.constant([]),
+            history: fc.constant(''),
+            medications: fc.constant(''),
+            systemicConditions: fc.constant(''),
+            habits: fc.constant(''),
           }),
           createdAt: fc.date(),
           updatedAt: fc.date(),
@@ -315,26 +301,19 @@ describe('Property 30: Form Auto-Save', () => {
           }),
           chiefComplaint: fc.record({
             description: fc.constant(''),
-            duration: fc.constant(''),
-            painLevel: fc.integer({ min: 1, max: 10 }),
-            triggers: fc.constant([]),
           }),
+          history: fc.constant(''),
           clinicalFindings: fc.record({
-            intraoral: fc.constant(''),
-            extraoral: fc.constant(''),
-            softTissue: fc.constant(''),
-            periodontal: fc.constant(''),
+            description: fc.constant(''),
           }),
           radiographicFindings: fc.record({
             description: fc.constant(''),
-            boneLoss: fc.constant(''),
-            periapicalStatus: fc.constant(''),
           }),
           medicalHistory: fc.record({
-            medications: fc.constant([]),
-            allergies: fc.constant([]),
-            systemicConditions: fc.constant([]),
-            previousTreatments: fc.constant([]),
+            history: fc.constant(''),
+            medications: fc.constant(''),
+            systemicConditions: fc.constant(''),
+            habits: fc.constant(''),
           }),
           createdAt: fc.date(),
           updatedAt: fc.date(),
@@ -345,7 +324,7 @@ describe('Property 30: Form Auto-Save', () => {
 
           expect(restored).not.toBeNull();
           expect(restored!.chiefComplaint.description).toBe('');
-          expect(restored!.clinicalFindings.intraoral).toBe('');
+          expect(restored!.clinicalFindings.description).toBe('');
         }
       ),
       { numRuns: 50 }

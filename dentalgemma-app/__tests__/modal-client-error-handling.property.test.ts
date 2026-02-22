@@ -307,27 +307,20 @@ describe('Modal Client Error Handling Property Tests', () => {
         id: '123',
         patient: { age: 30, gender: 'male' as const },
         chiefComplaint: {
-          description: 'Pain',
-          duration: '2 days',
-          painLevel: 7,
-          triggers: [],
+          description: 'Pain'
         },
+        history: 'Pain for 2 days. Pain level 7.',
         clinicalFindings: {
-          intraoral: 'Findings',
-          extraoral: 'Normal',
-          softTissue: 'Normal',
-          periodontal: 'Normal',
+          description: 'Findings'
         },
         radiographicFindings: {
-          description: 'Findings',
-          boneLoss: 'None',
-          periapicalStatus: 'Normal',
+          description: 'Findings'
         },
         medicalHistory: {
-          medications: [],
-          allergies: [],
-          systemicConditions: [],
-          previousTreatments: [],
+          history: 'None',
+          medications: 'None',
+          systemicConditions: 'None',
+          habits: 'None',
         },
         createdAt: new Date(),
         updatedAt: new Date(),

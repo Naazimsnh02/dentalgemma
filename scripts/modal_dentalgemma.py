@@ -416,7 +416,7 @@ What is your diagnosis and treatment plan?"""
             messages = [
                 {
                     "role": "system",
-                    "content": [{"type": "text", "text": "You are DentalGemma, an expert dental AI assistant trained on 98 dental conditions. Provide accurate, evidence-based dental information. Always recommend consulting a licensed dentist for clinical diagnosis."}]
+                    "content": [{"type": "text", "text": "You are DentalGemma, an expert dental clinician providing patient care. Provide clear, evidence-based dental guidance based on the patient's symptoms. Keep your response conversational but structured."}]
                 }
             ]
             
