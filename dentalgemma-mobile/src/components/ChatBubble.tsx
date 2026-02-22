@@ -1,9 +1,47 @@
-import React from 'react';
-import {View, Text, Image, StyleSheet} from 'react-native';
+import React, {useState, useEffect} from 'react';
+import {View, Text, Image, StyleSheet, Animated} from 'react-native';
 import type {Message} from '../types';
 
 type ChatBubbleProps = {
   message: Message;
+};
+
+const TypingIndicator = () => {
+  const [dot1] = useState(new Animated.Value(0));
+  const [dot2] = useState(new Animated.Value(0));
+  const [dot3] = useState(new Animated.Value(0));
+
+  useEffect(() => {
+    const animateDot = (dot: Animated.Value, delay: number) => {
+      Animated.loop(
+        Animated.sequence([
+          Animated.timing(dot, {
+            toValue: 1,
+            duration: 400,
+            useNativeDriver: true,
+            delay,
+          }),
+          Animated.timing(dot, {
+            toValue: 0,
+            duration: 400,
+            useNativeDriver: true,
+          }),
+        ])
+      ).start();
+    };
+
+    animateDot(dot1, 0);
+    animateDot(dot2, 200);
+    animateDot(dot3, 400);
+  }, [dot1, dot2, dot3]);
+
+  return (
+    <View style={styles.typingContainer}>
+      <Animated.View style={[styles.typingDot, { opacity: dot1 }]} />
+      <Animated.View style={[styles.typingDot, { opacity: dot2 }]} />
+      <Animated.View style={[styles.typingDot, { opacity: dot3 }]} />
+    </View>
+  );
 };
 
 export const ChatBubble: React.FC<ChatBubbleProps> = ({message}) => {
@@ -17,7 +55,11 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({message}) => {
       ]}>
       {!isUser && (
         <View style={styles.avatar}>
-          <Text style={styles.avatarText}>🦷</Text>
+          <Image 
+            source={require('../../android/app/src/main/res/mipmap-xxhdpi/ic_launcher.png')} 
+            style={styles.avatarImage} 
+            resizeMode="cover"
+          />
         </View>
       )}
       <View
@@ -32,12 +74,15 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({message}) => {
             resizeMode="contain"
           />
         )}
-        <Text
-          style={[styles.text, isUser ? styles.userText : styles.assistantText]}
-          selectable>
-          {message.content}
-          {message.isStreaming && <Text style={styles.cursor}>▊</Text>}
-        </Text>
+        {message.isStreaming && !message.content ? (
+          <TypingIndicator />
+        ) : (
+          <Text
+            style={[styles.text, isUser ? styles.userText : styles.assistantText]}
+            selectable>
+            {message.content}
+          </Text>
+        )}
       </View>
     </View>
   );
@@ -59,14 +104,16 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: '#E3F2FD',
+    backgroundColor: '#FFFFFF', // Changed background to white for the image
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 8,
     marginTop: 4,
+    overflow: 'hidden', // Add overflow hidden for the image
   },
-  avatarText: {
-    fontSize: 16,
+  avatarImage: {
+    width: 32,
+    height: 32,
   },
   bubble: {
     maxWidth: '75%',
@@ -97,8 +144,17 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     marginBottom: 8,
   },
-  cursor: {
-    color: '#1976D2',
-    opacity: 0.7,
+  typingContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    height: 22, // Match line height
+    paddingHorizontal: 4,
+  },
+  typingDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#888',
+    marginHorizontal: 3,
   },
 });

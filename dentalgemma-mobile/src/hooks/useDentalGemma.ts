@@ -24,28 +24,67 @@ type UseDentalGemmaReturn = {
 };
 
 /**
+ * Decodes a sequence of hex strings representing UTF-8 bytes.
+ */
+const decodeBytes = (hexArray: string[]): string => {
+  try {
+    const uriString = hexArray.map(hex => '%' + hex.padStart(2, '0')).join('');
+    return decodeURIComponent(uriString);
+  } catch (e) {
+    // If invalid UTF-8 (e.g., partial sequence), return empty string
+    return '';
+  }
+};
+
+/**
  * Clean tokenizer artifacts from Gemma GGUF output.
  * 
  * The Gemma tokenizer in GGUF format sometimes produces byte-fallback tokens
- * like [UNK_BYTE_0x...] when it encounters characters it can't properly decode.
- * This is a known issue with SentencePiece tokenizers converted to GGUF.
+ * like [UNK_BYTE_0x...] or <0x...> when it encounters characters it can't 
+ * properly decode (like spaces or emojis). 
  * 
- * Root cause: The tokenizer hash for MedGemma/DentalGemma (Gemma 3 family) may not
- * be fully recognized by llama.cpp, causing it to fall back to byte-level encoding
- * for certain Unicode sequences or special characters.
+ * This function extracts these hex sequences and decodes them back to standard UTF-8.
  */
 const cleanTokenizerArtifacts = (text: string): string => {
-  let cleaned = text;
+  let hexBytes: string[] = [];
+  let parts: string[] = [];
   
-  // Remove UNK_BYTE patterns (with or without brackets)
+  // Match either [UNK_BYTE_0xHEX] or <0xHEX>
+  const regex = /(?:\[UNK_BYTE_0x([0-9a-fA-F]+)\]|<0x([0-9a-fA-F]+)>)/gi;
+  let lastIndex = 0;
+  let match;
+  
+  while ((match = regex.exec(text)) !== null) {
+    if (match.index > lastIndex) {
+      if (hexBytes.length > 0) {
+        parts.push(decodeBytes(hexBytes));
+        hexBytes = [];
+      }
+      parts.push(text.substring(lastIndex, match.index));
+    }
+    // match[1] is for [UNK_BYTE_...], match[2] is for <0x...>
+    hexBytes.push(match[1] || match[2]);
+    lastIndex = regex.lastIndex;
+  }
+  
+  if (hexBytes.length > 0) {
+     parts.push(decodeBytes(hexBytes));
+  }
+  if (lastIndex < text.length) {
+    parts.push(text.substring(lastIndex));
+  }
+  
+  let cleaned = parts.join('');
+  
+  // Map SentencePiece space character to standard space
+  cleaned = cleaned.replace(/\u2581/g, ' ');
+  
+  // Strip any remaining literal artifact tags that weren't decoded
   cleaned = cleaned.replace(/\[?UNK_BYTE_0x[0-9a-fA-F]+_?\]?/gi, '');
   cleaned = cleaned.replace(/UNK_BYTE_/gi, '');
   
-  // Remove hex byte patterns
-  cleaned = cleaned.replace(/<0x[0-9a-fA-F]+>/gi, '');
-  
   // Remove Unicode replacement character
-  cleaned = cleaned.replace(/�/g, '');
+  cleaned = cleaned.replace(/\uFFFD/g, '');
   
   // Clean up multiple spaces
   cleaned = cleaned.replace(/\s{2,}/g, ' ').trim();
@@ -244,6 +283,13 @@ export const useDentalGemma = (): UseDentalGemmaReturn => {
         }
         prompt += '<start_of_turn>model\n';
 
+        console.log('📤 FULL PROMPT TO MODEL:');
+        console.log('─'.repeat(80));
+        console.log(prompt);
+        console.log('─'.repeat(80));
+        console.log(`Prompt length: ${prompt.length} chars`);
+        console.log(`Has image: ${!!imagePath}`);
+
         console.log('📤 Sending prompt to model (length=%d, hasImage=%s)...', prompt.length, !!imagePath);
         setStatusDetailed('Calling native completion()...');
 
@@ -252,15 +298,22 @@ export const useDentalGemma = (): UseDentalGemmaReturn => {
             prompt,
             media_paths: imagePath ? [imagePath] : [],
             n_predict: 1024,
-            temperature: 0.7,
+            temperature: 0.2, // Lower temp to minimize UNK_BYTE sampling
             top_p: 0.9,
             top_k: 40,
-            stop: [...STOP_WORDS, '<end_of_turn>'],
+            penalty_repeat: 1.15, // Break endless repetition loops
+            penalty_freq: 0.05,
+            stop: [...STOP_WORDS, '<end_of_turn>', '<eos>'],
           },
           data => {
             if (data.token) {
               setStatusDetailed('Receiving tokens...');
               const cleanToken = cleanTokenizerArtifacts(data.token);
+              
+              // Log each token for debugging
+              if (cleanToken.trim()) {
+                console.log('🔤 Token:', JSON.stringify(cleanToken));
+              }
               
               // Only send non-empty tokens
               if (cleanToken.trim()) {
@@ -271,10 +324,21 @@ export const useDentalGemma = (): UseDentalGemmaReturn => {
         );
 
         console.log('✅ Generation complete');
+        console.log('📥 FULL MODEL RESPONSE:');
+        console.log('─'.repeat(80));
+        console.log(result.text || '');
+        console.log('─'.repeat(80));
+        console.log(`Response length: ${(result.text || '').length} chars`);
+        
         setStatusDetailed('Finished generation.');
         
         // Clean the final result text of any remaining tokenizer artifacts
         const cleanText = cleanTokenizerArtifacts(result.text || '');
+        
+        console.log('📥 CLEANED RESPONSE:');
+        console.log('─'.repeat(80));
+        console.log(cleanText);
+        console.log('─'.repeat(80));
         
         return cleanText;
       } catch (err) {

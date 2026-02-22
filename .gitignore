@@ -59,6 +59,8 @@ finetune/output/
 .kiro/
 docs/
 llama.rn/
+temp_prompt.txt
+test_symptom_checker.js
 
 # Documentation
 AGENTS.md

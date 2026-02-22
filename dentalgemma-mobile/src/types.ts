@@ -21,3 +21,23 @@ export type ModelFiles = {
   modelExists: boolean;
   mmprojExists: boolean;
 };
+
+export type SymptomData = {
+  location: string;
+  painType: string;
+  duration: string;
+  triggers: string[];
+  associatedSymptoms: string[];
+  medicalHistory: string[];
+};
+
+export type SymptomResult = {
+  possibleConditions: Array<{
+    condition: string;
+    likelihood: number;
+  }>;
+  urgency: 'emergency' | 'urgent' | 'routine' | 'home-care';
+  actionGuidance: string;
+  homeCareRecommendations: string[];
+  redFlags: string[];
+};

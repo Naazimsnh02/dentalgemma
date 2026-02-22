@@ -4,6 +4,8 @@ import {SafeAreaProvider} from 'react-native-safe-area-context';
 import {toggleNativeLog, addNativeLogListener} from 'llama.rn';
 import {ModelSetupScreen} from './screens/ModelSetupScreen';
 import {ChatScreen} from './screens/ChatScreen';
+import {SymptomCheckerScreen} from './screens/SymptomCheckerScreen';
+import {HomeScreen} from './screens/HomeScreen';
 import {useDentalGemma} from './hooks/useDentalGemma';
 import type {ModelState} from './types';
 
@@ -13,8 +15,11 @@ addNativeLogListener((level, text) => {
   console.log(['[rnllama]', level ? `[${level}]` : '', text].filter(Boolean).join(' '));
 });
 
+type Screen = 'home' | 'chat' | 'symptom-checker';
+
 const App: React.FC = () => {
   const [modelState, setModelState] = useState<ModelState>('checking');
+  const [currentScreen, setCurrentScreen] = useState<Screen>('home');
   const {
     isModelLoaded,
     isGenerating,
@@ -41,15 +46,41 @@ const App: React.FC = () => {
     [loadModel],
   );
 
-  const handleBack = useCallback(async () => {
+  const handleBackToHome = useCallback(() => {
+    setCurrentScreen('home');
+  }, []);
+
+  const handleNavigateToChat = useCallback(() => {
+    setCurrentScreen('chat');
+  }, []);
+
+  const handleNavigateToSymptomChecker = useCallback(() => {
+    setCurrentScreen('symptom-checker');
+  }, []);
+
+  const handleUnloadModel = useCallback(async () => {
     await unloadModel();
     setModelState('checking');
+    setCurrentScreen('home');
   }, [unloadModel]);
 
   return (
     <SafeAreaProvider>
       <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
-      {isModelLoaded ? (
+      {!isModelLoaded ? (
+        <ModelSetupScreen
+          modelState={modelState}
+          loadProgress={loadProgress}
+          error={error}
+          onLoadModel={handleLoadModel}
+        />
+      ) : currentScreen === 'home' ? (
+        <HomeScreen
+          onNavigateToChat={handleNavigateToChat}
+          onNavigateToSymptomChecker={handleNavigateToSymptomChecker}
+          onUnloadModel={handleUnloadModel}
+        />
+      ) : currentScreen === 'chat' ? (
         <ChatScreen
           sendMessage={sendMessage}
           stopGeneration={stopGeneration}
@@ -57,14 +88,13 @@ const App: React.FC = () => {
           isGenerating={isGenerating}
           error={error}
           statusDetailed={statusDetailed}
-          onBack={handleBack}
+          onBack={handleBackToHome}
         />
       ) : (
-        <ModelSetupScreen
-          modelState={modelState}
-          loadProgress={loadProgress}
-          error={error}
-          onLoadModel={handleLoadModel}
+        <SymptomCheckerScreen
+          sendMessage={sendMessage}
+          isGenerating={isGenerating}
+          onBack={handleBackToHome}
         />
       )}
     </SafeAreaProvider>

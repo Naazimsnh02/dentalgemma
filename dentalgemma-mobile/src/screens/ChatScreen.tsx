@@ -95,7 +95,7 @@ export const ChatScreen: React.FC<ChatScreenProps> = ({
     let accumulated = '';
     try {
       const finalText = await sendMessage(
-        text || 'Analyze this dental X-ray.',
+        userMessage.content,
         selectedImage,
         history,
         token => {
@@ -110,6 +110,7 @@ export const ChatScreen: React.FC<ChatScreenProps> = ({
         },
       );
 
+      // Once generation is done, update the assistant message with the FULL text.
       setMessages(prev =>
         prev.map(m =>
           m.id === assistantId
@@ -123,7 +124,7 @@ export const ChatScreen: React.FC<ChatScreenProps> = ({
           m.id === assistantId
             ? {
                 ...m,
-                content: accumulated || 'Error generating response.',
+                content: 'Error generating response.',
                 isStreaming: false,
               }
             : m,
