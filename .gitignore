@@ -59,6 +59,7 @@ finetune/output/
 .kiro/
 docs/
 llama.rn/
+dentalgemma-video/
 temp_prompt.txt
 test_symptom_checker.js
 

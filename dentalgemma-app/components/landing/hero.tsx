@@ -94,7 +94,7 @@ export function Hero() {
               { label: 'Clinical Coverage', value: '98+ Conditions' },
               { label: 'Fine-Tuning Data', value: '5k+ Samples' },
               { label: 'Foundation Model', value: 'MedGemma 4B' },
-              { label: 'Dataset Strategy', value: 'Compositional VQA' },
+              { label: 'Mobile Support', value: 'Quantized GGUF' },
             ].map((stat, index) => (
               <div 
                 key={index}

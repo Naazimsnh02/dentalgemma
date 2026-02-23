@@ -5,6 +5,9 @@ import {
   Workflow,
   MapPin,
   BookOpen,
+  Stethoscope,
+  GraduationCap,
+  Smartphone,
   type LucideIcon,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -38,7 +41,7 @@ const features: Feature[] = [
     icon: Workflow,
     title: 'Agentic Diagnostic Workflow',
     description:
-      'Autonomous multi-step diagnostic orchestration powered by Vercel AI SDK 6. Coordinates analysis, research, and referral in one seamless pipeline.',
+      'Autonomous multi-step diagnostic orchestration powered by a Custom Async Engine. Coordinates analysis, research, and referral in one seamless pipeline.',
   },
   {
     icon: MapPin,
@@ -52,6 +55,24 @@ const features: Feature[] = [
     description:
       'Access evidence-based dental literature through PubMed integration. Search, filter, and review the latest clinical studies and guidelines.',
   },
+  {
+    icon: Stethoscope,
+    title: 'Symptom Checker',
+    description:
+      'Evaluate oral symptoms using DentalGemma\'s advanced diagnostic reasoning for an instant assessment and urgency classification.',
+  },
+  {
+    icon: GraduationCap,
+    title: 'Patient Education Portal',
+    description:
+      'Interactive learning portal featuring a dental anatomy explorer and clinical condition explanations covering 98 unique situations.',
+  },
+  {
+    icon: Smartphone,
+    title: 'Native Mobile App',
+    description:
+      'Offline-capable React Native companion app running quantized GGUF foundation models fully on-device natively via llama.cpp bounds (llama.rn).',
+  }
 ];
 
 export function Features() {

@@ -4,7 +4,7 @@ const techItems = [
   { emoji: "⚡", label: "Next.js 16" },
   { emoji: "🧠", label: "MedGemma 1.5 4B" },
   { emoji: "🚀", label: "Modal.com GPU" },
-  { emoji: "🤖", label: "Vercel AI SDK 6" },
+  { emoji: "🤖", label: "Custom Async Engine" },
   { emoji: "📚", label: "PubMed E-Utils" },
   { emoji: "📍", label: "Google Places API" },
   { emoji: "🎨", label: "Tailwind CSS v4" },

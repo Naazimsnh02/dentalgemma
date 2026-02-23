@@ -62,6 +62,7 @@ finetune/
 │   ├── process_panoramic.py          # Dentition assessment with clinical context
 │   ├── process_opg_detection.py      # Location-aware diagnosis with region mapping
 │   ├── process_text_cases.py         # JSONL clinical cases → chat-format instruct data
+│   ├── process_dental_radiography.py # [Unused] Legacy processor for removed dataset
 │   ├── answer_builder.py             # Compositional answer generation utility
 │   ├── inspect_dataset.py            # Dataset inspection utility
 │   ├── export_to_csv.py              # Export utility
@@ -88,8 +89,12 @@ finetune/
 │   └── Wildstashdental 2.5k-instruct/
 │       └── dental_training_data_v3.jsonl
 ├── output/                           # Built datasets (not tracked in git)
+├── dataset-mermaid-diagram.png       # Dataset architecture flow diagram
+├── mermaid-diagram.md                # Markdown source for the Mermaid architecture diagram
 ├── dentalgemma-fine-tune.ipynb       # Fine-tuning notebook (Latest version with bfloat16 LoRA)
 ├── dentalgemma_validation.ipynb      # Validation and inference notebook
+├── readme_instruct.md                # HuggingFace Dataset Card for Instruct dataset
+├── readme_vqa.md                     # HuggingFace Dataset Card for VQA dataset
 └── README.md                         # This file
 ```
 
@@ -135,8 +140,8 @@ Two curated HuggingFace datasets power the fine-tuning:
 
 | Split | Samples |
 |:------|--------:|
-| Train | 2,244 |
-| Validation | 250 |
+| Train | 2,246 |
+| Validation | 248 |
 | **Total** | **2,494** |
 
 **Features:**

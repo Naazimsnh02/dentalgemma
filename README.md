@@ -47,7 +47,7 @@
 
 - **Fine-tuned MedGemma 1.5 4B IT** — Specialized for dental diagnostics across 98 clinical conditions
 - **Cloud-First Architecture** — GPU-accelerated inference via Modal.com for high accuracy and speed
-- **Multi-Agent Diagnostic System** — Intelligent workflow orchestration using Vercel AI SDK 6
+- **Multi-Agent Diagnostic System** — Intelligent workflow orchestration using a custom Async Generator Engine
 - **Voice Consultation** — Web Speech API combined with DentalGemma
 - **Evidence-Based Research** — Integrated PubMed search for clinical guidelines
 - **Mobile Companion App** — Offline-capable React Native application running DentalGemma natively via llama.cpp
@@ -74,7 +74,7 @@ MedGemma was **not originally trained on dental data**, making this a novel task
 | 📸 **Dental Image Analysis** | Analyze clinical photos and radiographs (OPG, bitewing, periapical) for cavity detection and oral health assessment | DentalGemma 1.5 4B IT |
 | 📋 **Clinical Assessment** | Comprehensive diagnostic reports with diagnosis, treatment plans, antibiotic recommendations, and follow-up schedules | DentalGemma 1.5 4B IT |
 | 🎤 **Voice Consultation** | Hands-free clinical queries using the Web Speech API backed by the DentalGemma model | Web Speech API |
-| 🤖 **Agentic Workflows** | Multi-agent system orchestrating X-ray analysis, research synthesis, and specialist referrals | Vercel AI SDK 6 |
+| 🤖 **Agentic Workflows** | Multi-agent system orchestrating X-ray analysis, research synthesis, and specialist referrals | Custom Async Engine |
 
 ### Additional Features
 
@@ -171,9 +171,12 @@ MedGemma was **not originally trained on dental data**, making this a novel task
 │  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐              │
 │  │ Live Chat│ │ Image    │ │ Symptom  │ │ Dentist  │              │
 │  │ Assistant│ │ Analysis │ │ Checker  │ │ Finder   │              │
-│  └────┬─────┘ └────┬─────┘ └────┬─────┘ └──────────┘              │
-│       │             │            │                                  │
-│  ┌────┴─────────────┴────────────┴──────────────────────────┐      │
+│  ├──────────┤ ├──────────┤ ├──────────┤ ├──────────┤              │
+│  │ Clinical │ │ Research │ │ Patient  │ │ Model    │              │
+│  │ Assess.  │ │ Dashboard│ │ Education│ │ Setup    │              │
+│  └────┬─────┘ └────┬─────┘ └────┬─────┘ └────┬─────┘              │
+│       │             │            │             │                    │
+│  ┌────┴─────────────┴────────────┴─────────────┴────────────┐      │
 │  │               llama.rn (llama.cpp) ON-DEVICE             │      │
 │  │     (GGUF Quantized Models running 100% Offline)         │      │
 │  └──────────────────────────────────────────────────────────┘      │
@@ -228,7 +231,7 @@ MedGemma was **not originally trained on dental data**, making this a novel task
 | Service | Technology | Purpose |
 |---------|------------|---------|
 | **Model Serving** | Modal.com | GPU inference (L40S), serverless, GPU snapshotting |
-| **AI Framework** | Vercel AI SDK 6 | Agent abstractions, streaming, type-safe outputs |
+| **AI Framework** | Custom Async Engine | Agent abstractions, streaming generator patterns |
 | **Voice** | Web Speech API | Browser-native speech recognition and TTS |
 | **Location Services** | Google Places API | Dentist finder and location search |
 | **Research** | PubMed E-Utils API | Free medical literature search |
@@ -362,13 +365,14 @@ MedGemma was **not originally trained on dental data**, making this a novel task
    
    Edit `.env.local` and add your API keys:
    ```env
-   # Modal.com Backend
-   NEXT_PUBLIC_MODAL_ENDPOINT=https://your-modal-endpoint.modal.run
+   # Modal.com API Configuration
+   NEXT_PUBLIC_MODAL_BASE_URL=https://your-modal-deployment
    
-   # Google APIs
-   NEXT_PUBLIC_GOOGLE_PLACES_API_KEY=your_places_api_key
+   # Google APIs (Server-side only)
+   GOOGLE_PLACES_API_KEY=your-google-places-api-key
    
-   # Optional: Analytics, monitoring, etc.
+   # Optional: PubMed API Key
+   PUBMED_API_KEY=optional-for-higher-rate-limits
    ```
 
 4. **Run the development server**
@@ -398,11 +402,35 @@ MedGemma was **not originally trained on dental data**, making this a novel task
    modal deploy modal_dentalgemma.py
    ```
    
-   Copy the endpoint URL and add it to your `.env.local` as `NEXT_PUBLIC_MODAL_ENDPOINT`
+   Copy the endpoint URL and add it to your `.env.local` as `NEXT_PUBLIC_MODAL_BASE_URL`
 
 3. **Test the deployment**
    ```bash
    modal app list
+   ```
+
+### Running the Mobile App (React Native)
+
+1. **Navigate to the mobile directory and install dependencies**
+   ```bash
+   cd ../dentalgemma-mobile
+   npm install
+   ```
+
+2. **Configure environment variables**
+   ```bash
+   cp .env.example .env
+   ```
+   Edit `.env` and add your Google Places API key.
+
+3. **Run on Android or iOS**
+   ```bash
+   # For Android
+   npm run android
+   
+   # For iOS (macOS only)
+   cd ios && pod install && cd ..
+   npm run ios
    ```
 
 ---
@@ -504,7 +532,7 @@ dentalgemma/
 |-------------|----------|
 | **🏆 Main Track** | Production-ready application with 13 integrated features, professional deployment, comprehensive documentation |
 | **🏆 Novel Task** | MedGemma not originally trained on dental data; 4 datasets curated, 5,023 samples, unified multimodal fine-tuning, 98 dental conditions |
-| **🏆 Agentic Workflow** | Vercel AI SDK 6 multi-agent system with 6-step autonomous diagnostic pipeline, transparent reasoning, tool calling |
+| **🏆 Agentic Workflow** | Custom multi-agent system with 6-step autonomous diagnostic pipeline, transparent reasoning, tool calling |
 
 ### Evaluation Criteria Coverage
 
@@ -530,7 +558,7 @@ dentalgemma/
 
 ## 📜 License
 
-This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the Apache License 2.0.
 
 ### Component Licenses
 
@@ -547,7 +575,7 @@ If you use DentalGemma in your research or project, please cite:
 ```bibtex
 @misc{dentalgemma2026,
   title={DentalGemma: Fine-tuning MedGemma for Dental Diagnostics},
-  author={Naazim},
+  author={Syed Naazim Hussain},
   year={2026},
   publisher={HuggingFace},
   howpublished={\url{https://github.com/naazimsnh02/dentalgemma}},
