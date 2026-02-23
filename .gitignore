@@ -57,12 +57,16 @@ finetune/output/
 
 # Custom
 .kiro/
+.agent/
 docs/
 llama.rn/
 dentalgemma-video/
 temp_prompt.txt
 test_symptom_checker.js
+Submission_Final.md
+SUBMISSION.md
+Technical Document.md
+
 
 # Documentation
 AGENTS.md
-SUBMISSION.md

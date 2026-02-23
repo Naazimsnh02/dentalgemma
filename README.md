@@ -1,5 +1,7 @@
 <div align="center">
 
+<img src="screenshots/thumbnail.png" alt="DentalGemma Banner" width="800"/>
+
 # 🦷 DentalGemma
 
 ### AI-Powered Dental Diagnostics with Intelligent Agentic Workflows
@@ -73,8 +75,9 @@ MedGemma was **not originally trained on dental data**, making this a novel task
 |---------|-------------|------------|
 | 📸 **Dental Image Analysis** | Analyze clinical photos and radiographs (OPG, bitewing, periapical) for cavity detection and oral health assessment | DentalGemma 1.5 4B IT |
 | 📋 **Clinical Assessment** | Comprehensive diagnostic reports with diagnosis, treatment plans, antibiotic recommendations, and follow-up schedules | DentalGemma 1.5 4B IT |
-| 🎤 **Voice Consultation** | Hands-free clinical queries using the Web Speech API backed by the DentalGemma model | Web Speech API |
+| 🔍 **Symptom Checker** | AI-powered urgency assessment using the DentalGemma model | DentalGemma 1.5 4B IT |
 | 🤖 **Agentic Workflows** | Multi-agent system orchestrating X-ray analysis, research synthesis, and specialist referrals | Custom Async Engine |
+| 🎤 **Voice Consultation** | Hands-free clinical queries using the Web Speech API backed by the DentalGemma model | Web Speech API |
 
 ### Additional Features
 
@@ -84,7 +87,6 @@ MedGemma was **not originally trained on dental data**, making this a novel task
 | 📊 **Treatment Tracker** | Visual progress monitoring with milestones, charts, and cost tracking |
 | 🔬 **Research Dashboard** | PubMed integration for evidence-based literature search and citation export |
 | 📚 **Patient Education Portal** | Interactive learning portal with anatomy explorer covering 98 dental conditions |
-| 🔍 **Symptom Checker** | AI-powered urgency assessment using the DentalGemma model |
 | 📈 **Analytics Dashboard** | Usage statistics, condition distribution, and activity timeline |
 | ℹ️ **Model Information** | Detailed model architecture, training data, and performance metrics |
 | ⚙️ **Settings & History** | Customizable preferences and analysis history management |
@@ -103,12 +105,9 @@ MedGemma was **not originally trained on dental data**, making this a novel task
 
 ## 📸 Screenshots
 
-<div align="center">
-  <img src="screenshots/landingpage.png" alt="Landing Page" width="800"/>
-  <p><em>Landing Page & Hero Section</em></p>
-</div>
-
-<br/>
+| **Landing Page** | **Mobile App** |
+|:---:|:---:|
+| ![Landing Page](screenshots/landingpage.png) | ![Mobile App](screenshots/mobilesummary.png) |
 
 | **X-Ray Analysis** | **Clinical Assessment** |
 |:---:|:---:|
@@ -637,7 +636,5 @@ If you use DentalGemma in your research or project, please cite:
 **Built with ❤️ for the MedGemma Impact Challenge**
 
 *Advancing dental healthcare through AI innovation*
-
-[![Star on GitHub](https://img.shields.io/github/stars/naazimsnh02/dentalgemma?style=social)](https://github.com/naazimsnh02/dentalgemma)
 
 </div>

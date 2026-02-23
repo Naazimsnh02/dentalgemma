@@ -73,6 +73,12 @@ models/*.gguf
 .env
 .env.local
 
+# Release signing credentials (NEVER COMMIT THESE!)
+gradle.properties.local
+android/gradle.properties.local
+**/gradle.properties
+!android/gradle.properties.release
+
 # Yarn
 .yarn/*
 !.yarn/patches

@@ -7,6 +7,7 @@ import {
   Text,
   KeyboardAvoidingView,
   Platform,
+  Image,
   StyleSheet,
 } from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
@@ -172,7 +173,11 @@ export const ChatScreen: React.FC<ChatScreenProps> = ({
         }
         ListEmptyComponent={
           <View style={styles.emptyState}>
-            <Text style={styles.emptyIcon}>🦷</Text>
+            <Image
+              source={require('../../android/app/src/main/res/mipmap-xxhdpi/ic_launcher.png')}
+              style={styles.emptyIcon}
+              resizeMode="contain"
+            />
             <Text style={styles.emptyTitle}>DentalGemma</Text>
             <Text style={styles.emptySubtitle}>
               Ask me about dental conditions.
@@ -296,8 +301,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 32,
   },
   emptyIcon: {
-    fontSize: 48,
-    marginBottom: 12,
+    width: 80,
+    height: 80,
+    marginBottom: 16,
   },
   emptyTitle: {
     fontSize: 24,

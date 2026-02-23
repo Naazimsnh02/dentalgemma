@@ -48,7 +48,14 @@ const decodeBytes = (hexArray: string[]): string => {
 const cleanTokenizerArtifacts = (text: string): string => {
   let cleaned = text;
 
-  // 1. [UNK_BYTE_0xHEX + optional non-hex junk + ] → decode hex to UTF-8
+  // 1. Remove thought blocks / thinking tags used by Gemma 3 and others
+  //    Handles [unused94]...[unused95], <thought>...</thought>, etc.
+  cleaned = cleaned.replace(/\[unused94\][\s\S]*?\[unused95\]/gi, '');
+  cleaned = cleaned.replace(/<thought>[\s\S]*?<\/thought>/gi, '');
+  cleaned = cleaned.replace(/<\|thought\|>[\s\S]*?<\|?\/thought\|?>/gi, '');
+  cleaned = cleaned.replace(/\[thought\][\s\S]*?\[\/thought\]/gi, '');
+
+  // 2. [UNK_BYTE_0xHEX + optional non-hex junk + ] → decode hex to UTF-8
   cleaned = cleaned.replace(
     /\[UNK_BYTE_0x([0-9a-fA-F]+)[^\]]*\]/g,
     (_match, hex) => {
@@ -61,51 +68,65 @@ const cleanTokenizerArtifacts = (text: string): string => {
     },
   );
 
-  // 2. <0xHH> single-byte tokens
-  cleaned = cleaned.replace(/<0x([0-9a-fA-F]{2})>/g, (_match, hex) => {
-    try {
-      return decodeBytes([hex]);
-    } catch {
-      return '';
-    }
-  });
+  // 3. Adjacent <0xHH> byte tokens → decode as a single multi-byte UTF-8
+  //    sequence (e.g. <0xC2><0xA0> = U+00A0 non-breaking space).
+  cleaned = cleaned.replace(
+    /(?:<0x[0-9a-fA-F]{2}>)+/g,
+    match => {
+      try {
+        const hexPairs = [...match.matchAll(/<0x([0-9a-fA-F]{2})>/g)].map(
+          m => m[1],
+        );
+        return decodeBytes(hexPairs);
+      } catch {
+        return ' ';
+      }
+    },
+  );
 
-  // 3. All Unicode Block Element characters (U+2580-U+259F) → space
-  //    Includes ▁ (U+2581) which SentencePiece uses as a space marker,
-  //    plus other block chars the quantized tokenizer may emit.
+  // 4. ASCII DEL (0x7F) and C0/C1 control characters (except \n \r \t) → space.
+  //    Gemma GGUF quantization often emits 0x7F in place of the ▁ space marker.
+  // eslint-disable-next-line no-control-regex
+  cleaned = cleaned.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F-\x9F]/g, ' ');
+
+  // 5. All Unicode Block Element characters (U+2580-U+259F) → space
+  //    Includes ▁ (U+2581) which SentencePiece uses as a space marker.
   cleaned = cleaned.replace(/[\u2580-\u259F]/g, ' ');
 
-  // 4. Unicode replacement character → space (JNI bridge may produce these
-  //    when ▁ bytes can't be decoded)
+  // 6. Unicode replacement character → space
   cleaned = cleaned.replace(/\uFFFD/g, ' ');
 
-  // 5. Various Unicode whitespace / invisible chars → standard space
-  cleaned = cleaned.replace(/[\u00A0\u2000-\u200B\u202F\u205F\u3000\uFEFF]/g, ' ');
+  // 7. Various Unicode whitespace / invisible / control chars → standard space
+  //    Includes non-breaking spaces, zero-width spaces, and other "box" candidates.
+  cleaned = cleaned.replace(/[\u00A0\u2000-\u200B\u200C-\u200F\u202F\u205F\u3000\uFEFF\u2060-\u206F]/g, ' ');
 
-  // 6. Strip leftover UNK_BYTE fragments that weren't fully bracketed
+  // 8. Strip leftover UNK_BYTE/unused fragments
   cleaned = cleaned.replace(/\[?UNK_BYTE[^\]\s]*\]?/gi, '');
+  cleaned = cleaned.replace(/\[?unused\d+\]?/gi, '');
 
-  // 7. Remove common GGUF control tokens
+  // 9. Remove common GGUF control tokens
   cleaned = cleaned.replace(/<\/?s>/g, '');
   cleaned = cleaned.replace(/<pad>/gi, '');
+  cleaned = cleaned.replace(/<end_of_turn>/g, '');
+  cleaned = cleaned.replace(/<start_of_turn>/g, '');
 
-  // 8. Fix duplicate word]word patterns left by partial cleanup
+  // 10. Fix duplicate word]word patterns left by partial cleanup
   cleaned = cleaned.replace(/(\w+)\]\1/g, '$1');
 
-  // 9. Remove orphaned ] between word chars (tokenizer artifact)
+  // 11. Remove orphaned ] between word chars (tokenizer artifact)
   cleaned = cleaned.replace(/(\w)\](\w)/g, '$1 $2');
   cleaned = cleaned.replace(/(^|[\s\n])\]/g, '$1');
 
-  // 10. Collapse runs of spaces (preserve newlines)
+  // 12. Final cleanup: Collapse runs of spaces (preserve newlines)
   cleaned = cleaned.replace(/[^\S\n]{2,}/g, ' ');
 
-  // 11. Remove spaces before punctuation
+  // 13. Remove spaces before punctuation
   cleaned = cleaned.replace(/ ([.,;:!?])/g, '$1');
 
-  // 12. Ensure space after sentence-ending punctuation before a letter
+  // 14. Ensure space after sentence-ending punctuation before a letter
   cleaned = cleaned.replace(/([.!?:])([A-Za-z])/g, '$1 $2');
 
-  return cleaned;
+  return cleaned.trim();
 };
 
 /**
@@ -340,8 +361,11 @@ export const useDentalGemma = (): UseDentalGemmaReturn => {
                 const delta = cleanedFull.substring(lastCleanLength);
                 lastCleanLength = cleanedFull.length;
 
-                if (delta.trim()) {
-                  console.log('🔤 Token:', JSON.stringify(delta));
+                if (delta.length > 0) {
+                  // Enhanced logging: show content and hex for non-printable chars
+                  const isPrintable = /^[\x20-\x7E\s]+$/.test(delta);
+                  const displayContent = isPrintable ? JSON.stringify(delta) : `${JSON.stringify(delta)} (Hex: ${Array.from(delta).map(c => c.charCodeAt(0).toString(16)).join(' ')})`;
+                  console.log('🔤 Token:', displayContent);
                 }
 
                 if (delta.length > 0) {
@@ -361,9 +385,9 @@ export const useDentalGemma = (): UseDentalGemmaReturn => {
         
         setStatusDetailed('Finished generation.');
         
-        // Use accumulated raw tokens (preserves space markers) over result.text
-        // which may have already lost space info during llama.rn detokenization
-        const cleanText = cleanTokenizerArtifacts(rawAccumulated || result.text || '');
+        // Prefer result.text because it preserves <0xHH> byte-fallback tokens
+        // (e.g. <0xC2><0xA0> for NBSP) that the streaming callback may drop.
+        const cleanText = cleanTokenizerArtifacts(result.text || rawAccumulated || '');
         
         console.log('📥 CLEANED RESPONSE:');
         console.log('─'.repeat(80));
