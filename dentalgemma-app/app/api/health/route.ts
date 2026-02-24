@@ -13,6 +13,13 @@ export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
+  // Log who's calling this endpoint to help debug
+  const userAgent = request.headers.get('user-agent') || 'unknown';
+  const referer = request.headers.get('referer') || 'none';
+  const origin = request.headers.get('origin') || 'none';
+  
+  console.log(`[Health Check] Called by: ${userAgent.substring(0, 100)}, Referer: ${referer}, Origin: ${origin}`);
+  
   // Return simple healthy response without calling Modal.com
   // This saves costs since external monitors may ping this endpoint
   const response: HealthCheckResponse = {

@@ -7,6 +7,7 @@ import {
   ScrollView,
   ActivityIndicator,
   Alert,
+  Image,
 } from 'react-native';
 import {ModelStatus} from '../components/ModelStatus';
 import {
@@ -179,7 +180,10 @@ export const ModelSetupScreen: React.FC<ModelSetupScreenProps> = ({
       style={styles.container}
       contentContainerStyle={styles.content}>
       <View style={styles.header}>
-        <Text style={styles.logo}>🦷</Text>
+        <Image
+          source={require('../assets/images/logo.png')}
+          style={styles.logoImage}
+        />
         <Text style={styles.title}>DentalGemma</Text>
         <Text style={styles.subtitle}>
           Offline Dental AI — Powered by MedGemma
@@ -300,7 +304,7 @@ export const ModelSetupScreen: React.FC<ModelSetupScreenProps> = ({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FAFAFA',
+    backgroundColor: '#f9fafb',
   },
   content: {
     padding: 20,
@@ -310,9 +314,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 32,
   },
-  logo: {
-    fontSize: 64,
-    marginBottom: 8,
+  logoImage: {
+    width: 80,
+    height: 80,
+    marginBottom: 12,
+    resizeMode: 'contain',
   },
   title: {
     fontSize: 28,
@@ -463,12 +469,17 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 20,
     marginBottom: 32,
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 1},
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
   },
   specsTitle: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: '600',
     color: '#212121',
-    marginBottom: 12,
+    marginBottom: 16,
   },
   specsText: {
     fontSize: 14,

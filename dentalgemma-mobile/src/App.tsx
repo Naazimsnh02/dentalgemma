@@ -1,7 +1,8 @@
-import React, {useState, useCallback} from 'react';
+import React, {useState, useCallback, useEffect} from 'react';
 import {StatusBar} from 'react-native';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
 import {toggleNativeLog, addNativeLogListener} from 'llama.rn';
+import {ErrorBoundary} from './components/ErrorBoundary';
 import {ModelSetupScreen} from './screens/ModelSetupScreen';
 import {ChatScreen} from './screens/ChatScreen';
 import {SymptomCheckerScreen} from './screens/SymptomCheckerScreen';
@@ -13,12 +14,6 @@ import {ResearchScreen} from './screens/ResearchScreen';
 import {HomeScreen} from './screens/HomeScreen';
 import {useDentalGemma} from './hooks/useDentalGemma';
 import type {ModelState} from './types';
-
-// Catch logs from llama.cpp
-toggleNativeLog(true);
-addNativeLogListener((level, text) => {
-  console.log(['[rnllama]', level ? `[${level}]` : '', text].filter(Boolean).join(' '));
-});
 
 type Screen = 'home' | 'chat' | 'symptom-checker' | 'clinical-assessment' | 'image-analysis' | 'education' | 'dentist-finder' | 'research';
 
@@ -37,6 +32,20 @@ const App: React.FC = () => {
     unloadModel,
     statusDetailed,
   } = useDentalGemma();
+
+  // Initialize llama.rn logging safely after component mount
+  useEffect(() => {
+    try {
+      if (__DEV__) {
+        toggleNativeLog(true);
+        addNativeLogListener((level, text) => {
+          console.log(['[rnllama]', level ? `[${level}]` : '', text].filter(Boolean).join(' '));
+        });
+      }
+    } catch (err) {
+      console.warn('Failed to initialize llama.rn logging:', err);
+    }
+  }, []);
 
   const handleLoadModel = useCallback(
     async (modelPath: string, mmprojPath: string) => {
@@ -90,8 +99,9 @@ const App: React.FC = () => {
   }, [unloadModel]);
 
   return (
-    <SafeAreaProvider>
-      <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
+    <ErrorBoundary>
+      <SafeAreaProvider>
+        <StatusBar barStyle="dark-content" backgroundColor="#f9fafb" />
       {!isModelLoaded ? (
         <ModelSetupScreen
           modelState={modelState}
@@ -145,7 +155,8 @@ const App: React.FC = () => {
           onBack={handleBackToHome}
         />
       )}
-    </SafeAreaProvider>
+      </SafeAreaProvider>
+    </ErrorBoundary>
   );
 };
 

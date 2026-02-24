@@ -482,29 +482,23 @@ What is your diagnosis and treatment plan?"""
                 "processing_time": round(time.time() - start_time, 3)
             }
     
-    @modal.fastapi_endpoint(method="GET")
-    def health(self):
-        """
-        Health check endpoint.
-        
-        Response:
-        {
-            "status": "healthy",
-            "model": "dentalgemma-1.5-4b-it",
-            "device": "cuda:0",
-            "dtype": "torch.bfloat16"
-        }
-        """
-        import torch
-        
-        return {
-            "status": "healthy",
-            "model": "dentalgemma-1.5-4b-it",
-            "device": str(self.model.device),
-            "dtype": str(self.model.dtype),
-            "gpu_available": torch.cuda.is_available(),
-            "gpu_name": torch.cuda.get_device_name(0) if torch.cuda.is_available() else None
-        }
+    # Health endpoint disabled to save costs during hackathon
+    # Modal will auto-wake on actual feature usage (chat, xray, assessment)
+    # @modal.fastapi_endpoint(method="GET")
+    # def health(self):
+    #     """
+    #     Health check endpoint - DISABLED to save costs.
+    #     """
+    #     import torch
+    #     
+    #     return {
+    #         "status": "healthy",
+    #         "model": "dentalgemma-1.5-4b-it",
+    #         "device": str(self.model.device),
+    #         "dtype": str(self.model.dtype),
+    #         "gpu_available": torch.cuda.is_available(),
+    #         "gpu_name": torch.cuda.get_device_name(0) if torch.cuda.is_available() else None
+    #     }
 
 
 # Local testing function

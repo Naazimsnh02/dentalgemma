@@ -64,23 +64,5 @@ export const getModelFileSize = async (
 };
 
 export const getSetupInstructions = (): string => {
-  const dir = getModelsDir();
-
-  if (Platform.OS === 'android') {
-    return `Models will be downloaded automatically from Hugging Face.
-
-Alternatively, push model files using ADB:
-
-adb push ${MODEL_FILES.model.filename} ${dir}/
-adb push ${MODEL_FILES.mmproj.filename} ${dir}/
-
-Or copy files manually to:
-${dir}/`;
-  }
-
-  return `Models will be downloaded automatically from Hugging Face.
-
-Alternatively, copy files to:
-${dir}/${MODEL_FILES.model.filename}
-${dir}/${MODEL_FILES.mmproj.filename}`;
+  return 'Models will be downloaded automatically from Hugging Face.';
 };
