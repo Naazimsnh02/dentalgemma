@@ -157,9 +157,9 @@ src/
 
 | Metric | Expected |
 |--------|----------|
-| Model load time | 10-15 seconds |
-| Text generation | 5-15 tokens/sec |
-| Image encoding | 2-5 seconds |
+| Model load time | 1 to 3 mins |
+| Text inference | 1 to 3 seconds |
+| Image inference | 2 to 5 mins |
 | RAM usage | ~4-5 GB |
 
 ## Tech Stack

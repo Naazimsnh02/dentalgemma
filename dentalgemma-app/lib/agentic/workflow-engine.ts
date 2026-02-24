@@ -2,8 +2,6 @@
  * Agentic Workflow Engine
  * 
  * Multi-agent diagnostic workflow orchestration
- * Uses a simplified agent pattern (Vercel AI SDK 6 would be used in production)
- * Requirements: 4.1-4.6
  */
 
 import type { WorkflowInput, WorkflowStep, WorkflowResult } from '@/types';

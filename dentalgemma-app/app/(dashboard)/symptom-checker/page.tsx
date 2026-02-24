@@ -247,8 +247,8 @@ export default function SymptomCheckerPage() {
               <Loader2 className="h-12 w-12 animate-spin text-primary" />
               <div className="text-center">
                 <p className="text-lg font-medium">Analyzing Your Symptoms</p>
-                <p className="text-sm text-muted-foreground mt-1">
-                  This may take a few moments...
+                <p className="text-sm text-muted-foreground mt-1 text-center max-w-xs">
+                  Initializing AI Engine... First launch can take 1-2 minutes to spin up the GPU environment. Subsequent requests will be near-instant.
                 </p>
               </div>
             </div>

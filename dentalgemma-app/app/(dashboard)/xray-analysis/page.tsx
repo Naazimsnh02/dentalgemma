@@ -360,7 +360,7 @@ export default function XRayAnalysisPage() {
             </div>
 
             <p className="text-sm text-gray-500 dark:text-gray-400">
-              This may take a few seconds...
+              Initializing AI Engine... First launch can take 1-2 minutes to spin up the GPU environment. Subsequent requests will be near-instant.
             </p>
           </div>
         </div>
@@ -405,6 +405,10 @@ export default function XRayAnalysisPage() {
                   <span>Save</span>
                 </button>
               </div>
+              <p className="text-blue-700 text-sm mb-4">
+                Initializing AI Engine... First launch can take 1-2 minutes to spin up the GPU environment.
+                Subsequent requests will be near-instant.
+              </p>
               <AnalysisResults
                 analysis={analysis}
                 onExportPDF={handleExportPDF}

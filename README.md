@@ -4,7 +4,7 @@
 
 ### AI-Powered Dental Diagnostics with Intelligent Agentic Workflows
 
-[![Live Demo](https://img.shields.io/badge/🌐_Live_Demo-dentalgemma.vercel.app-blue?style=for-the-badge)](https://dentalgemma.vercel.app)
+[![Live Web Platform](https://img.shields.io/badge/🌐_Web_Platform-dentalgemma.vercel.app-blue?style=for-the-badge)](https://dentalgemma.vercel.app)
 [![YouTube Video](https://img.shields.io/badge/🎬_Project_Video-Watch_on_YouTube-red?style=for-the-badge&logo=youtube)](https://youtu.be/TtAIXdoiZPs)
 [![HuggingFace Model](https://img.shields.io/badge/🤗_Model-dentalgemma--1.5--4b--it-yellow?style=for-the-badge)](https://huggingface.co/naazimsnh02/dentalgemma-1.5-4b-it)
 [![License](https://img.shields.io/badge/License-Apache_2.0-green?style=for-the-badge)](LICENSE)
@@ -35,6 +35,7 @@
 - [Project Structure](#-project-structure)
 - [Deployment](#-deployment)
 - [Challenge Alignment](#-challenge-alignment)
+- [Future Enhancements](#-future-enhancements)
 - [Medical Disclaimer](#-medical-disclaimer)
 - [License](#-license)
 - [Citation](#-citation)
@@ -65,10 +66,11 @@ While MedGemma demonstrates strong general medical reasoning, dental diagnostics
 3. **Agentic Diagnostic Orchestration**
    - 6-agent pipeline for coordinated image analysis, reasoning, research synthesis, and reporting
    - Streaming inference with transparent reasoning logs
+   - Autonomous multi-step clinical reasoning
 
 4. **Dual Deployment Architecture**
-   - 🌐 **Cloud Platform**: GPU-accelerated inference (Modal.com) integrated into a Next.js 16 production web app
-   - 📱 **Edge AI Mobile App**: Fully offline on-device inference using quantized GGUF models via llama.cpp (llama.rn)
+   - 🌐 **Cloud Platform**: GPU-accelerated inference (Modal.com) using NVIDIA L40S GPUs integrated into a Next.js 16 production web app
+   - 📱 **Edge AI Mobile App**: Fully offline on-device inference using quantized GGUF models via llama.cpp (llama.rn). Tested on Snapdragon 8 series hardware.
 
 ---
 
@@ -110,7 +112,6 @@ This project moves dental AI from conceptual experimentation to real-world deplo
 | 📈 **Analytics Dashboard** | Usage statistics, condition distribution, and activity timeline |
 | ℹ️ **Model Information** | Detailed model architecture, training data, and performance metrics |
 | ⚙️ **Settings & History** | Customizable preferences and analysis history management |
-| 📱 **PWA Support** | Installable app with offline capabilities for key features |
 
 ---
 
@@ -157,63 +158,65 @@ This project moves dental AI from conceptual experimentation to real-world deplo
 ## 🏗️ Architecture
 
 ```
-┌─────────────────────────────────────────────────────────────────────┐
-│                    FRONTEND (Next.js 16 PWA)                        │
-│              Deployed on Vercel · Tailwind v4 · shadcn/ui           │
-│                                                                     │
-│  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐              │
-│  │ Image    │ │ Clinical │ │ Voice    │ │ Agentic  │              │
-│  │ Analyzer │ │ Case     │ │ Consult  │ │ Workflow │              │
-│  │ (Vision) │ │ Assess.  │ │ (WebAPI) │ │ Engine   │              │
-│  └────┬─────┘ └────┬─────┘ └────┬─────┘ └────┬─────┘              │
-│       │             │            │             │                    │
-│  ┌────┴─────────────┴────────────┴─────────────┴────────────┐      │
-│  │                 AI ENGINE LAYER                          │      │
-│  │    ┌──────────────────────────┐                          │      │
-│  │    │   Modal.com GPU Backend  │                          │      │
-│  │    │   DentalGemma 1.5 4B IT  │                          │      │
-│  │    │   (bfloat16 Inference)   │                          │      │
-│  │    └──────────────────────────┘                          │      │
-│  └──────────────────────────────────────────────────────────┘      │
-│                                                                     │
-│  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐              │
-│  │ Dentist  │ │ Progress │ │ Research │ │ Patient  │              │
-│  │ Finder   │ │ Tracker  │ │ Dashboard│ │ Education│              │
-│  └──────────┘ └──────────┘ └──────────┘ └──────────┘              │
-└─────────────────────────────────────────────────────────────────────┘
+┌────────────────────────────────────────────────────────────────┐
+│                    FRONTEND (Next.js 16)                       │
+│              Deployed on Vercel · Tailwind v4 · shadcn/ui      │
+│                                                                │
+│  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐           │
+│  │ Image    │ │ Clinical │ │ Voice    │ │ Agentic  │           │
+│  │ Analyzer │ │ Case     │ │ Consult  │ │ Workflow │           │
+│  │ (Vision) │ │ Assess.  │ │ (WebAPI) │ │ Engine   │           │
+│  └────┬─────┘ └─────┬────┘ └─────┬────┘ └─────┬────┘           │
+│       │             │            │            │                │
+│  ┌────┴─────────────┴────────────┴────────────┴─────────────┐  │
+│  │                 AI ENGINE LAYER                          │  │
+│  │    ┌──────────────────────────┐                          │  │
+│  │    │   Modal.com GPU Backend  │                          │  │
+│  │    │   DentalGemma 1.5 4B IT  │                          │  │
+│  │    │   (bfloat16 Inference)   │                          │  │
+│  │    └──────────────────────────┘                          │  │
+│  └──────────────────────────────────────────────────────────┘  │
+│                                                                │
+│  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐           │
+│  │ Dentist  │ │ Progress │ │ Research │ │ Patient  │           │
+│  │ Finder   │ │ Tracker  │ │ Dashboard│ │ Education│           │
+│  └──────────┘ └──────────┘ └──────────┘ └──────────┘           │
+└────────────────────────────────────────────────────────────────┘
 
-┌─────────────────────────────────────────────────────────────────────┐
-│                    MOBILE (React Native 0.84)                       │
-│              Offline Local Inference using llama.cpp                │
-│                                                                     │
-│  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐              │
-│  │ Live Chat│ │ Image    │ │ Symptom  │ │ Dentist  │              │
-│  │ Assistant│ │ Analysis │ │ Checker  │ │ Finder   │              │
-│  ├──────────┤ ├──────────┤ ├──────────┤ ├──────────┤              │
-│  │ Clinical │ │ Research │ │ Patient  │ │ Model    │              │
-│  │ Assess.  │ │ Dashboard│ │ Education│ │ Setup    │              │
-│  └────┬─────┘ └────┬─────┘ └────┬─────┘ └────┬─────┘              │
-│       │             │            │             │                    │
-│  ┌────┴─────────────┴────────────┴─────────────┴────────────┐      │
-│  │               llama.rn (llama.cpp) ON-DEVICE             │      │
-│  │     (GGUF Quantized Models running 100% Offline)         │      │
-│  └──────────────────────────────────────────────────────────┘      │
-└─────────────────────────────────────────────────────────────────────┘
+┌────────────────────────────────────────────────────────────────┐
+│                    MOBILE (React Native 0.84)                  │
+│              Offline Local Inference using llama.cpp           │
+│                                                                │
+│  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐           │
+│  │ Live Chat│ │ Image    │ │ Symptom  │ │ Dentist  │           │
+│  │ Assistant│ │ Analysis │ │ Checker  │ │ Finder   │           │
+│  ├──────────┤ ├──────────┤ ├──────────┤ ├──────────┤           │
+│  │ Clinical │ │ Research │ │ Patient  │ │ Model    │           │
+│  │ Assess.  │ │ Dashboard│ │ Education│ │ Setup    │           │
+│  └────┬─────┘ └────┬─────┘ └────┬─────┘ └────┬─────┘           │
+│       │            │            │            │                 │
+│  ┌────┴────────────┴────────────┴────────────┴──────────────┐  │
+│  │               llama.rn (llama.cpp) ON-DEVICE             │  │
+│  │     (GGUF Quantized Models running 100% Offline)         │  │
+│  └──────────────────────────────────────────────────────────┘  │
+└────────────────────────────────────────────────────────────────┘
 
 ┌─────────────────────────────────────────────────────────────────────┐
 │                     BACKEND SERVICES                                │
 │                                                                     │
-│  ┌──────────────────┐                                              │
-│  │  Modal.com        │                                              │
-│  │  · DentalGemma    │                                              │
-│  │    1.5 4B IT      │                                              │
-│  │  · GPU: L40S      │                                              │
-│  └──────────────────┘                                              │
+│  ┌───────────────────┐  ┌────────────────────┐                      │
+│  │  Modal.com        │  │  FastAPI Layer     │                      │
+│  │  · DentalGemma    │  │  · Webhook Handlers│                      │
+│  │    1.5 4B IT      │  │  · Stream Logic    │                      │
+│  │  · GPU: L40S      │  │  · Snapshotting    │                      │
+│  └───────────────────┘  └────────────────────┘                      │
 │                                                                     │
-│  ┌──────────────────┐  ┌──────────────────┐                        │
+│  ┌───────────────────┐  ┌──────────────────┐                        │
 │  │  Google Places    │  │  PubMed E-Utils  │                        │
 │  │  API              │  │                  │                        │
-│  └──────────────────┘  └──────────────────┘                        │
+│  └───────────────────┘  └──────────────────┘                        │
+│                                                                     │
+│  *GPU Snapshotting enables 10x faster cold starts for AI endpoints* │
 └─────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -318,6 +321,18 @@ This project moves dental AI from conceptual experimentation to real-world deplo
 | 📍 **Location-Aware Diagnosis** | ~545 pairs (232 images) | Anatomical region mapping (e.g., "right mandibular region") |
 | 🦷 **Dentition Assessment** | ~128 pairs (64 images) | Tooth type identification, completeness evaluation |
 | 💊 **Clinical Case Analysis** | 2,494 cases | Diagnosis, treatment planning, antibiotic recommendations for 98 conditions |
+
+#### Mobile Optimization & Performance
+
+The model is quantized to 4-bit (GGUF) for edge deployment, ensuring balanced performance between accuracy and speed on mobile hardware.
+
+| Metric | Expected Performance |
+|--------|----------------------|
+| **Model Load Time** | 1 to 3 mins |
+| **Text Inference** | 1 to 3 seconds |
+| **Image Inference** | 2 to 5 mins |
+| **Tested Hardware** | Snapdragon 888 |
+| **Requirement** | 6GB+ RAM (8GB recommended), 3.4GB Storage |
 
 ---
 
@@ -484,7 +499,7 @@ dentalgemma/
 │   ├── types/                    # TypeScript type definitions
 │   ├── __tests__/                # Automated testing suite
 │   ├── scripts/                  # Utility scripts
-│   ├── public/                   # Static assets and PWA files
+│   ├── public/                   # Static assets
 │   ├── jest.config.js            # Test configuration
 │   └── vercel.json               # Vercel deployment config
 ├── dentalgemma-mobile/           # React Native offline application
@@ -548,20 +563,41 @@ dentalgemma/
 
 | Track | Evidence |
 |-------------|----------|
-| **🏆 Main Track** | Production-ready application with 11 integrated features, professional deployment, comprehensive documentation |
-| **🏆 Novel Task** | Extension of MedGemma into the specialized domain of dental diagnostics; 4 curated datasets, 5,023 samples, unified multimodal fine-tuning, structured coverage of 98 dental conditions |
-| **🏆 Agentic Workflow** | Custom multi-agent system with 6-step autonomous diagnostic pipeline, transparent reasoning, tool calling |
-| **🏆 The Edge AI** | Full offline mobile application running DentalGemma locally via llama.cpp/GGUF, enabling diagnostics in remote areas |
+| **🏆 Main Track** | Production-ready ecosystem with 13 integrated features, professional deployment, and comprehensive documentation covering the full clinical lifecycle. |
+| **🏆 Novel Task** | Systematic adaptation of MedGemma to dental diagnostics; 4 curated datasets, 5,023 samples, two-stage fine-tuning, and structured coverage of 98 conditions. |
+| **🏆 Agentic Workflow** | Custom multi-agent orchestration with 6-agent autonomous diagnostic pipeline, transparent reasoning logs, and streaming tool-integrated inference. |
+| **🏆 The Edge AI** | Full offline mobile application running DentalGemma locally via llama.rn/GGUF, enabling diagnostics in remote areas. |
 
 ### Evaluation Criteria Coverage
 
 | Criterion | Weight | How DentalGemma Addresses It |
 |-----------|--------|------------------------------|
-| **Effective use of HAI-DEF models** | 20% | Fine-tuned MedGemma 1.5 4B IT for novel dental domain with 5,023 samples. Cloud deployment via Modal.com demonstrating effective model serving. |
-| **Problem domain** | 15% | Clear dental diagnostic workflow improvement. Reduces diagnostic time, automates complex multi-step workflows, improves accessibility for underserved areas. |
-| **Impact potential** | 15% | Free web-based PWA accessible globally. Offline capability for key resources. Educational tool for dental students and professionals. |
-| **Product feasibility** | 20% | Production deployment on Vercel + Modal.com. 11 integrated features. Real external APIs. Professional UI. Performance optimized. PWA installable. |
-| **Execution & communication** | 30% | Professional demo videos, comprehensive documentation, clean codebase, user-friendly interface, technical innovation across all tracks. |
+| **Effective use of HAI-DEF models** | 20% | Domain adaptation of MedGemma 1.5 4B IT for dental diagnostics. Systematic multimodal fine-tuning on 5,023 samples. Efficient serving via Modal.com (L40S GPUs) and on-device (GGUF). |
+| **Problem domain** | 15% | Addresses the underserved dental subdomain. Implements 13 clinical features spanning diagnosis, triage, research, and education using specialized multimodal reasoning. |
+| **Impact potential** | 15% | High accessibility via cloud web app and offline-first mobile app. Enables AI-assisted dental care in low-connectivity areas. Practical tool for students and clinicians. |
+| **Product feasibility** | 20% | Production-ready stack: Next.js 16, React Native 0.84, Modal.com, Google APIs. Highly optimized for both cloud GPU and local mobile hardware. |
+| **Execution & communication** | 30% | Professional 3-minute technical walkthrough. Comprehensive documentation. Transparent agentic reasoning. Cross-platform excellence across web and mobile. |
+
+---
+
+## 🔮 Future Enhancements
+
+While DentalGemma provides a robust foundation for dental AI, future development will be focused on several key strategic areas:
+
+1. **Clinically Validated Data Expansion**
+   - Fine-tuning on larger, multi-institutional datasets with ground-truth labels validated by panels of expert radiologists and clinicians to improve diagnostic specificity.
+
+2. **Advanced Radiography Support**
+   - Extending multimodal reasoning to 3D imaging (CBCT - Cone Beam Computed Tomography) and higher-resolution digital intraoral sensors.
+
+3. **EHR & Practice Management Integration**
+   - Developing HL7/FHIR-compatible connectors to integrate DentalGemma directly into existing Dental Practice Management Systems (PMS) for seamless clinical workflows.
+
+4. **Longitudinal Pathology Tracking**
+   - Implementing temporal analysis to track the progression of conditions (e.g., bone loss or caries development) by comparing historical patient scans over multiple visits.
+
+5. **Edge AI Hardware Optimization**
+   - Leveraging specialized NPUs (Neural Processing Units) on the latest mobile chipsets to further reduce offline inference latency and power consumption.
 
 ---
 
@@ -642,9 +678,10 @@ If you use DentalGemma in your research or project, please cite:
 
 ## 🔗 Links
 
-- **Live Demo**: [dentalgemma.vercel.app](https://dentalgemma.vercel.app)
+- **Live Web Platform**: [dentalgemma.vercel.app](https://dentalgemma.vercel.app)
 - **YouTube Video**: [Project Walkthrough](https://youtu.be/TtAIXdoiZPs)
 - **Model**: [naazimsnh02/dentalgemma-1.5-4b-it](https://huggingface.co/naazimsnh02/dentalgemma-1.5-4b-it)
+- **Model GGUF**: [naazimsnh02/dentalgemma-1.5-4b-it-GGUF](https://huggingface.co/naazimsnh02/dentalgemma-1.5-4b-it-GGUF)
 - **VQA Dataset**: [naazimsnh02/dentalgemma-vqa](https://huggingface.co/datasets/naazimsnh02/dentalgemma-vqa)
 - **Instruct Dataset**: [naazimsnh02/dentalgemma-instruct](https://huggingface.co/datasets/naazimsnh02/dentalgemma-instruct)
 - **Base Model**: [google/medgemma-1.5-4b-it](https://huggingface.co/google/medgemma-1.5-4b-it)

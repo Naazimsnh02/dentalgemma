@@ -9,7 +9,6 @@ const techItems = [
   { emoji: "📍", label: "Google Places API" },
   { emoji: "🎨", label: "Tailwind CSS v4" },
   { emoji: "🔧", label: "TypeScript" },
-  { emoji: "📱", label: "PWA Ready" },
 ]
 
 export function TechStack() {

@@ -294,8 +294,9 @@ export const ModelSetupScreen: React.FC<ModelSetupScreenProps> = ({
         <Text style={styles.specsTitle}>Device Requirements</Text>
         <Text style={styles.specsText}>• 6+ GB RAM (8+ GB recommended)</Text>
         <Text style={styles.specsText}>• ~3.4 GB storage for model files</Text>
-        <Text style={styles.specsText}>• Load time: 10-15 seconds</Text>
-        <Text style={styles.specsText}>• Speed: 5-15 tokens/second</Text>
+        <Text style={styles.specsText}>• Load time: 1 to 3 mins</Text>
+        <Text style={styles.specsText}>• Text inference: 1 to 3 seconds</Text>
+        <Text style={styles.specsText}>• Image inference: 2 to 5 mins</Text>
       </View>
     </ScrollView>
   );

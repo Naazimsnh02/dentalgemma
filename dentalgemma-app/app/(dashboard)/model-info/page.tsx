@@ -89,7 +89,6 @@ const resourceLinks = [
   { title: 'MedGemma Base Model', url: 'https://huggingface.co/google/medgemma-1.5-4b-it', description: 'Original MedGemma model by Google' },
   { title: 'MedGemma Impact Challenge', url: 'https://kaggle.com/competitions/med-gemma-impact-challenge', description: 'Kaggle competition page' },
   { title: 'Modal.com', url: 'https://modal.com', description: 'GPU inference platform' },
-  { title: 'Vercel AI SDK', url: 'https://sdk.vercel.ai', description: 'Agent framework for agentic workflows' },
 ];
 
 export default function ModelInfoPage() {
@@ -228,8 +227,7 @@ export default function ModelInfoPage() {
                       Frontend
                     </div>
                     <p className="text-sm text-muted-foreground">
-                      Next.js 16 PWA on Vercel with API routes proxying to Modal.com.
-                      Vercel AI SDK 6 for agentic workflow orchestration.
+                      Next.js 16 on Vercel with API routes proxying to Modal.com.
                     </p>
                   </div>
                 </div>

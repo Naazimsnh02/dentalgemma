@@ -13,7 +13,6 @@ Multimodal dental AI diagnostic platform built with Next.js 16, featuring cloud-
 - 📚 **Research Dashboard** - PubMed integration for evidence-based practice
 - 🎓 **Patient Education Portal** - Browsable library of dental conditions with a built-in anatomy explorer
 - 🔍 **Symptom Checker** - AI-powered symptom analysis via the DentalGemma model
-- 📱 **PWA Support** - Offline capabilities and app-like experience
 
 ## Tech Stack
 
@@ -82,7 +81,7 @@ dentalgemma-app/
 ├── store/            # Zustand global state management
 ├── __tests__/        # Automated test suite (unit + property-based tests)
 ├── scripts/          # Backend deployment and endpoint test scripts
-├── public/           # Static assets and PWA manifest
+├── public/           # Static assets
 ├── jest.config.js    # Jest test configuration
 └── vercel.json       # Vercel deployment configuration
 ```

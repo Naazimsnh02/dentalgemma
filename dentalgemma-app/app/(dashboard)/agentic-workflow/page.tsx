@@ -311,6 +311,14 @@ export default function AgenticWorkflowPage() {
           </p>
         </div>
 
+        {/* Initialization Notice */}
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-center gap-3">
+          <Sparkles className="h-5 w-5 text-blue-600 animate-pulse" />
+          <p className="text-sm text-blue-800">
+            <strong>Note:</strong> Initializing the AI Engine... First launch can take 1-2 minutes to spin up the multi-agent GPU environment. Subsequent runs will start instantly.
+          </p>
+        </div>
+
         {/* Input Section */}
         {status === 'idle' && (
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">

@@ -141,8 +141,8 @@ export default function ClinicalAssessmentPage() {
               <div>
                 <h3 className="font-semibold text-blue-900 mb-1">Analyzing Clinical Case...</h3>
                 <p className="text-blue-700 text-sm">
-                  DentalGemma is processing your case data and generating a comprehensive assessment.
-                  This may take a few moments.
+                  Initializing AI Engine... First launch can take 1-2 minutes to spin up the GPU environment. 
+                  Subsequent requests will be near-instant.
                 </p>
               </div>
             </div>

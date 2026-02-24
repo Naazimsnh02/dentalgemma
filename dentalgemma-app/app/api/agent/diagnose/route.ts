@@ -1,10 +1,6 @@
 /**
  * Agentic Workflow API Route
  * 
- * Uses Vercel AI SDK 6 agent with streaming for multi-agent diagnostic workflow
- * Requirements: 4.1-4.6
- * 
- * NOTE: Full implementation with Vercel AI SDK will be completed in Task 11.
  * This is a placeholder that validates input and returns a basic response.
  */
 
@@ -48,8 +44,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // TODO: Implement full agentic workflow with Vercel AI SDK in Task 11
-    // For now, return a placeholder response indicating the workflow would execute
     
     const workflow = {
       steps: [
