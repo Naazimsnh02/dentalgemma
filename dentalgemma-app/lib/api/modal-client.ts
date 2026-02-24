@@ -25,7 +25,7 @@ import type {
 const MODAL_BASE_URL = process.env.NEXT_PUBLIC_MODAL_BASE_URL || '';
 const MAX_RETRIES = 3;
 const INITIAL_RETRY_DELAY = 1000; // 1 second
-const KEEP_ALIVE_INTERVAL = 5 * 60 * 1000; // 5 minutes
+const KEEP_ALIVE_INTERVAL = 24 * 60 * 60 * 1000; // 24 hours (once per day)
 
 // Error types
 export class ModalClientError extends Error {
@@ -217,7 +217,7 @@ class KeepAliveManager {
       }
     }, KEEP_ALIVE_INTERVAL);
 
-    console.log('Keep-alive pings started (every 5 minutes)');
+    console.log('Keep-alive pings started (once per day)');
   }
 
   stop() {
