@@ -103,7 +103,8 @@ export default function VoiceConsultationPage() {
         if (!modalClientRef.current) {
           console.log('🔄 Creating Modal client...');
           modalClientRef.current = new ModalClient();
-          modalClientRef.current.startKeepAlive();
+          // Keep-alive disabled to save costs - Modal wakes on-demand
+          // modalClientRef.current.startKeepAlive();
           console.log('✅ Standard mode: Using DentalGemma via Modal');
         } else {
           console.log('✅ Modal client already initialized');

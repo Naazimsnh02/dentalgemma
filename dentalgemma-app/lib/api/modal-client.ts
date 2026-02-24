@@ -1336,7 +1336,8 @@ export class ModalClient {
 // Export singleton instance
 export const modalClient = new ModalClient();
 
-// Auto-start keep-alive in browser environment
-if (typeof window !== 'undefined') {
-  modalClient.startKeepAlive();
-}
+// Keep-alive disabled to save Modal.com costs during hackathon
+// Modal will wake up on-demand when features are used
+// if (typeof window !== 'undefined') {
+//   modalClient.startKeepAlive();
+// }
