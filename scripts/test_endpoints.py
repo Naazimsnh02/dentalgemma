@@ -5,14 +5,59 @@ import os
 import sys
 import re
 
-# Endpoint URLs
+# ============================================================================
+# CONFIGURATION: Update these URLs after deploying to Modal
+# ============================================================================
+# After running 'modal deploy modal_dentalgemma.py', Modal will output your
+# endpoint URLs. Copy them here, or set the MODAL_USERNAME environment variable.
+#
+# To find your Modal username, run: modal profile current
+# Your URLs will follow this pattern:
+#   https://[YOUR-USERNAME]--dentalgemma-dentalgemmamodel-[ENDPOINT].modal.run
+# ============================================================================
+
+import subprocess
+
+def get_modal_endpoints():
+    """
+    Automatically detect Modal username and build endpoint URLs.
+    Falls back to environment variable or prompts user if not found.
+    """
+    username = os.environ.get('MODAL_USERNAME')
+    
+    if not username:
+        try:
+            result = subprocess.run(['modal', 'profile', 'current'], 
+                                  capture_output=True, text=True, timeout=5)
+            if result.returncode == 0:
+                username = result.stdout.strip()
+        except Exception:
+            pass
+    
+    if not username:
+        print("\n" + "="*60)
+        print("⚠️  CONFIGURATION REQUIRED")
+        print("="*60)
+        print("Could not detect your Modal username automatically.")
+        print("\nPlease do ONE of the following:")
+        print("  1. Set environment variable: export MODAL_USERNAME=your-username")
+        print("  2. Run: modal profile current (to see your username)")
+        print("  3. Edit this file and replace [YOUR-USERNAME] in MODAL_ENDPOINTS")
+        print("\nAfter deploying with 'modal deploy modal_dentalgemma.py',")
+        print("Modal will display your actual endpoint URLs.")
+        print("="*60 + "\n")
+        username = "[YOUR-USERNAME]"
+    
+    base_url = f"https://{username}--dentalgemma-dentalgemmamodel"
+    return {
+        "health": f"{base_url}-health.modal.run",
+        "chat": f"{base_url}-chat.modal.run",
+        "xray": f"{base_url}-analyze-xray.modal.run",
+        "assess": f"{base_url}-assess-case.modal.run"
+    }
+
 # Modal direct endpoints
-MODAL_ENDPOINTS = {
-    "health": "https://sumaiyanaazim--dentalgemma-dentalgemmamodel-health.modal.run",
-    "chat": "https://sumaiyanaazim--dentalgemma-dentalgemmamodel-chat.modal.run",
-    "xray": "https://sumaiyanaazim--dentalgemma-dentalgemmamodel-analyze-xray.modal.run",
-    "assess": "https://sumaiyanaazim--dentalgemma-dentalgemmamodel-assess-case.modal.run"
-}
+MODAL_ENDPOINTS = get_modal_endpoints()
 
 # Next.js local API (mirrors exactly how the UI calls it)
 NEXTJS_BASE = "http://localhost:3000/api"

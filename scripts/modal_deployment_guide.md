@@ -57,11 +57,24 @@ If you are ready to go, follow these steps to deploy immediately:
     ```
 
 3.  **Check Your Endpoints:**
-    After deployment, Modal will output 4 URLs matching this pattern:
-    *   `https://[user]--dentalgemma-dentalgemmamodel-health.modal.run`
-    *   `https://[user]--dentalgemma-dentalgemmamodel-chat.modal.run`
-    *   `https://[user]--dentalgemma-dentalgemmamodel-analyze-xray.modal.run`
-    *   `https://[user]--dentalgemma-dentalgemmamodel-assess-case.modal.run`
+    After deployment, Modal will output 4 URLs. **IMPORTANT: Copy these URLs!**
+    
+    They follow this pattern (replace `[YOUR-USERNAME]` with your actual Modal username):
+    *   `https://[YOUR-USERNAME]--dentalgemma-dentalgemmamodel-health.modal.run`
+    *   `https://[YOUR-USERNAME]--dentalgemma-dentalgemmamodel-chat.modal.run`
+    *   `https://[YOUR-USERNAME]--dentalgemma-dentalgemmamodel-analyze-xray.modal.run`
+    *   `https://[YOUR-USERNAME]--dentalgemma-dentalgemmamodel-assess-case.modal.run`
+    
+    **To find your Modal username:**
+    ```bash
+    modal profile current
+    ```
+    
+    **For testing scripts:** The `test_endpoints.py` script will auto-detect your username, or you can set:
+    ```bash
+    export MODAL_USERNAME=your-username
+    python scripts/test_endpoints.py
+    ```
 
 ---
 
@@ -183,11 +196,26 @@ curl -X POST https://[your-url]-analyze-xray.modal.run \
 ```
 
 ### Python Test Script
-Save as `test_endpoints.py`:
+The included `test_endpoints.py` script automatically detects your Modal username:
+
+```bash
+# Option 1: Auto-detect (requires Modal CLI)
+python scripts/test_endpoints.py
+
+# Option 2: Set username explicitly
+export MODAL_USERNAME=your-username
+python scripts/test_endpoints.py
+
+# Option 3: Edit the script and replace [YOUR-USERNAME] in MODAL_ENDPOINTS
+```
+
+**Manual example** (if you prefer to write your own):
 ```python
 import requests, base64
 
-BASE_URL = "https://[your-username]--dentalgemma-dentalgemmamodel"
+# Replace [YOUR-USERNAME] with your actual Modal username
+# Find it by running: modal profile current
+BASE_URL = "https://[YOUR-USERNAME]--dentalgemma-dentalgemmamodel"
 ENDPOINTS = {
     "health": f"{BASE_URL}-health.modal.run",
     "chat": f"{BASE_URL}-chat.modal.run",
@@ -214,11 +242,15 @@ if __name__ == "__main__":
 ## 🛠️ Integration with Next.js
 
 1.  **Add Environment Variables** to `.env.local`:
+    
+    After deploying, copy your actual endpoint URLs from Modal's output:
     ```bash
-    MODAL_HEALTH_ENDPOINT=https://...health.modal.run
-    MODAL_CHAT_ENDPOINT=https://...chat.modal.run
-    MODAL_XRAY_ENDPOINT=https://...analyze-xray.modal.run
-    MODAL_ASSESS_ENDPOINT=https://...assess-case.modal.run
+    # Replace these with your actual URLs from 'modal deploy' output
+    # Find your username with: modal profile current
+    MODAL_HEALTH_ENDPOINT=https://[YOUR-USERNAME]--dentalgemma-dentalgemmamodel-health.modal.run
+    MODAL_CHAT_ENDPOINT=https://[YOUR-USERNAME]--dentalgemma-dentalgemmamodel-chat.modal.run
+    MODAL_XRAY_ENDPOINT=https://[YOUR-USERNAME]--dentalgemma-dentalgemmamodel-analyze-xray.modal.run
+    MODAL_ASSESS_ENDPOINT=https://[YOUR-USERNAME]--dentalgemma-dentalgemmamodel-assess-case.modal.run
     ```
 
 2.  **Create API Client** (`lib/modal-client.ts`):
@@ -248,6 +280,8 @@ if __name__ == "__main__":
 
 | Issue | Cause | Solution |
 | :--- | :--- | :--- |
+| **`[YOUR-USERNAME]` in URLs** | Placeholder not replaced. | Run `modal profile current` to get your username, then replace all instances of `[YOUR-USERNAME]` with your actual username. |
+| **Test script shows wrong URLs** | Hardcoded username from original author. | Set `export MODAL_USERNAME=your-username` or edit `scripts/test_endpoints.py` to update the `MODAL_ENDPOINTS` dictionary. |
 | **`HF_TOKEN not found`** | Missing Modal secret. | Run `modal secret create huggingface-secret HF_TOKEN=...` |
 | **`Model access denied`** | Invalid token permissions. | Ensure HF token has "Read" scope and access to the repo. |
 | **Slow Response (First)** | Cold start (~45s). | Normal behavior. Subsequent requests take ~1-2s. |

@@ -60,12 +60,12 @@ finetune/output/
 .agent/
 docs/
 llama.rn/
-dentalgemma-video/
 temp_prompt.txt
 test_symptom_checker.js
 Submission_Final.md
 SUBMISSION.md
 Technical Document.md
+dentalgemma-video/
 
 
 # Documentation

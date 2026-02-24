@@ -1,12 +1,11 @@
 <div align="center">
 
-<img src="screenshots/thumbnail.png" alt="DentalGemma Banner" width="800"/>
-
-# 🦷 DentalGemma
+# <img src="dentalgemma-app/public/icon.png" width="40" alt="DentalGemma Icon" align="center"> DentalGemma
 
 ### AI-Powered Dental Diagnostics with Intelligent Agentic Workflows
 
 [![Live Demo](https://img.shields.io/badge/🌐_Live_Demo-dentalgemma.vercel.app-blue?style=for-the-badge)](https://dentalgemma.vercel.app)
+[![YouTube Video](https://img.shields.io/badge/🎬_Project_Video-Watch_on_YouTube-red?style=for-the-badge&logo=youtube)](https://youtu.be/TtAIXdoiZPs)
 [![HuggingFace Model](https://img.shields.io/badge/🤗_Model-dentalgemma--1.5--4b--it-yellow?style=for-the-badge)](https://huggingface.co/naazimsnh02/dentalgemma-1.5-4b-it)
 [![License](https://img.shields.io/badge/License-Apache_2.0-green?style=for-the-badge)](LICENSE)
 [![Next.js](https://img.shields.io/badge/Next.js-16-black?style=for-the-badge&logo=next.js)](https://nextjs.org/)
@@ -45,25 +44,46 @@
 
 ## 🎯 Overview
 
-**DentalGemma** is a multimodal dental AI diagnostic platform that demonstrates novel domain adaptation of Google's MedGemma foundation model for dental healthcare. The platform combines:
+**DentalGemma** is a domain-adapted multimodal AI system that extends Google’s MedGemma 1.5 4B IT model into the field of dental diagnostics — a subdomain largely absent from foundation model research.
 
-- **Fine-tuned MedGemma 1.5 4B IT** — Specialized for dental diagnostics across 98 clinical conditions
-- **Cloud-First Architecture** — GPU-accelerated inference via Modal.com for high accuracy and speed
-- **Multi-Agent Diagnostic System** — Intelligent workflow orchestration using a custom Async Generator Engine
-- **Voice Consultation** — Web Speech API combined with DentalGemma
-- **Evidence-Based Research** — Integrated PubMed search for clinical guidelines
-- **Mobile Companion App** — Offline-capable React Native application running DentalGemma natively via llama.cpp
-- **Practical Utility** — Dentist finder, treatment tracking, patient education, Symptom Checker and more
+While MedGemma demonstrates strong general medical reasoning, dental diagnostics requires specialized multimodal understanding of oral imaging and structured pathology workflows. DentalGemma extends MedGemma into this domain through targeted multimodal fine-tuning and production deployment across both cloud and edge environments.
 
-### Why DentalGemma?
+### Core Contributions
 
-MedGemma was **not originally trained on dental data**, making this a novel task adaptation. Dental diagnostics remains an underserved domain in medical AI, and DentalGemma bridges this gap by:
+1. **Domain Adaptation of MedGemma**
+   - 5,023 curated dental samples
+   - 2-stage fine-tuning (Multimodal VQA → Clinical Instruction)
+   - 98 structured dental conditions
+   - LoRA (Rank 64) in full bfloat16 precision
 
-1. Curating 5 diverse dental datasets (5,023 total samples)
-2. Fine-tuning with full bfloat16 precision LoRA for maximum diagnostic accuracy
-3. Building a comprehensive web application with 13 integrated features
-4. Creating a fully offline, native on-device mobile proxy using `llama.rn`
-5. Deploying on cloud infrastructure for real-world accessibility
+2. **Multimodal Dental Intelligence**
+   - Clinical photo analysis
+   - Panoramic OPG classification
+   - Location-aware anatomical reasoning
+   - Structured diagnosis, treatment planning, and triage
+
+3. **Agentic Diagnostic Orchestration**
+   - 6-agent pipeline for coordinated image analysis, reasoning, research synthesis, and reporting
+   - Streaming inference with transparent reasoning logs
+
+4. **Dual Deployment Architecture**
+   - 🌐 **Cloud Platform**: GPU-accelerated inference (Modal.com) integrated into a Next.js 16 production web app
+   - 📱 **Edge AI Mobile App**: Fully offline on-device inference using quantized GGUF models via llama.cpp (llama.rn)
+
+---
+
+## 🌍 Why This Matters
+
+Oral diseases affect over 3.5 billion people globally, yet dental AI remains underrepresented in foundation model research.
+
+DentalGemma demonstrates that:
+
+- Medical foundation models can be systematically adapted to underserved clinical subdomains  
+- Multimodal reasoning can be specialized through structured dataset curation  
+- Agentic workflows improve orchestration and transparency in clinical AI systems  
+- Edge deployment enables AI-assisted diagnostics in low-connectivity and rural environments  
+
+This project moves dental AI from conceptual experimentation to real-world deployable infrastructure — spanning research, cloud-scale systems, and offline edge inference.
 
 ---
 
@@ -96,10 +116,9 @@ MedGemma was **not originally trained on dental data**, making this a novel task
 
 ## 🎥 Demo Videos
 
-> **Note:** Demo videos will be added here showcasing:
-> - Complete platform walkthrough (3 minutes)
-> - Agentic workflow demonstration (2 minutes)
-> - Feature-specific tutorials
+[![DentalGemma Project Video](https://img.youtube.com/vi/cah-hRAyBtU/maxresdefault.jpg)](https://youtu.be/TtAIXdoiZPs)
+
+**[Watch the full project walkthrough on YouTube](https://youtu.be/TtAIXdoiZPs)**
 
 ---
 
@@ -188,12 +207,12 @@ MedGemma was **not originally trained on dental data**, making this a novel task
 │  │  Modal.com        │                                              │
 │  │  · DentalGemma    │                                              │
 │  │    1.5 4B IT      │                                              │
-│  │  · GPU: A10G      │                                              │
+│  │  · GPU: L40S      │                                              │
 │  └──────────────────┘                                              │
 │                                                                     │
 │  ┌──────────────────┐  ┌──────────────────┐                        │
 │  │  Google Places    │  │  PubMed E-Utils  │                        │
-│  │  API              │  │  (Free)          │                        │
+│  │  API              │  │                  │                        │
 │  └──────────────────┘  └──────────────────┘                        │
 └─────────────────────────────────────────────────────────────────────┘
 ```
@@ -529,9 +548,10 @@ dentalgemma/
 
 | Track | Evidence |
 |-------------|----------|
-| **🏆 Main Track** | Production-ready application with 13 integrated features, professional deployment, comprehensive documentation |
-| **🏆 Novel Task** | MedGemma not originally trained on dental data; 4 datasets curated, 5,023 samples, unified multimodal fine-tuning, 98 dental conditions |
+| **🏆 Main Track** | Production-ready application with 11 integrated features, professional deployment, comprehensive documentation |
+| **🏆 Novel Task** | Extension of MedGemma into the specialized domain of dental diagnostics; 4 curated datasets, 5,023 samples, unified multimodal fine-tuning, structured coverage of 98 dental conditions |
 | **🏆 Agentic Workflow** | Custom multi-agent system with 6-step autonomous diagnostic pipeline, transparent reasoning, tool calling |
+| **🏆 The Edge AI** | Full offline mobile application running DentalGemma locally via llama.cpp/GGUF, enabling diagnostics in remote areas |
 
 ### Evaluation Criteria Coverage
 
@@ -540,7 +560,7 @@ dentalgemma/
 | **Effective use of HAI-DEF models** | 20% | Fine-tuned MedGemma 1.5 4B IT for novel dental domain with 5,023 samples. Cloud deployment via Modal.com demonstrating effective model serving. |
 | **Problem domain** | 15% | Clear dental diagnostic workflow improvement. Reduces diagnostic time, automates complex multi-step workflows, improves accessibility for underserved areas. |
 | **Impact potential** | 15% | Free web-based PWA accessible globally. Offline capability for key resources. Educational tool for dental students and professionals. |
-| **Product feasibility** | 20% | Production deployment on Vercel + Modal.com. 13 integrated features. Real external APIs. Professional UI. Performance optimized. PWA installable. |
+| **Product feasibility** | 20% | Production deployment on Vercel + Modal.com. 11 integrated features. Real external APIs. Professional UI. Performance optimized. PWA installable. |
 | **Execution & communication** | 30% | Professional demo videos, comprehensive documentation, clean codebase, user-friendly interface, technical innovation across all tracks. |
 
 ---
@@ -623,6 +643,7 @@ If you use DentalGemma in your research or project, please cite:
 ## 🔗 Links
 
 - **Live Demo**: [dentalgemma.vercel.app](https://dentalgemma.vercel.app)
+- **YouTube Video**: [Project Walkthrough](https://youtu.be/TtAIXdoiZPs)
 - **Model**: [naazimsnh02/dentalgemma-1.5-4b-it](https://huggingface.co/naazimsnh02/dentalgemma-1.5-4b-it)
 - **VQA Dataset**: [naazimsnh02/dentalgemma-vqa](https://huggingface.co/datasets/naazimsnh02/dentalgemma-vqa)
 - **Instruct Dataset**: [naazimsnh02/dentalgemma-instruct](https://huggingface.co/datasets/naazimsnh02/dentalgemma-instruct)

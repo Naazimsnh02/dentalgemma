@@ -52,7 +52,7 @@ model-index:
 
 # 🦷 DentalGemma 1.5 4B IT
 
-**DentalGemma** is a fine-tuned version of [MedGemma 1.5 4B IT](https://huggingface.co/google/medgemma-1.5-4b-it) specialized for dental diagnostics and clinical reasoning. This model represents a novel domain adaptation, as MedGemma was not originally trained on dental data.
+**DentalGemma** is a domain-adapted extension of [MedGemma 1.5 4B IT](https://huggingface.co/google/medgemma-1.5-4b-it) specialized for dental diagnostics and structured clinical reasoning. The model leverages targeted multimodal fine-tuning to enable detailed interpretation of dental imaging and comprehensive oral pathology assessment.
 
 Built for the [MedGemma Impact Challenge](https://kaggle.com/competitions/med-gemma-impact-challenge), DentalGemma demonstrates how medical foundation models can be efficiently adapted to underserved healthcare domains using parameter-efficient fine-tuning.
 

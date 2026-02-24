@@ -515,15 +515,30 @@ def test():
     Run with: modal run modal_dentalgemma.py
     
     Note: Web endpoints must be tested via HTTP requests, not .remote() calls.
+    After deployment, Modal will display your actual endpoint URLs.
     """
-    import requests
+    import subprocess
     
     print("🧪 Testing DentalGemma deployment...")
     print("\n⚠️  Note: Web endpoints are deployed and accessible via HTTP.")
-    print("    Use the URLs below to test your endpoints:\n")
     
-    # Get the base URL (dev environment when running with 'modal run')
-    base_url = "https://sumaiyanaazim--dentalgemma-dentalgemmamodel"
+    # Try to get the Modal username automatically
+    try:
+        result = subprocess.run(['modal', 'profile', 'current'], 
+                              capture_output=True, text=True, timeout=5)
+        if result.returncode == 0:
+            username = result.stdout.strip()
+            base_url = f"https://{username}--dentalgemma-dentalgemmamodel"
+        else:
+            print("\n⚠️  Could not detect Modal username automatically.")
+            print("    Run 'modal profile current' to see your username.")
+            print("    Then update the base_url below:\n")
+            base_url = "https://[YOUR-USERNAME]--dentalgemma-dentalgemmamodel"
+    except Exception:
+        print("\n⚠️  Could not detect Modal username automatically.")
+        print("    Run 'modal profile current' to see your username.")
+        print("    Then update the base_url in this script:\n")
+        base_url = "https://[YOUR-USERNAME]--dentalgemma-dentalgemmamodel"
     
     print("📡 Deployed Endpoints:")
     print(f"   Health:     {base_url}-health-dev.modal.run")

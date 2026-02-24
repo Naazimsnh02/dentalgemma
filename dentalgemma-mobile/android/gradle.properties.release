@@ -1,0 +1,8 @@
+# Release signing configuration
+# Copy this file to gradle.properties and fill in your keystore details
+# DO NOT commit gradle.properties with real credentials to version control!
+
+DENTALGEMMA_UPLOAD_STORE_FILE=dentalgemma-release-key.keystore
+DENTALGEMMA_UPLOAD_KEY_ALIAS=dentalgemma-key-alias
+DENTALGEMMA_UPLOAD_STORE_PASSWORD=your-keystore-password
+DENTALGEMMA_UPLOAD_KEY_PASSWORD=your-key-password
